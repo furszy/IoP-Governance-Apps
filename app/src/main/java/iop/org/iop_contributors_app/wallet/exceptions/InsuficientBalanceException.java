@@ -1,0 +1,12 @@
+package iop.org.iop_contributors_app.wallet.exceptions;
+
+/**
+ * Created by mati on 17/11/16.
+ */
+
+public class InsuficientBalanceException extends Exception {
+
+    public InsuficientBalanceException(String message) {
+        super(message);
+    }
+}

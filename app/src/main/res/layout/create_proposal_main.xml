@@ -1,0 +1,453 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    android:background="#202020">
+
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingBottom="7dp"
+            android:id="@+id/title"
+
+            >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Title"
+            android:layout_marginLeft="16dp"
+            android:textColor="#00A99D"
+            />
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/help_icon"
+            android:layout_marginLeft="9dp"
+            />
+
+        </LinearLayout>
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/edit_title"
+            android:layout_below="@+id/title"
+            android:textColor="#fff"
+            android:background="#4E4E4E"
+            android:padding="12dp"
+            android:textSize="15sp"
+            />
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingTop="7dp">
+
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingBottom="7dp"
+            android:id="@+id/subtitle"
+            >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Subtitle"
+                android:paddingLeft="16dp"
+                android:textColor="#00A99D"
+                />
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/help_icon"
+                android:layout_marginLeft="9dp"
+                />
+
+        </LinearLayout>
+
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/edit_subtitle"
+            android:layout_below="@+id/subtitle"
+            android:background="#4E4E4E"
+            android:padding="12dp"
+            android:textColor="#fff"
+            android:textSize="15sp"
+
+            />
+
+    </RelativeLayout>
+
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingTop="7dp">
+
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingBottom="7dp"
+            android:id="@+id/category"
+            >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Category:"
+                android:paddingLeft="16dp"
+                android:textColor="#00A99D"
+                android:paddingBottom="7dp"
+                />
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/help_icon"
+                android:layout_marginLeft="9dp"
+                />
+
+        </LinearLayout>
+
+
+
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/edit_category"
+            android:layout_below="@+id/category"
+            android:background="#4E4E4E"
+            android:padding="12dp"
+            android:textColor="#fff"
+            android:textSize="15sp"
+
+            />
+
+    </RelativeLayout>
+
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingTop="7dp">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingBottom="7dp"
+            android:id="@+id/body"
+            >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Body:"
+                android:paddingLeft="16dp"
+                android:textColor="#00A99D"
+                android:paddingBottom="7dp"
+                />
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/help_icon"
+                android:layout_marginLeft="9dp"
+                />
+
+        </LinearLayout>
+
+
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/edit_body"
+            android:layout_below="@+id/body"
+            android:background="#4E4E4E"
+            android:padding="12dp"
+            android:lines="7"
+            android:textSize="15sp"
+            android:textColor="#fff"
+
+            />
+
+    </RelativeLayout>
+
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        >
+
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingTop="7dp"
+            android:layout_weight="1"
+            android:layout_marginRight="9dp"
+            >
+
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingBottom="7dp"
+                android:id="@+id/startBlock"
+                >
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Start block:"
+                    android:paddingLeft="16dp"
+                    android:textColor="#00A99D"
+                    android:paddingBottom="7dp"
+                    />
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/help_icon"
+                    android:layout_marginLeft="9dp"
+                    />
+
+            </LinearLayout>
+
+
+
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/edit_start_block"
+                android:layout_below="@+id/startBlock"
+                android:background="#4E4E4E"
+                android:padding="12dp"
+                android:textSize="15sp"
+                android:textColor="#fff"
+
+                />
+
+        </RelativeLayout>
+
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingTop="7dp"
+            android:layout_weight="1"
+            android:layout_marginLeft="9dp">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingBottom="7dp"
+                android:id="@+id/endBlock"
+                >
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="End block:"
+                    android:paddingLeft="16dp"
+                    android:textColor="#00A99D"
+                    android:paddingBottom="7dp"
+                    />
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/help_icon"
+                    android:layout_marginLeft="9dp"
+                    />
+
+            </LinearLayout>
+
+
+
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/edit_end_block"
+                android:layout_below="@+id/endBlock"
+                android:background="#4E4E4E"
+                android:padding="12dp"
+                android:textColor="#fff"
+                android:textSize="15sp"
+
+                />
+
+        </RelativeLayout>
+
+    </LinearLayout>
+
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingTop="7dp">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingBottom="7dp"
+            android:id="@+id/reward"
+            >
+
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Block reward:"
+                android:paddingLeft="16dp"
+                android:textColor="#00A99D"
+                android:paddingBottom="7dp"
+                />
+
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/help_icon"
+                android:layout_marginLeft="9dp"
+                />
+
+        </LinearLayout>
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/edit_block_reward"
+            android:layout_below="@+id/reward"
+            android:background="#4E4E4E"
+            android:textColor="#fff"
+            android:padding="12dp"
+            android:textSize="15sp"
+            />
+
+    </RelativeLayout>
+
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:paddingTop="7dp">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingBottom="7dp"
+            android:id="@+id/delirable"
+            >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Beneficiaries List:"
+                android:paddingLeft="16dp"
+                android:textColor="#00A99D"
+                android:paddingBottom="7dp"
+                />
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/help_icon"
+                android:layout_marginLeft="9dp"
+                />
+
+        </LinearLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_below="@+id/delirable"
+            >
+
+
+            <EditText
+                android:layout_width="200dp"
+                android:layout_height="wrap_content"
+                android:textColor="#fff"
+                android:padding="12dp"
+                android:background="#4E4E4E"
+                android:id="@+id/edit_beneficiary_1_address"
+                android:hint="Address"
+                android:layout_marginRight="12dp"
+                android:textSize="15sp"
+                android:textColorHint="#77ffffff"
+                />
+
+
+            <EditText
+                android:layout_width="150dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/edit_beneficiary_1_value"
+                android:background="#4E4E4E"
+                android:textColor="#fff"
+                android:padding="12dp"
+                android:layout_gravity="end"
+                android:layout_alignParentEnd="true"
+                android:textColorHint="#77ffffff"
+                android:hint="Reward"
+                android:textSize="15sp"
+                android:gravity="start"
+                />
+
+        </RelativeLayout>
+
+
+    </RelativeLayout>
+
+
+    <Button
+        android:layout_width="140dp"
+        android:layout_height="wrap_content"
+        android:text="CREATE"
+        android:textColor="#1A1A1A"
+        android:background="@drawable/create_proposal_btn"
+        android:id="@+id/btn_create_proposal"
+        android:layout_gravity="end"
+        android:layout_marginTop="24dp"
+        />
+
+
+
+
+</LinearLayout>
+
+</ScrollView>

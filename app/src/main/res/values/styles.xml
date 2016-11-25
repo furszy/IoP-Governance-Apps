@@ -1,0 +1,20 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/base_background</item>
+        <item name="colorPrimaryDark">@color/base_background</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="colorControlNormal">#fff</item>
+        <item name="colorControlActivated">@color/text_blue</item>
+        <item name="colorControlHighlight">@color/text_blue</item>
+
+    </style>
+
+
+    <style name="PreferenceScreen" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:textColor">#fff</item>
+        <item name="android:subtitle">#fff</item>
+    </style>
+</resources>

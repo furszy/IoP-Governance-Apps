@@ -1,0 +1,35 @@
+package iop.org.iop_contributors_app.configurations;
+
+import android.content.SharedPreferences;
+
+/**
+ * Created by mati on 11/11/16.
+ */
+public class WalletPreferencesConfiguration extends Configurations{
+
+    public static final String PREFS_NAME = "wallet_preferences";
+
+    public static final String PREFS_KEY_CONNECTIVITY_NOTIFICATION = "connectivity_notification";
+
+    private static final String PREFS_KEY_BEST_CHAIN_HEIGHT_EVER = "best_chain_height_ever";
+
+    public WalletPreferencesConfiguration(SharedPreferences prefs) {
+        super(prefs);
+    }
+
+
+    public boolean getConnectivityNotificationEnabled() {
+        return prefs.getBoolean(PREFS_KEY_CONNECTIVITY_NOTIFICATION, false);
+    }
+
+    public int getBestChainHeightEver()
+    {
+        return prefs.getInt(PREFS_KEY_BEST_CHAIN_HEIGHT_EVER, 0);
+    }
+
+    public void maybeIncrementBestChainHeightEver(final int bestChainHeightEver)
+    {
+        if (bestChainHeightEver > getBestChainHeightEver())
+            prefs.edit().putInt(PREFS_KEY_BEST_CHAIN_HEIGHT_EVER, bestChainHeightEver).apply();
+    }
+}

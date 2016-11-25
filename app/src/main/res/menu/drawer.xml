@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group
+        android:checkableBehavior="single">
+
+        <item
+            android:id="@+id/drawer_home"
+            android:checked="true"
+            android:icon="@drawable/icon_home_on"
+            android:title="@string/home"
+            />
+
+        <item
+            android:id="@+id/drawer_forum"
+            android:icon="@drawable/icon_forum_off"
+            android:title="@string/forum"
+            />
+
+        <item
+            android:id="@+id/drawer_create_proposal"
+            android:icon="@drawable/icon_createproposal_1"
+            android:title="@string/create_proposal"/>
+
+        <item
+            android:id="@+id/drawer_proposals"
+            android:icon="@drawable/icon_createproposal_2"
+            android:title="@string/proposals"/>
+
+
+        <item
+            android:id="@+id/drawer_settings"
+            android:icon="@drawable/icon_settings_off"
+            android:title="@string/settings"/>
+
+    </group>
+</menu>

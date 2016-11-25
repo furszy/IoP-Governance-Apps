@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="iop.org.iop_contributors_app">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+
+    <application
+        android:name=".ApplicationController"
+        android:allowBackup="false"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+        <activity android:name=".ui.MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity android:name=".ui.ForumActivity"
+           >
+        </activity>
+        <activity android:name=".ui.ProfileActivity" />
+        <activity android:name=".ui.SettingsActivity"
+            android:theme="@style/PreferenceScreen"/>
+
+        <activity android:name=".ui.CreateProposalActivity"/>
+        <activity android:name=".ui.ProposalsActivity"/>
+        <service android:name=".services.ProfileServerService"/>
+        <service android:name=".services.BlockchainServiceImpl"/>
+
+    </application>
+
+</manifest>

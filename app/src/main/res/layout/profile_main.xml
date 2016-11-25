@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/base_background"
+    >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="48dp"
+        android:gravity="center"
+        android:id="@+id/user_image"
+        android:layout_marginBottom="24dp">
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/profile_image"
+            android:layout_width="148dp"
+            android:layout_height="128dp"
+            android:src="@drawable/icon_profile_picture"
+            app:civ_border_width="1dp"
+            android:layout_marginRight="12dp"
+
+            app:civ_border_color="#71b6ff"/>
+
+
+    </LinearLayout>
+
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/user_image"
+        android:orientation="vertical"
+        android:layout_marginTop="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_gravity="center_horizontal"
+            android:paddingTop="5dp"
+            android:paddingBottom="12dp">
+
+
+            <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/txt_name"
+                android:ems="10"
+                tools:ignore="HardcodedText"
+                android:textColor="#E6E6E6"
+                android:hint="Username"
+                android:textColorHint="#E6E6E6"
+                android:foregroundTint="#808080"
+                android:backgroundTint="#fff"
+                android:paddingRight="12dp"
+                android:gravity="center"
+                android:textSize="16sp"
+                android:digits="0123456789 abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ñÑ"/>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginLeft="12dp"
+                >
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/icon_home_on"
+                    android:layout_gravity="center"
+                    />
+
+            </LinearLayout>
+
+
+
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_gravity="center_horizontal"
+            android:paddingTop="5dp"
+            android:paddingBottom="12dp">
+
+            <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/txt_password"
+                android:ems="10"
+                tools:ignore="HardcodedText"
+                android:textColor="#E6E6E6"
+                android:hint="Password"
+                android:textColorHint="#E6E6E6"
+                android:paddingRight="12dp"
+
+                android:foregroundTint="#808080"
+                android:layout_centerHorizontal="true"
+                android:gravity="center"
+                android:textSize="16sp"
+                android:digits="0123456789 abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ñÑ"/>
+
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginLeft="12dp"
+                >
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/icon_home_on"
+                    android:layout_gravity="center"
+                    />
+
+            </LinearLayout>
+
+
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_gravity="center_horizontal"
+            android:id="@+id/container_mail"
+            android:gravity="center"
+            android:paddingTop="5dp"
+            android:paddingBottom="12dp">
+
+
+            <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/txt_mail"
+                android:ems="10"
+                tools:ignore="HardcodedText"
+                android:textColor="#E6E6E6"
+                android:hint="Email"
+                android:textColorHint="#E6E6E6"
+                android:foregroundTint="#808080"
+                android:layout_centerHorizontal="true"
+                android:paddingRight="12dp"
+
+                android:gravity="center"
+                android:textSize="16sp"
+                android:digits="0123456789 abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ñÑ ,., @"/>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginLeft="12dp"
+                >
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/icon_home_on"
+                    android:layout_gravity="center"
+                    />
+
+            </LinearLayout>
+
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="5dp">
+
+
+            <!--<TextView-->
+            <!--android:gravity="center_horizontal"-->
+            <!--android:id="@+id/crypto_broker_phrase_title"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:background="@android:color/transparent"-->
+            <!--android:text="STATUS"-->
+            <!--android:textColor="#21386D"-->
+            <!--android:textSize="12sp"-->
+            <!--tools:ignore="HardcodedText"/>-->
+
+            <!--<EditText-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:id="@+id/crypto_broker_phrase"-->
+            <!--android:ems="10"-->
+            <!--tools:ignore="HardcodedText"-->
+            <!--android:textColor="#6D6E70"-->
+            <!--android:hint="Write your status"-->
+            <!--android:textColorHint="#6D6E70"-->
+            <!--android:foregroundTint="#808080"-->
+            <!--android:layout_below="@+id/crypto_broker_phrase_title"-->
+            <!--android:gravity="center_horizontal"-->
+            <!--android:textSize="16sp"-->
+            <!--android:singleLine="true"-->
+            <!--android:digits="0123456789 abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ñÑ"/>-->
+
+        </LinearLayout>
+
+
+
+        <ProgressBar
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:id="@+id/progressBar"
+            android:layout_marginTop="12dp"
+            android:layout_gravity="center"
+            android:layout_marginBottom="50dp"
+            />
+
+
+
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/btn_create"
+        android:layout_width="166dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="15dp"
+        android:textColor="#00A99D"
+        android:text="Create"
+        android:layout_marginRight="12dp"
+        android:background="@drawable/create_button"/>
+
+</RelativeLayout>

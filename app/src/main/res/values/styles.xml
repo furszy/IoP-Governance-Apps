@@ -16,6 +16,14 @@
     <style name="PreferenceScreen" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="android:textColor">#fff</item>
         <item name="android:subtitle">#fff</item>
+        <item name="android:listSeparatorTextViewStyle">@style/ListSeparatorText</item>
+    </style>
+
+
+    <style name="ListSeparatorText" parent="android:Widget.TextView"><!--parent is optional -->
+        <item name="android:background">#fff</item>
+        <item name="android:color">#fff</item>
+
     </style>
 
     <style name="AppThmeForum" parent="Theme.AppCompat.Light.NoActionBar">

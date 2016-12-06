@@ -12,6 +12,18 @@
 
     </style>
 
+    <style name="AppTheme1" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:windowBackground">@null</item>
+    </style>
+
+    <style name="AppTheme.CenterAnimation">
+        <item name="android:windowBackground">@drawable/init_screen</item>
+    </style>
+
 
     <style name="PreferenceScreen" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="android:textColor">#fff</item>

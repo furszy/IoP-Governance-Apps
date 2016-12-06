@@ -75,7 +75,7 @@ import iop.org.iop_contributors_app.ui.dialogs.wallet.BackupDialog;
 import iop.org.iop_contributors_app.ui.dialogs.DialogBuilder;
 import iop.org.iop_contributors_app.ui.dialogs.wallet.ImportDialogButtonEnablerListener;
 import iop.org.iop_contributors_app.ui.dialogs.wallet.RestoreDialogFragment;
-import iop.org.iop_contributors_app.ui.dialogs.wallet.RestoreDialogFragmentMati;
+import iop.org.iop_contributors_app.ui.dialogs.wallet.RestoreDialogFragment2;
 import iop.org.iop_contributors_app.utils.Cache;
 import iop.org.iop_contributors_app.utils.Io;
 import iop.org.iop_contributors_app.wallet.WalletConstants;
@@ -135,9 +135,8 @@ public abstract class BaseActivity extends AppCompatActivity {
             if (hasDrawer())setupDrawerLayout();
             container = (ViewGroup) findViewById(R.id.container);
             onCreateView(container,savedInstanceState);
-        }else {
-            startActivity(new Intent(this, StartActivity.class));
-        }
+        }else
+            Log.e(TAG,"Algo malo pasó");
     }
 
     @Override
@@ -162,7 +161,7 @@ public abstract class BaseActivity extends AppCompatActivity {
                 return true;
 
             case R.id.action_restore:
-                RestoreDialogFragment restoreDialogFragment = RestoreDialogFragment.factory(this);
+                RestoreDialogFragment2 restoreDialogFragment = RestoreDialogFragment2.newInstance();
                 restoreDialogFragment.show(getFragmentManager(),"restore_dialog");
                 return true;
 

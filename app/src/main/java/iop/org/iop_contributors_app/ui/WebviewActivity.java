@@ -4,10 +4,12 @@ package iop.org.iop_contributors_app.ui;
  * Created by mati on 07/11/16.
  */
 import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.Button;
@@ -23,6 +25,7 @@ import iop.org.iop_contributors_app.wallet.WalletModule;
 
 public class WebviewActivity extends Activity {
 
+
     WebView web1;
     EditText ed1;
     Button bt1;
@@ -30,9 +33,12 @@ public class WebviewActivity extends Activity {
     String add;
     ProgressBar pbar;
 
+    String currentUrl;
+
     WalletModule module;
 
     Map<String, String> additionalHttpHeaders;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,9 +47,13 @@ public class WebviewActivity extends Activity {
 
         module = ApplicationController.getInstance().getWalletModule();
 
+        Intent intent = getIntent();
+
+        currentUrl = "http://fermat.community";
+
         web1 = (WebView)findViewById(R.id.webView1);
         ed1 = (EditText)findViewById(R.id.editText1);
-        ed1.setText("http://fermat.community/all");
+        ed1.setText(currentUrl);
         bt1 = (Button)findViewById(R.id.button1);
         pbar = (ProgressBar)findViewById(R.id.progressBar1);
         pbar.setVisibility(View.GONE);
@@ -88,11 +98,18 @@ public class WebviewActivity extends Activity {
 
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
-
+            currentUrl = url;
             // TODO Auto-generated method stub
             view.loadUrl(url);
             return true;
         }
+
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+            currentUrl = request.getUrl().toString();
+            return super.shouldOverrideUrlLoading(view, request);
+        }
+
         @Override
         public void onPageFinished(WebView view, String url) {
 
@@ -112,5 +129,10 @@ public class WebviewActivity extends Activity {
             return true;
         }
         return super.onKeyDown(keyCode, event);
+    }
+
+
+    private void checkIfTopicIsMine(){
+
     }
 }

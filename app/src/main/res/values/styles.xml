@@ -17,4 +17,10 @@
         <item name="android:textColor">#fff</item>
         <item name="android:subtitle">#fff</item>
     </style>
+
+    <style name="AppThmeForum" parent="Theme.AppCompat.Light.NoActionBar">
+
+        <item name="colorAccent">#fff</item>
+
+    </style>
 </resources>

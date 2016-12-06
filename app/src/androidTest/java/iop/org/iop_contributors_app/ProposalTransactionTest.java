@@ -2,18 +2,13 @@ package iop.org.iop_contributors_app;
 
 import junit.framework.Assert;
 
-import org.apache.commons.codec.DecoderException;
 import org.bitcoinj.params.RegTestParams;
 import org.junit.Test;
 import org.libsodium.jni.encoders.Hex;
 
-import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
-import java.nio.ByteBuffer;
 
-import iop.org.iop_contributors_app.core.Proposal;
 import iop.org.iop_contributors_app.core.iop_sdk.blockchain.OpReturnOutputTransaction;
-import iop.org.iop_contributors_app.core.iop_sdk.blockchain.contribution_contract.ProposalTransactionBuilder;
 
 /**
  * Created by mati on 18/11/16.

@@ -13,7 +13,7 @@ import java.util.concurrent.Executors;
 
 import iop.org.iop_contributors_app.ApplicationController;
 import iop.org.iop_contributors_app.R;
-import iop.org.iop_contributors_app.core.Proposal;
+import iop.org.iop_contributors_app.core.iop_sdk.governance.Proposal;
 import iop.org.iop_contributors_app.ui.base.BaseActivity;
 import iop.org.iop_contributors_app.ui.components.ProposalsAdapter;
 import iop.org.iop_contributors_app.wallet.WalletModule;
@@ -32,9 +32,13 @@ public class ProposalsActivity extends BaseActivity {
     private RecyclerView.LayoutManager layoutManager;
     private ProposalsAdapter adapter;
 
-    private ExecutorService executorService;
-
     private List<Proposal> proposals;
+
+
+    @Override
+    protected boolean hasDrawer() {
+        return true;
+    }
 
     @Override
     protected void onCreateView(ViewGroup container, Bundle savedInstance) {
@@ -60,18 +64,20 @@ public class ProposalsActivity extends BaseActivity {
     }
 
     @Override
+    protected boolean onBroadcastReceive(String action, Bundle data) {
+        return false;
+    }
+
+    @Override
     protected void onResume() {
-        executorService = Executors.newSingleThreadExecutor();
         if (proposals==null){
-            loadProposals();
+            executor.execute(loadProposals);
         }
         super.onResume();
     }
 
     @Override
     protected void onStop() {
-        executorService.shutdownNow();
-        executorService = null;
         super.onStop();
     }
 
@@ -82,18 +88,15 @@ public class ProposalsActivity extends BaseActivity {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    proposals = new ArrayList<Proposal>();
-                    proposals.add(new Proposal());
-                    proposals.add(new Proposal());
-                    proposals.add(new Proposal());
+//                    proposals = new ArrayList<Proposal>();
+//                    proposals.add(new Proposal());
+//                    proposals.add(new Proposal());
+//                    proposals.add(new Proposal());
                     adapter.changeDataSet(proposals);
                 }
             });
         }
     };
 
-    private void loadProposals(){
-        executorService.submit(loadProposals);
-    }
 
 }

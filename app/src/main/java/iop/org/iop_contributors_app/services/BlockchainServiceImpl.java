@@ -39,15 +39,20 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import iop.org.iop_contributors_app.ApplicationController;
 import iop.org.iop_contributors_app.configurations.WalletPreferencesConfiguration;
-import iop.org.iop_contributors_app.core.Proposal;
+import iop.org.iop_contributors_app.core.iop_sdk.governance.Proposal;
 import iop.org.iop_contributors_app.ui.CreateProposalActivity;
 import iop.org.iop_contributors_app.wallet.BlockchainManager;
+import iop.org.iop_contributors_app.wallet.InvalidProposalException;
 import iop.org.iop_contributors_app.wallet.db.CantSaveProposalException;
 import iop.org.iop_contributors_app.wallet.exceptions.CantSendProposalException;
 import iop.org.iop_contributors_app.wallet.WalletConstants;
 import iop.org.iop_contributors_app.wallet.WalletModule;
 import iop.org.iop_contributors_app.wallet.exceptions.InsuficientBalanceException;
 
+import static iop.org.iop_contributors_app.ui.CreateProposalActivity.CANT_SAVE_PROPOSAL_DIALOG;
+import static iop.org.iop_contributors_app.ui.CreateProposalActivity.COMMON_ERROR_DIALOG;
+import static iop.org.iop_contributors_app.ui.CreateProposalActivity.INSUFICIENTS_FUNDS_DIALOG;
+import static iop.org.iop_contributors_app.ui.CreateProposalActivity.UNKNOWN_ERROR_DIALOG;
 import static iop.org.iop_contributors_app.wallet.WalletConstants.BLOCKCHAIN_STATE_BROADCAST_THROTTLE_MS;
 
 /**
@@ -307,13 +312,18 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
                     @Override
                     public void run() {
                         try {
-                            walletModule.sendProposal((Proposal) intent.getSerializableExtra(INTENT_EXTRA_PROPOSAL));
+                            Proposal proposal = (Proposal) intent.getSerializableExtra(INTENT_EXTRA_PROPOSAL);
+                            if (walletModule.sendProposal(proposal)){
+                                broadcastProposalSuced(proposal.getTitle());
+                            }
                         }catch (InsuficientBalanceException e){
-                            showInsuficientFundsException();
+                            showDialogException(INSUFICIENTS_FUNDS_DIALOG,null);
                         }catch (CantSendProposalException e) {
-                            showCantSendProposalDialog();
+                            showDialogException(UNKNOWN_ERROR_DIALOG, e.getMessage());
                         }catch (CantSaveProposalException e){
-                            showCantSendProposalDialog();
+                            showDialogException(CANT_SAVE_PROPOSAL_DIALOG,e.getMessage());
+                        } catch (InvalidProposalException e) {
+                            showDialogException(COMMON_ERROR_DIALOG, e.getMessage());
                         } catch (Exception e){
                             e.printStackTrace();
                         }
@@ -343,16 +353,18 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
     }
 
 
-    private void showInsuficientFundsException(){
+    private void showDialogException(int dialogType, String message){
         Intent intent = new Intent(CreateProposalActivity.ACTION_RECEIVE_EXCEPTION);
-        intent.putExtra(CreateProposalActivity.INTENT_DIALOG,CreateProposalActivity.INSUFICIENTS_FUNDS_DIALOG);
+        intent.putExtra(CreateProposalActivity.INTENT_DIALOG,dialogType);
+        intent.putExtra(CreateProposalActivity.INTENT_EXTRA_MESSAGE_DIALOG,message);
+        Log.e(TAG,"insuficient funds exception");
         localBroadcast.sendBroadcast(intent);
     }
 
-    private void showCantSendProposalDialog() {
-        Intent intent = new Intent(CreateProposalActivity.ACTION_RECEIVE_EXCEPTION);
-        intent.putExtra(CreateProposalActivity.INTENT_DIALOG,CreateProposalActivity.UNKNOWN_ERROR_DIALOG);
-        localBroadcast.sendBroadcast(intent);
+    private void broadcastProposalSuced(String title){
+        Intent intent = new Intent(CreateProposalActivity.ACTION_PROPOSAL_BROADCASTED);
+        intent.putExtra("title",title);
+        sendBroadcast(intent);
     }
 
     @Override

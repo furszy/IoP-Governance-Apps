@@ -62,4 +62,8 @@ public class Configurations {
         return prefs.getString(key,defaultValue);
     }
 
+    public void remove(){
+        prefs.edit().clear().apply();
+    }
+
 }

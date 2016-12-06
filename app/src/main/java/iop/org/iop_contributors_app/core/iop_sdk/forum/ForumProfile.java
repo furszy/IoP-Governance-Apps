@@ -6,9 +6,17 @@ package iop.org.iop_contributors_app.core.iop_sdk.forum;
 
 public class ForumProfile {
 
+    private long forumId;
+    private String name;
     private String username;
     private String password;
     private String email;
+
+    public ForumProfile(long forumId, String name, String username) {
+        this.forumId = forumId;
+        this.name = name;
+        this.username = username;
+    }
 
     public ForumProfile(String username, String password, String email) {
         this.username = username;
@@ -31,5 +39,33 @@ public class ForumProfile {
 
     public String getEmail() {
         return email;
+    }
+
+    public long getForumId() {
+        return forumId;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setForumId(long forumId) {
+        this.forumId = forumId;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 }

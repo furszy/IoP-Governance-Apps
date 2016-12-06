@@ -8,6 +8,11 @@
     android:title="Backup wallet"
     app:showAsAction="never"/>
 
+    <item
+        android:id="@+id/action_restore"
+        android:title="Restore wallet"
+        app:showAsAction="never"/>
+
 
 
 </menu>

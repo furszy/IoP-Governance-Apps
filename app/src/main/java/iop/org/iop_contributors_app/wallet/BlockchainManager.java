@@ -280,6 +280,7 @@ public class BlockchainManager {
             wakeLock.release();
         }
 
+        //todo: falta hacer el tema de la memoria, hoy en día si se queda sin memoria no dice nada..
         //todo: ver si conviene esto..
 //        broadcastBlockchainState();
 

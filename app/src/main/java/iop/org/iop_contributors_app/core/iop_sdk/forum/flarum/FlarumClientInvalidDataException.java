@@ -1,4 +1,4 @@
-package iop.org.iop_contributors_app.core.iop_sdk.forum;
+package iop.org.iop_contributors_app.core.iop_sdk.forum.flarum;
 
 /**
  * Created by mati on 23/11/16.

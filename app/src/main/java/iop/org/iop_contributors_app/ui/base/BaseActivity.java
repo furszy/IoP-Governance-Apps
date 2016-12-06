@@ -1,36 +1,57 @@
 package iop.org.iop_contributors_app.ui.base;
 
+import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.NotificationManager;
+import android.content.BroadcastReceiver;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.app.NotificationCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.DisplayMetrics;
-import android.util.TypedValue;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.common.base.Charsets;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 
+import org.bitcoinj.core.Context;
+import org.bitcoinj.wallet.Wallet;
+
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -45,9 +66,19 @@ import iop.org.iop_contributors_app.ui.MainActivity;
 import iop.org.iop_contributors_app.ui.ProfileActivity;
 import iop.org.iop_contributors_app.ui.ProposalsActivity;
 import iop.org.iop_contributors_app.ui.SettingsActivity;
+import iop.org.iop_contributors_app.ui.StartActivity;
 import iop.org.iop_contributors_app.ui.components.sdk.FermatListItemListeners;
-import iop.org.iop_contributors_app.ui.dialogs.BackupDialog;
+import iop.org.iop_contributors_app.ui.dialogs.Crypto;
+import iop.org.iop_contributors_app.ui.dialogs.ShowPasswordCheckListener;
+import iop.org.iop_contributors_app.ui.dialogs.WalletUtils;
+import iop.org.iop_contributors_app.ui.dialogs.wallet.BackupDialog;
+import iop.org.iop_contributors_app.ui.dialogs.DialogBuilder;
+import iop.org.iop_contributors_app.ui.dialogs.wallet.ImportDialogButtonEnablerListener;
+import iop.org.iop_contributors_app.ui.dialogs.wallet.RestoreDialogFragment;
+import iop.org.iop_contributors_app.ui.dialogs.wallet.RestoreDialogFragmentMati;
 import iop.org.iop_contributors_app.utils.Cache;
+import iop.org.iop_contributors_app.utils.Io;
+import iop.org.iop_contributors_app.wallet.WalletConstants;
 import iop.org.iop_contributors_app.wallet.WalletModule;
 
 import static android.graphics.Color.WHITE;
@@ -56,7 +87,13 @@ import static android.graphics.Color.WHITE;
  * Created by mati on 07/11/16.
  */
 
-public class BaseActivity extends AppCompatActivity {
+public abstract class BaseActivity extends AppCompatActivity {
+
+    private static final String TAG = "BaseActivity";
+
+    public static final String ACTION_PROPOSAL_BROADCASTED = "propBroadcasted";
+
+    NotificationManager notificationManager;
 
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
@@ -69,8 +106,10 @@ public class BaseActivity extends AppCompatActivity {
 
     private TextView txt_available_balance;
     private TextView txt_lock_balance;
+    private TextView txt_drawer_name;
     private ImageView imgQr;
 
+    protected ApplicationController application;
     protected WalletModule module;
 
     protected ExecutorService executor;
@@ -81,7 +120,10 @@ public class BaseActivity extends AppCompatActivity {
     public final void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        module = ApplicationController.getInstance().getWalletModule();
+        notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
+        application = ApplicationController.getInstance();
+        module = application.getWalletModule();
 
         executor = Executors.newFixedThreadPool(3);
 
@@ -90,25 +132,11 @@ public class BaseActivity extends AppCompatActivity {
         if (isStarted) {
             setContentView(R.layout.base_main);
             initToolbar();
-            setupDrawerLayout();
+            if (hasDrawer())setupDrawerLayout();
             container = (ViewGroup) findViewById(R.id.container);
             onCreateView(container,savedInstanceState);
         }else {
-            setContentView(R.layout.start_main);
-            findViewById(R.id.btn_sigin).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    startActivity(new Intent(BaseActivity.this,ProfileActivity.class));
-                }
-            });
-            findViewById(R.id.btn_login).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Intent intent = new Intent(BaseActivity.this,ProfileActivity.class);
-                    intent.putExtra(ProfileActivity.INTENT_LOGIN,true);
-                    startActivity(intent);
-                }
-            });
+            startActivity(new Intent(this, StartActivity.class));
         }
     }
 
@@ -133,6 +161,11 @@ public class BaseActivity extends AppCompatActivity {
                 backupDialog.show(getFragmentManager(),"backup_dialog");
                 return true;
 
+            case R.id.action_restore:
+                RestoreDialogFragment restoreDialogFragment = RestoreDialogFragment.factory(this);
+                restoreDialogFragment.show(getFragmentManager(),"restore_dialog");
+                return true;
+
             default:
                 // If we got here, the user's action was not recognized.
                 // Invoke the superclass to handle it.
@@ -147,11 +180,23 @@ public class BaseActivity extends AppCompatActivity {
         final ActionBar actionBar = getSupportActionBar();
 
         if (actionBar != null) {
-            actionBar.setHomeAsUpIndicator(R.drawable.ic_home_black_24dp);
+            actionBar.setHomeAsUpIndicator(R.drawable.icon_back);
             actionBar.setDisplayHomeAsUpEnabled(true);
+            toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    onBackPressed();
+                }
+            });
         }
-        toolbar.setNavigationIcon(R.drawable.menu_hamburguesa);
 
+    }
+
+    private void setupDrawerLayout() {
+        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+
+        // toolbar button
+        toolbar.setNavigationIcon(R.drawable.menu_hamburguesa);
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -159,14 +204,11 @@ public class BaseActivity extends AppCompatActivity {
             }
         });
 
-    }
-
-    private void setupDrawerLayout() {
-        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-
         navigationView = (NavigationView) findViewById(R.id.navigation_view);
 
-        navigationView.getHeaderView(0).setOnClickListener(new View.OnClickListener() {
+        View headerView = navigationView.getHeaderView(0);
+
+        headerView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(BaseActivity.this, ProfileActivity.class));
@@ -223,9 +265,11 @@ public class BaseActivity extends AppCompatActivity {
         navViewRecyclerView.setAdapter(navViewAdapter);
 
         imgQr = (ImageView) navigationView.findViewById(R.id.img_qr);
-        txt_available_balance = (TextView) drawerLayout.findViewById(R.id.txt_available_balance);
-        txt_lock_balance = (TextView) drawerLayout.findViewById(R.id.txt_lock_balance);
+        txt_available_balance = (TextView) headerView.findViewById(R.id.txt_available_balance);
+        txt_lock_balance = (TextView) headerView.findViewById(R.id.txt_lock_balance);
+        txt_drawer_name = (TextView) headerView.findViewById(R.id.txt_drawer_name);
 
+        txt_drawer_name.setText(module.getForumProfile().getUsername());
 
         imgQr.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -242,6 +286,8 @@ public class BaseActivity extends AppCompatActivity {
         executor.submit(new Runnable() {
             @Override
             public void run() {
+
+                Context.propagate(WalletConstants.CONTEXT);
 
                 try {
 
@@ -268,7 +314,7 @@ public class BaseActivity extends AppCompatActivity {
 
                 // balance
                 try {
-                    txt_available_balance.setText(String.valueOf(module.getAvailableBalance() + " IoPs"));
+                    txt_available_balance.setText(module.getAvailableBalance() + " IoPs");
                     txt_lock_balance.setText(String.valueOf(module.getLockedBalance()) + " IoPs");
                 }catch (Exception e){
                     e.printStackTrace();
@@ -276,11 +322,6 @@ public class BaseActivity extends AppCompatActivity {
 
             }
         });
-
-
-
-
-
 
     }
 
@@ -352,16 +393,38 @@ public class BaseActivity extends AppCompatActivity {
             });
             ImageView image = (ImageView) dialog.findViewById(R.id.img_qr);
 
+            String address = Cache.getCacheAddress();
+            if (address==null) {
+                address = module.getNewAddress();
+                Cache.setCacheAddress(address);
+            }
             // qr
             Bitmap qrBitmap = Cache.getQrBigBitmapCache();
             if (qrBitmap == null) {
                 Resources r = getResources();
                 int px = convertDpToPx(175);
-                qrBitmap = encodeAsBitmap(module.getNewAddress(), px, px, Color.parseColor("#1A1A1A"), WHITE );
+                qrBitmap = encodeAsBitmap(address, px, px, Color.parseColor("#1A1A1A"), WHITE );
                 Cache.setQrBigBitmapCache(qrBitmap);
             }
-
             image.setImageBitmap(qrBitmap);
+
+            // cache address
+            TextView txt_qr = (TextView)dialog.findViewById(R.id.txt_qr);
+            txt_qr.setText(address);
+            txt_qr.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+//                    if(android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB) {
+//                        android.text.ClipboardManager clipboard = (android.text.ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+//                        clipboard.setText(stringYouExtracted);
+//                    } else {
+//                        android.content.ClipboardManager clipboard = (android.content.ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+//                        android.content.ClipData clip = android.content.ClipData.newPlainText("Copied Text", stringYouExtracted);
+//                        clipboard.setPrimaryClip(clip);
+//                    }
+                    return true;
+                }
+            });
 
             dialog.show();
 
@@ -371,6 +434,9 @@ public class BaseActivity extends AppCompatActivity {
             e.printStackTrace();
         }
     }
+
+
+
 
     private int convertDpToPx(int dp){
         return Math.round(dp*(getResources().getDisplayMetrics().xdpi/ DisplayMetrics.DENSITY_DEFAULT));
@@ -398,5 +464,77 @@ public class BaseActivity extends AppCompatActivity {
         Bitmap bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
         bitmap.setPixels(pixels, 0, w, 0, 0, w, h);
         return bitmap;
+    }
+
+    /**
+     * metodo llamado cuando un permiso es otorgado
+     *
+     * @param requestCode
+     * @param permissions
+     * @param grantResults
+     */
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+//        switch (requestCode) {
+//            case MY_PERMISSIONS_REQUEST_READ_CONTACTS: {
+//                // If request is cancelled, the result arrays are empty.
+//                if (grantResults.length > 0
+//                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+//
+//                    // permission was granted, yay! Do the
+//                    // contacts-related task you need to do.
+//
+//                } else {
+//
+//                    // permission denied, boo! Disable the
+//                    // functionality that depends on this permission.
+//                }
+//                return;
+//            }
+//
+//            // other 'case' lines to check for other
+//            // permissions this app might request
+//        }
+    }
+
+
+    /**
+     *
+     * @return false if the activity don't know how to do with that broadcast and this activity send a notification
+     */
+    protected abstract boolean onBroadcastReceive(String action,Bundle data);
+
+    /**
+     * Enable drawer
+     *
+     * @return
+     */
+    protected abstract boolean hasDrawer();
+
+    private class NotificationReceiver extends BroadcastReceiver{
+
+
+        @Override
+        public void onReceive(android.content.Context context, Intent intent) {
+
+            if (intent.getAction().equals(ACTION_PROPOSAL_BROADCASTED)){
+
+                if (!onBroadcastReceive(ACTION_PROPOSAL_BROADCASTED,intent.getExtras())){
+                    android.support.v4.app.NotificationCompat.Builder mBuilder =
+                            new NotificationCompat.Builder(getApplicationContext())
+                                    .setSmallIcon(R.mipmap.ic_launcher)
+                                    .setContentTitle("Proposal broadcast succed!")
+                                    .setContentText(intent.getStringExtra("title"));
+
+                    notificationManager.notify(0,mBuilder.build());
+
+
+                }
+
+            }
+
+
+        }
     }
 }

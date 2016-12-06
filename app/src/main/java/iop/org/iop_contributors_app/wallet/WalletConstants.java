@@ -1,10 +1,13 @@
 package iop.org.iop_contributors_app.wallet;
 
+import android.os.Environment;
 import android.text.format.DateUtils;
 
 import org.bitcoinj.core.Context;
 import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.params.RegTestParams;
+
+import java.io.File;
 
 import iop.org.iop_contributors_app.ApplicationController;
 
@@ -21,8 +24,12 @@ public class WalletConstants {
     /** Bitcoinj global context. */
     public static final Context CONTEXT = new Context(NETWORK_PARAMETERS);
 
+    /** Intent data **/
+    public static final String ACTION_WALLET_REFERENCE_CHANGED = WalletConstants.class.getPackage().getName() + ".wallet_reference_changed";
+
     /** User-agent to use for network access. */
     public static final String USER_AGENT = ApplicationController.getInstance().getPackageName()+"_AGENT";
+    public static final String SHOW_RESTORE_SUCCED_DIALOG = "restore_succed";
 
     public static final class Files{
 
@@ -39,8 +46,21 @@ public class WalletConstants {
 
         public static final String BIP39_WORDLIST_FILENAME = "bip39-wordlist.txt";
 
-
+        /** Path to external storage */
+        public static final File EXTERNAL_STORAGE_DIR = Environment.getExternalStorageDirectory();
+        /** Filename of the manual wallet backup. */
+        public static final String EXTERNAL_WALLET_BACKUP = "bitcoin-wallet-backup" + FILENAME_NETWORK_SUFFIX;
+        /** Manual backups go here. */
+        public static final File EXTERNAL_WALLET_BACKUP_DIR = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
     }
+
+    /** MIME type used for transmitting wallet backups. */
+    public static final String MIMETYPE_WALLET_BACKUP = "application/x-iop-wallet-backup";
+    /** Maximum size of backups. Files larger will be rejected. */
+    public static final long BACKUP_MAX_CHARS = 10000000;
+
+    // dk
+    public static final char CHAR_THIN_SPACE = '\u2009';
 
     // blockchain service
 

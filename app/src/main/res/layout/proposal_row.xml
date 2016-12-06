@@ -57,13 +57,14 @@
                 android:layout_height="wrap_content"
                 android:paddingTop="12dp"
                 android:textColor="#CCCCCC"
-
+                android:id="@+id/txt_body"
                 android:text="Soy un fucking cuerpo y me aburre escribir mucho, por eso escribo cualquier cosa..\n despues puede decirles que sigo aburrido por hacer pantallas..."
                  />
 
             <Button
                 android:layout_width="75dp"
                 android:layout_height="25dp"
+                android:id="@+id/btn_read_more"
                 android:text="Read more"
                 android:textSize="11sp"
                 android:textColor="#CCCCCC"
@@ -140,6 +141,7 @@
             <TextView
                 android:layout_width="150dp"
                 android:layout_height="wrap_content"
+                android:id="@+id/txt_total_amount"
                 android:text="Total:  4356 IoPs"
                 android:layout_marginTop="9dp"
                 android:padding="4dp"
@@ -154,6 +156,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:id="@+id/txt_go_forum"
             android:text="See in the Forum"
             android:layout_gravity="center"
             android:gravity="center"
@@ -168,6 +171,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:id="@+id/txt_state"
             android:text="Accepted"
             android:layout_gravity="center"
             android:gravity="center"

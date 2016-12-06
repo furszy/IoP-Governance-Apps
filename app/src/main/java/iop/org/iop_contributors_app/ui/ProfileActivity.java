@@ -1,8 +1,9 @@
 package iop.org.iop_contributors_app.ui;
 
-import android.app.AlertDialog;
+import android.Manifest;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -11,32 +12,37 @@ import android.graphics.PorterDuff;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 import iop.org.iop_contributors_app.ApplicationController;
-import iop.org.iop_contributors_app.configurations.ProfileServerConfigurations;
 import iop.org.iop_contributors_app.R;
-import iop.org.iop_contributors_app.core.iop_sdk.forum.FlarumClient;
-import iop.org.iop_contributors_app.core.iop_sdk.forum.FlarumClientInvalidDataException;
+import iop.org.iop_contributors_app.core.iop_sdk.forum.InvalidUserParametersException;
+import iop.org.iop_contributors_app.core.iop_sdk.forum.flarum.FlarumClientInvalidDataException;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.ForumProfile;
-import iop.org.iop_contributors_app.profile_server.ModuleProfileServer;
 import iop.org.iop_contributors_app.ui.base.BaseActivity;
 import iop.org.iop_contributors_app.ui.dialogs.DialogBuilder;
 import iop.org.iop_contributors_app.wallet.WalletModule;
+
+import static iop.org.iop_contributors_app.core.iop_sdk.utils.StringUtils.cleanString;
 
 /**
  * Created by mati on 07/11/16.
@@ -50,6 +56,7 @@ public class ProfileActivity extends BaseActivity {
     public static final String INTENT_LOGIN = "login";
 
     private static final int RESULT_LOAD_IMAGE = 100;
+    private static final int MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL = 500;
 
     private WalletModule module;
 
@@ -60,23 +67,39 @@ public class ProfileActivity extends BaseActivity {
     private EditText txt_email;
     private Button btn_create;
     private ProgressBar progressBar;
+    private ImageView check_profile;
+    private ImageView check_password;
+    private ImageView check_email;
+
 
     private ForumProfile forumProfile;
 
     byte[] profImgData;
 
-    private boolean isLogin = false;
+    private boolean isPasswordCorrect;
+    private boolean isUsernameCorrect;
+    private boolean isEmailCorrect;
+
+    private AtomicBoolean lock = new AtomicBoolean(false);
+
+    private boolean isRegistered;
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        if (isRegistered)
+            return super.onCreateOptionsMenu(menu);
+        else
+            return true;
+    }
 
     @Override
     protected void onCreateView(ViewGroup container, Bundle savedInstance) {
 
-        if (getIntent().getExtras()!=null) {
-            isLogin = getIntent().getExtras().getBoolean(INTENT_LOGIN, false);
-        }
-
         getLayoutInflater().inflate(R.layout.profile_main,container);
 
         module = ApplicationController.getInstance().getWalletModule();
+
+        isRegistered = module.isForumRegistered();
 
         imgProfile = (CircleImageView) findViewById(R.id.profile_image);
         txt_name = (EditText) findViewById(R.id.txt_name);
@@ -88,6 +111,9 @@ public class ProfileActivity extends BaseActivity {
         progressBar.getIndeterminateDrawable().setColorFilter(Color.BLUE, PorterDuff.Mode.MULTIPLY);
         progressBar.setVisibility(View.GONE);
 
+        check_profile = (ImageView) findViewById(R.id.img_check_profile);
+        check_email = (ImageView) findViewById(R.id.img_check_email);
+        check_password = (ImageView) findViewById(R.id.img_check_password);
 
         btn_create = (Button) findViewById(R.id.btn_create);
 
@@ -99,7 +125,7 @@ public class ProfileActivity extends BaseActivity {
             }
         });
 
-        if (module.isForumRegistered()){
+        if (isRegistered){
             btn_create.setText("Back");
             btn_create.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -107,46 +133,36 @@ public class ProfileActivity extends BaseActivity {
                     startActivity(new Intent(v.getContext(),MainActivity.class));
                 }
             });
+
         }else {
-
-            if (isLogin) {
-                txt_email.setVisibility(View.GONE);
-                btn_create.setText("LOGIN");
-                findViewById(R.id.container_mail).setVisibility(View.GONE);
-            }
-
             btn_create.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     try {
-
                         progressBar.setVisibility(View.VISIBLE);
+                        if (isUsernameCorrect){
+                            if (isPasswordCorrect){
+                                if (isEmailCorrect){
+                                    if (!module.isForumRegistered()) {
+                                        final String username = txt_name.getText().toString();
+                                        final String password = txt_password.getText().toString();
+                                        final String email = txt_email.getText().toString();
 
-
-                        final String username = txt_name.getText().toString();
-                        final String password = txt_password.getText().toString();
-                        final String email = txt_email.getText().toString();
-
-                        if (username != null && !username.equals("")) {
-
-                            if (password != null && !password.equals("")) {
-
-                                if (!module.isForumRegistered()) {
-
-                                    if (isLogin) {
-                                        loginUser(username, password);
-                                    } else if (email != null && !email.equals("")) {
                                         registerUser(username, password, email);
-                                    }
 
-                                } else
-                                    Log.e(TAG, "IsRegistered true, error!!");
-                            } else
+                                    } else
+                                        Log.e(TAG, "IsRegistered true, error!!");
+                                }else {
+                                    Toast.makeText(ProfileActivity.this, "Error email is invalid", Toast.LENGTH_LONG).show();
+                                }
+
+                            }else {
                                 Toast.makeText(ProfileActivity.this, "Error password is invalid", Toast.LENGTH_LONG).show();
-
-                        } else {
+                            }
+                        }else {
                             Toast.makeText(ProfileActivity.this, "Username invalid, please add your nickname", Toast.LENGTH_LONG).show();
                         }
+
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -156,6 +172,16 @@ public class ProfileActivity extends BaseActivity {
 
         }
         init();
+    }
+
+    @Override
+    protected boolean onBroadcastReceive(String action, Bundle data) {
+        return false;
+    }
+
+    @Override
+    protected boolean hasDrawer() {
+        return isRegistered;
     }
 
     @Override
@@ -186,66 +212,131 @@ public class ProfileActivity extends BaseActivity {
 
             @Override
             public void afterTextChanged(Editable s) {
-                if (s.toString().length()<8){
-                    Toast.makeText(ProfileActivity.this,"Password debe tener 8 caracteres minimo",Toast.LENGTH_SHORT).show();
+                if (s.toString().length()>=8){
+                    isPasswordCorrect = true;
+                    check_password.setVisibility(View.VISIBLE);
+                    check_password.setImageResource(R.drawable.ic_check_profile);
+                }else {
+                    isPasswordCorrect = false;
+                    check_password.setVisibility(View.VISIBLE);
+                    check_password.setImageResource(R.drawable.ic_xroja_profile);
                 }
             }
         };
 
         txt_password.addTextChangedListener(passwordWatcher);
 
+        txt_email.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (validateMail(s.toString())){
+                    isEmailCorrect = true;
+                    check_email.setVisibility(View.VISIBLE);
+                    check_email.setImageResource(R.drawable.ic_check_profile);
+                }else {
+                    isEmailCorrect = false;
+                    check_email.setVisibility(View.VISIBLE);
+                    check_email.setImageResource(R.drawable.ic_xroja_profile);
+                }
+            }
+        });
+
+        txt_name.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (s.toString().length()>3){
+                    isUsernameCorrect = true;
+                    check_profile.setVisibility(View.VISIBLE);
+                    check_profile.setImageResource(R.drawable.ic_check_profile);
+                }else {
+                    isUsernameCorrect = false;
+                    check_profile.setVisibility(View.VISIBLE);
+                    check_profile.setImageResource(R.drawable.ic_xroja_profile);
+                }
+            }
+        });
+
+    }
+
+    private boolean validateMail(CharSequence email){
+        String regExpn =
+                "^(([\\w-]+\\.)+[\\w-]+|([a-zA-Z]{1}|[\\w-]{2,}))@"
+                        +"((([0-1]?[0-9]{1,2}|25[0-5]|2[0-4][0-9])\\.([0-1]?"
+                        +"[0-9]{1,2}|25[0-5]|2[0-4][0-9])\\."
+                        +"([0-1]?[0-9]{1,2}|25[0-5]|2[0-4][0-9])\\.([0-1]?"
+                        +"[0-9]{1,2}|25[0-5]|2[0-4][0-9])){1}|"
+                        +"([a-zA-Z]+[\\w-]+\\.)+[a-zA-Z]{2,4})$";
+
+        Pattern pattern = Pattern.compile(regExpn, Pattern.CASE_INSENSITIVE);
+        Matcher matcher = pattern.matcher(email);
+
+        if(matcher.matches())
+            return true;
+        else
+            return false;
     }
 
     private void registerUser(final String username, final String password, final String email){
 
-        execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    if (module.registerForumUser(username, password, email)) {
+        if (!lock.getAndSet(true)) {
+            execute(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        if (module.registerForumUser(username, password, email)) {
 
-                        ProfileActivity.this.runOnUiThread(new Runnable() {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    progressBar.setVisibility(View.GONE);
+                                    buildDialog();
+                                }
+                            });
+                        } else {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(ProfileActivity.this, "Error connection to the forum", Toast.LENGTH_LONG).show();
+                                    progressBar.setVisibility(View.GONE);
+                                }
+                            });
+                        }
+                    } catch (final InvalidUserParametersException e) {
+                        runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
+                                buildFailDialog(cleanString(e.getMessage()));
                                 progressBar.setVisibility(View.GONE);
-                                buildDialog();
                             }
                         });
-                    } else {
-                        Toast.makeText(ProfileActivity.this, "Error connection to the forum", Toast.LENGTH_LONG).show();
                     }
-                } catch (FlarumClientInvalidDataException e) {
-                    buildFailDialog(e.getMessage());
+
+                    lock.set(false);
                 }
-            }
-        });
-
-
+            });
+        }
     }
 
-    private void loginUser(final String username, final String password){
-        execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    if (module.connectToForum(username, password)) {
-
-                        ProfileActivity.this.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                progressBar.setVisibility(View.GONE);
-                                goHome();
-                            }
-                        });
-                    } else {
-                        Toast.makeText(ProfileActivity.this, "Error connection to the forum", Toast.LENGTH_LONG).show();
-                    }
-                } catch (FlarumClientInvalidDataException e) {
-                    buildFailDialog(e.getMessage());
-                }
-            }
-        });
-    }
 
     /**
      * Execute
@@ -253,9 +344,7 @@ public class ProfileActivity extends BaseActivity {
      * @param runnable
      */
     private void execute(Runnable runnable){
-        ExecutorService executorService = Executors.newSingleThreadExecutor();
-        executorService.submit(runnable);
-        executorService.shutdownNow();
+        executor.execute(runnable);
     }
 
     private void goHome(){
@@ -267,12 +356,6 @@ public class ProfileActivity extends BaseActivity {
         DialogBuilder dialogBuilder = new DialogBuilder(ProfileActivity.this);
         dialogBuilder.setTitle("Error");
         dialogBuilder.setMessage(message);
-        dialogBuilder.singleDismissButton(new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                startActivity(new Intent(ProfileActivity.this,MainActivity.class));
-            }
-        });
 
         dialogBuilder.show();
     }
@@ -280,7 +363,7 @@ public class ProfileActivity extends BaseActivity {
     private void buildDialog(){
         DialogBuilder dialogBuilder = new DialogBuilder(ProfileActivity.this);
         dialogBuilder.setTitle("Great!");
-        dialogBuilder.setMessage("Register completed, please check the email to verify the account");
+        dialogBuilder.setMessage("Register completed, please check your email to verify the account");
         dialogBuilder.singleDismissButton(new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -330,7 +413,30 @@ public class ProfileActivity extends BaseActivity {
             String picturePath = cursor.getString(columnIndex);
             cursor.close();
             Bitmap bitmap = BitmapFactory.decodeFile(picturePath);
-            imgProfile.setImageBitmap(bitmap);
+
+            // scale image
+            imgProfile.setImageBitmap(Bitmap.createScaledBitmap(bitmap, 1024, 1024, false));
+//            imgProfile.setImageBitmap(bitmap);
+
+            if( ContextCompat.checkSelfPermission(ProfileActivity.this,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED ) {
+                if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                        Manifest.permission.READ_CONTACTS)) {
+
+                    // Show an expanation to the user *asynchronously* -- don't block
+                    // this thread waiting for the user's response! After the user
+                    // sees the explanation, try again to request the permission.
+
+                } else {
+
+                    // No explanation needed, we can request the permission.
+
+                    ActivityCompat.requestPermissions(this,
+                            new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                            MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL);
+
+                }
+            }
 
             // compress and do it array
             ByteArrayOutputStream out = null;

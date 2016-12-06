@@ -1,42 +1,12 @@
 package iop.org.iop_contributors_app.ui;
 
-import android.app.AlertDialog;
-import android.app.Fragment;
-import android.app.FragmentManager;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
-import android.util.Base64;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 
-import com.android.volley.AuthFailureError;
-import com.android.volley.Request;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.VolleyLog;
-import com.android.volley.toolbox.JsonObjectRequest;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.DataOutputStream;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
-
-import iop.org.iop_contributors_app.ApplicationController;
 import iop.org.iop_contributors_app.R;
-import iop.org.iop_contributors_app.core.Proposal;
-import iop.org.iop_contributors_app.core.iop_sdk.forum.FlarumClientInvalidDataException;
-import iop.org.iop_contributors_app.services.BlockchainService;
 import iop.org.iop_contributors_app.ui.base.BaseActivity;
-import iop.org.iop_contributors_app.wallet.WalletModule;
 
 public class MainActivity extends BaseActivity {
 
@@ -50,19 +20,12 @@ public class MainActivity extends BaseActivity {
     protected void beforeCreate(Bundle savedInstanceState) {
         super.beforeCreate(savedInstanceState);
         isStarted = module.isForumRegistered();
-        if (isStarted){
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        module.connectToForum();
-                    } catch (FlarumClientInvalidDataException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }).start();
+    }
 
-        }
+
+    @Override
+    protected boolean hasDrawer() {
+        return true;
     }
 
     @Override
@@ -151,6 +114,10 @@ public class MainActivity extends BaseActivity {
 
     }
 
+    @Override
+    protected boolean onBroadcastReceive(String action, Bundle data) {
+        return false;
+    }
 
 
     @Override

@@ -9,12 +9,7 @@ import android.content.ServiceConnection;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.IBinder;
-import android.text.TextUtils;
 import android.util.Log;
-
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.toolbox.Volley;
 
 import org.bitcoinj.crypto.LinuxSecureRandom;
 import org.bitcoinj.utils.Threading;
@@ -32,7 +27,6 @@ import ch.qos.logback.core.rolling.RollingFileAppender;
 import ch.qos.logback.core.rolling.TimeBasedRollingPolicy;
 import iop.org.iop_contributors_app.configurations.DefaultForumConfiguration;
 import iop.org.iop_contributors_app.configurations.ProfileServerConfigurations;
-import iop.org.iop_contributors_app.core.iop_sdk.forum.FlarumClient;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.ForumConfigurations;
 import iop.org.iop_contributors_app.profile_server.ModuleProfileServer;
 
@@ -53,8 +47,6 @@ public class ApplicationController extends Application {
     private final String TAG = "ApplicationController";
 
     private static ApplicationController instance;
-
-    private RequestQueue mRequestQueue;
 
     // profile server
     private ModuleProfileServer profileServerService;
@@ -159,31 +151,6 @@ public class ApplicationController extends Application {
     public ModuleProfileServer getProfileServerManager(){
         if (profileServerService ==null) throw new IllegalStateException("Profile server is not connected");
         return profileServerService;
-    }
-
-    public RequestQueue getRequestQueue() {
-        if (mRequestQueue == null) {
-            mRequestQueue = Volley.newRequestQueue(getApplicationContext());
-        }
-
-        return mRequestQueue;
-    }
-
-    public <T> void addToRequestQueue(Request<T> req, String tag) {
-        // set the default tag if tag is empty
-        req.setTag(TextUtils.isEmpty(tag) ? TAG : tag);
-        getRequestQueue().add(req);
-    }
-
-    public <T> void addToRequestQueue(Request<T> req) {
-        req.setTag(TAG);
-        getRequestQueue().add(req);
-    }
-
-    public void cancelPendingRequests(Object tag) {
-        if (mRequestQueue != null) {
-            mRequestQueue.cancelAll(tag);
-        }
     }
 
 

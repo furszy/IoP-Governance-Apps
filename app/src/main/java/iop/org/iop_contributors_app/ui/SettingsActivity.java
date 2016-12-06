@@ -20,19 +20,19 @@ public class SettingsActivity  extends BaseActivity {
 
     private Fragment settingsFragment;
 
+    @Override
+    protected boolean hasDrawer() {
+        return true;
+    }
 
     @Override
     protected void onCreateView(ViewGroup container, Bundle savedInstance) {
         super.onCreateView(container, savedInstance);
-
-
             settingsFragment = new SettingsFragment();
             FragmentManager fragmentManager = getFragmentManager();
             fragmentManager.beginTransaction()
                     .add(container.getId(),settingsFragment)
                     .commit();
-
-
     }
 
     @Override
@@ -42,6 +42,11 @@ public class SettingsActivity  extends BaseActivity {
 
     @Override
     protected boolean hasOptionMenu(){
+        return false;
+    }
+
+    @Override
+    protected boolean onBroadcastReceive(String action, Bundle data) {
         return false;
     }
 

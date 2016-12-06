@@ -1,9 +1,9 @@
 package iop.org.iop_contributors_app.ui;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.preference.Preference;
-import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceScreen;
 import android.view.LayoutInflater;
@@ -14,7 +14,7 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import iop.org.iop_contributors_app.R;
-import iop.org.iop_contributors_app.ui.dialogs.BackupDialog;
+import iop.org.iop_contributors_app.ui.settings.IoPBalanceActivity;
 
 import static android.widget.Toast.*;
 
@@ -28,6 +28,7 @@ public class SettingsFragment extends PreferenceFragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
         addPreferencesFromResource(R.xml.settings);
 
         root = super.onCreateView(inflater, container, savedInstanceState);
@@ -47,8 +48,8 @@ public class SettingsFragment extends PreferenceFragment {
     @Override
     public boolean onPreferenceTreeClick(PreferenceScreen preferenceScreen, Preference preference) {
 
-        if (preference.getKey().equals(getString(R.string.preference_backup_key))){
-            Toast.makeText(getActivity(),"nada",LENGTH_LONG).show();
+        if (preference.getKey().equals(getString(R.string.id_balance))){
+            startActivity(new Intent(getActivity(), IoPBalanceActivity.class));
         }
 
         return super.onPreferenceTreeClick(preferenceScreen, preference);

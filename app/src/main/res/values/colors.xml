@@ -6,4 +6,11 @@
     <color name="base_background">#1A1A1A</color>
     <color name="fg_error">#ffff0000</color>
     <color name="text_blue">#9900A99D</color>
+
+    <!-- password strength -->
+    <color name="fg_password_strength_weak">#ff0000</color>
+    <color name="fg_password_strength_fair">#c06000</color>
+    <color name="fg_password_strength_strong">#00a000</color>
+    <color name="fg_less_significant">#ff666666</color>
+
 </resources>

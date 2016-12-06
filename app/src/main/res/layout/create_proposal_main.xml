@@ -192,6 +192,7 @@
             android:id="@+id/edit_body"
             android:layout_below="@+id/body"
             android:background="#4E4E4E"
+            android:gravity="top"
             android:padding="12dp"
             android:lines="7"
             android:textSize="15sp"
@@ -389,9 +390,17 @@
                 android:layout_marginLeft="9dp"
                 />
 
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/img_help_my_address"
+                android:src="@drawable/ic_see"
+                android:layout_marginLeft="9dp"
+                />
+
         </LinearLayout>
 
-        <RelativeLayout
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
@@ -400,50 +409,89 @@
 
 
             <EditText
-                android:layout_width="200dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="#fff"
+                android:layout_weight="1"
                 android:padding="12dp"
                 android:background="#4E4E4E"
                 android:id="@+id/edit_beneficiary_1_address"
+                android:maxLength="32"
+                android:maxLines="1"
+                android:lines="1"
                 android:hint="Address"
-                android:layout_marginRight="12dp"
+                android:inputType="text"
+                android:layout_marginRight="9dp"
                 android:textSize="15sp"
                 android:textColorHint="#77ffffff"
                 />
 
 
             <EditText
-                android:layout_width="150dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/edit_beneficiary_1_value"
+                android:layout_weight="0.25"
+                android:maxLines="1"
+                android:inputType="number"
                 android:background="#4E4E4E"
                 android:textColor="#fff"
                 android:padding="12dp"
                 android:layout_gravity="end"
+                android:lines="1"
                 android:layout_alignParentEnd="true"
                 android:textColorHint="#77ffffff"
                 android:hint="Reward"
+                android:layout_marginLeft="9dp"
                 android:textSize="15sp"
                 android:gravity="start"
                 />
 
-        </RelativeLayout>
+        </LinearLayout>
 
 
     </RelativeLayout>
 
 
-    <Button
-        android:layout_width="140dp"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="CREATE"
-        android:textColor="#1A1A1A"
-        android:background="@drawable/create_proposal_btn"
-        android:id="@+id/btn_create_proposal"
-        android:layout_gravity="end"
+        android:orientation="horizontal"
         android:layout_marginTop="24dp"
-        />
+        android:gravity="end"
+        >
+
+        <Button
+            android:layout_width="@dimen/little_btn_widht"
+            android:layout_height="wrap_content"
+            android:text="PUBLISH"
+            android:textColor="#1A1A1A"
+            android:background="@drawable/create_proposal_btn"
+            android:id="@+id/btn_publish_proposal"
+            android:layout_gravity="bottom|end"
+            android:visibility="invisible"
+            android:layout_marginRight="5dp"
+            />
+
+
+        <Button
+            android:layout_width="@dimen/little_btn_widht"
+            android:layout_height="wrap_content"
+            android:text="CREATE"
+            android:layout_marginLeft="5dp"
+            android:textColor="#1A1A1A"
+            android:background="@drawable/create_proposal_btn"
+            android:id="@+id/btn_create_proposal"
+            android:layout_gravity="bottom|end"
+            />
+
+    </LinearLayout>
+
+
+
+
+
+
 
 
 

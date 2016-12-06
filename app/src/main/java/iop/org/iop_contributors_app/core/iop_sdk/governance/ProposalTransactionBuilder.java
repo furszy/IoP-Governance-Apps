@@ -1,7 +1,6 @@
-package iop.org.iop_contributors_app.core.iop_sdk.blockchain.contribution_contract;
+package iop.org.iop_contributors_app.core.iop_sdk.governance;
 
 import org.apache.commons.codec.DecoderException;
-import org.apache.commons.codec.binary.Hex;
 import org.bitcoinj.core.Address;
 import org.bitcoinj.core.Coin;
 import org.bitcoinj.core.NetworkParameters;
@@ -15,9 +14,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
-import iop.org.iop_contributors_app.core.Proposal;
 import iop.org.iop_contributors_app.core.iop_sdk.blockchain.OpReturnOutputTransaction;
-import iop.org.iop_contributors_app.core.iop_sdk.blockchain.OpReturnOverflowException;
 
 import static iop.org.iop_contributors_app.core.iop_sdk.utils.ArraysUtils.numericTypeToByteArray;
 
@@ -36,8 +33,7 @@ public  class ProposalTransactionBuilder {
     private static final int CONTRACT_START_HEIGHT_POSITION = 4;
     private static final int CONTRACT_END_HEIGHT_POSITION = 7;
     private static final int CONTRACT_REWARD_POSITION = 9;
-    private static final int CONTRACT_OWNER_PK_POSITION = 12;
-    private static final int CONTRACT_HASH_POSITION = 44;
+    private static final int CONTRACT_HASH_POSITION = 12;
     // size
     private static final int CONTRACT_SIZE = 44;
     private static final int CONTRACT_TAG_SIZE = 2;
@@ -45,7 +41,6 @@ public  class ProposalTransactionBuilder {
     private static final int CONTRACT_START_HEIGHT_SIZE = 3;
     private static final int CONTRACT_END_HEIGHT_SIZE = 2;
     private static final int CONTRACT_REWARD_SIZE = 3;
-    private static final int CONTRACT_OWNER_PK_SIZE = 32;
     private static final int CONTRACT_HASH_SIZE = 32;
 
     /** tag */
@@ -112,15 +107,9 @@ public  class ProposalTransactionBuilder {
     /**
      * Add inputs
      *
-//         * @param input
+     * @param unspentTransactions
      * @return
      */
-//        public ProposalTransactionBuilder addInput(TransactionInput input){
-//            totalCoins.add(input.getValue());
-//            inputs.add(input);
-//            return this;
-//        }
-
     public ProposalTransactionBuilder addInputs(List<TransactionOutput> unspentTransactions) {
         // ahora que tengo los inputs los agrego
         for (TransactionOutput unspentTransaction : unspentTransactions) {
@@ -162,7 +151,7 @@ public  class ProposalTransactionBuilder {
         return this;
     }
 
-    public ProposalTransactionBuilder addContract(int blockStartHeight, int endHeight, long blockReward,byte[] ownerPubKey, byte[] proposalHash){
+    public ProposalTransactionBuilder addContract(int blockStartHeight, int endHeight, long blockReward, byte[] proposalHash){
 
         if (proposalHash.length!=32) throw new IllegalArgumentException("hash is not from SHA256");
 
@@ -188,13 +177,11 @@ public  class ProposalTransactionBuilder {
             numericTypeToByteArray(prevData,blockStartHeight,CONTRACT_START_HEIGHT_POSITION,CONTRACT_START_HEIGHT_SIZE);
             numericTypeToByteArray(prevData,endHeight,CONTRACT_END_HEIGHT_POSITION,CONTRACT_END_HEIGHT_SIZE);
             numericTypeToByteArray(prevData,blockReward,CONTRACT_REWARD_POSITION,CONTRACT_REWARD_SIZE);
-            System.arraycopy(ownerPubKey,0,prevData,CONTRACT_OWNER_PK_POSITION,CONTRACT_OWNER_PK_SIZE);
             System.arraycopy(proposalHash,0,prevData,CONTRACT_HASH_POSITION,CONTRACT_HASH_SIZE);
 
             OpReturnOutputTransaction opReturnOutputTransaction = new OpReturnOutputTransaction.Builder(networkParameters)
                     .setParentTransaction(proposalTransaction)
                     .addData(prevData)
-                    .addData(proposalHash)
                     .build2();
 
             LOG.info("OP_RETURN TRANSACTION created, data: "+opReturnOutputTransaction.toString());

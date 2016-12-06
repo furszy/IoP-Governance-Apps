@@ -18,6 +18,7 @@ public class DefaultForumConfiguration extends Configurations implements ForumCo
     public static final String PREFS_USERNAME = "forumUsername";
     public static final String PREFS_PASSWORD = "forumPassword";
     public static final String PREFS_EMAIL = "forumEmail";
+    public static final String PREFS_API_KEY = "apiKey";
 
     public DefaultForumConfiguration(SharedPreferences prefs) {
         super(prefs);
@@ -37,15 +38,27 @@ public class DefaultForumConfiguration extends Configurations implements ForumCo
     public void setForumUser(String name, String password, String mail) {
         save(PREFS_USERNAME,name);
         save(PREFS_PASSWORD,password);
-        save(PREFS_EMAIL,mail);
+        if (mail!=null)save(PREFS_EMAIL,mail);
+    }
+
+    @Override
+    public void setApiKey(String apiKey) {
+        save(PREFS_API_KEY,apiKey);
     }
 
     @Override
     public ForumProfile getForumUser() {
+        String username = getString(PREFS_USERNAME,null);
+        if (username==null) return null;
         return new ForumProfile(
-                getString(PREFS_USERNAME,null),
+                username,
                 getString(PREFS_PASSWORD,null),
                 getString(PREFS_EMAIL,null)
         );
+    }
+
+    @Override
+    public String getApiKey() {
+        return getString(PREFS_API_KEY,null);
     }
 }

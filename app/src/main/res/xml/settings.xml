@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <Preference android:key="id_balance" android:title="Balance"/>
 
-    <Preference android:key="@string/preference_backup_key"
-        android:summary="save your IoP"
-        android:title="Backup wallet"
-        />
-    <Preference android:key="export_tokens" android:title="Export tokens"/>
+    <Preference android:key="id_donate" android:title="Donate"/>
+
+    <Preference android:key="id_about" android:title="About"/>
 
 </PreferenceScreen>

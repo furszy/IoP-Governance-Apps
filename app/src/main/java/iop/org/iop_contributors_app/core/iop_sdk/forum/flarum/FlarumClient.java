@@ -1,6 +1,4 @@
-package iop.org.iop_contributors_app.core.iop_sdk.forum;
-
-import android.util.Log;
+package iop.org.iop_contributors_app.core.iop_sdk.forum.flarum;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
@@ -18,6 +16,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+
+import iop.org.iop_contributors_app.core.iop_sdk.forum.ForumConfigurations;
 
 
 /**

@@ -28,18 +28,17 @@
         android:layout_alignParentBottom="true"
         android:background="#Ca000000"
         android:orientation="vertical"
-        android:layout_marginBottom="3dp"
         >
 
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="32dp"
-            android:text="Furszy"
+            android:layout_marginStart="20dp"
+            android:id="@+id/txt_drawer_name"
+            android:text="Unknown"
             android:layout_marginTop="5dp"
             android:textAppearance="@style/TextAppearance.AppCompat.Body2"/>
-
 
 
         <LinearLayout

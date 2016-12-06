@@ -1,18 +1,18 @@
 package iop.org.iop_contributors_app.wallet;
 
 import android.app.Service;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
+import android.support.v4.content.LocalBroadcastManager;
 import android.widget.Toast;
 
-import org.bitcoinj.core.Address;
 import org.bitcoinj.core.Coin;
 import org.bitcoinj.core.InsufficientMoneyException;
 import org.bitcoinj.core.Transaction;
-import org.bitcoinj.core.TransactionOutPoint;
 import org.bitcoinj.core.TransactionOutput;
+import org.bitcoinj.utils.MonetaryFormat;
 import org.bitcoinj.wallet.CoinSelection;
-import org.bitcoinj.wallet.SendRequest;
 import org.bitcoinj.wallet.Wallet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,22 +25,29 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import iop.org.iop_contributors_app.ApplicationController;
 import iop.org.iop_contributors_app.Profile;
-import iop.org.iop_contributors_app.core.Proposal;
-import iop.org.iop_contributors_app.core.iop_sdk.blockchain.contribution_contract.ProposalTransactionBuilder;
-import iop.org.iop_contributors_app.core.iop_sdk.forum.FlarumClient;
-import iop.org.iop_contributors_app.core.iop_sdk.forum.FlarumClientInvalidDataException;
+import iop.org.iop_contributors_app.R;
+import iop.org.iop_contributors_app.core.iop_sdk.forum.CantCreateTopicException;
+import iop.org.iop_contributors_app.core.iop_sdk.governance.Proposal;
+import iop.org.iop_contributors_app.core.iop_sdk.forum.ForumClient;
+import iop.org.iop_contributors_app.core.iop_sdk.forum.ForumClientDiscourseImp;
+import iop.org.iop_contributors_app.core.iop_sdk.forum.InvalidUserParametersException;
+import iop.org.iop_contributors_app.core.iop_sdk.forum.flarum.FlarumClientInvalidDataException;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.ForumConfigurations;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.ForumProfile;
+import iop.org.iop_contributors_app.core.iop_sdk.governance.ProposalTransactionRequest;
 import iop.org.iop_contributors_app.services.BlockchainServiceImpl;
 import iop.org.iop_contributors_app.services.ProfileServerService;
 import iop.org.iop_contributors_app.services.ServicesCodes;
 import iop.org.iop_contributors_app.configurations.WalletPreferencesConfiguration;
+import iop.org.iop_contributors_app.ui.dialogs.DialogBuilder;
+import iop.org.iop_contributors_app.wallet.db.CantGetProposalException;
 import iop.org.iop_contributors_app.wallet.db.CantSaveProposalException;
+import iop.org.iop_contributors_app.wallet.db.CantSaveProposalExistException;
+import iop.org.iop_contributors_app.wallet.db.CantUpdateProposalException;
 import iop.org.iop_contributors_app.wallet.db.ProposalsDao;
 import iop.org.iop_contributors_app.wallet.exceptions.CantSendProposalException;
 import iop.org.iop_contributors_app.wallet.exceptions.InsuficientBalanceException;
@@ -56,17 +63,14 @@ public class WalletModule implements ContextWrapper{
     private ApplicationController context;
 
     private WalletManager walletManager;
-
     private BlockchainManager blockchainManager;
 
     /** Profile server profile */
     private Profile profile;
-    /** Forum profile */
-    private ForumProfile forumProfile;
 
     private WalletPreferencesConfiguration configuration;
 
-    private FlarumClient flarumClient;
+    private ForumClient forumClient;
     private ForumConfigurations forumConfigurations;
 
     private long lockedBalance;
@@ -83,8 +87,6 @@ public class WalletModule implements ContextWrapper{
         this.configuration = configuration;
         this.forumConfigurations = forumConfigurations;
         proposalsDao = new ProposalsDao(context);
-        // pre init
-        forumProfile = forumConfigurations.getForumUser();
         // locked outputs
         lockedBalance = proposalsDao.getTotalLockedBalance();
     }
@@ -93,7 +95,7 @@ public class WalletModule implements ContextWrapper{
         // init
         walletManager = new WalletManager(this,configuration);
         blockchainManager = new BlockchainManager(this,walletManager,configuration);
-        flarumClient = new FlarumClient(forumConfigurations);
+        forumClient = new ForumClientDiscourseImp(forumConfigurations);
 
     }
 
@@ -155,6 +157,36 @@ public class WalletModule implements ContextWrapper{
         return context.getAssets().open(name);
     }
 
+    @Override
+    public String getPackageName() {
+        return context.packageInfo().packageName;
+    }
+
+    @Override
+    public void sendLocalBroadcast(Intent broadcast) {
+        LocalBroadcastManager.getInstance(context).sendBroadcast(broadcast);
+    }
+
+    @Override
+    public void showDialog(String id) {
+        final DialogBuilder dialog = new DialogBuilder(context);
+        final StringBuilder message = new StringBuilder();
+        message.append(context.getString(R.string.restore_wallet_dialog_success));
+        message.append("\n\n");
+        message.append(context.getString(R.string.restore_wallet_dialog_success_replay));
+        dialog.setMessage(message);
+        dialog.setNeutralButton(R.string.button_ok, new DialogInterface.OnClickListener()
+        {
+            @Override
+            public void onClick(final DialogInterface dialog, final int id)
+            {
+                walletManager.resetBlockchain();
+                dialog.dismiss();
+            }
+        });
+        dialog.show();
+    }
+
     private Class<? extends Service> switchServices(int service) {
         Class<? extends Service> clazz = null;
         switch (service){
@@ -188,7 +220,6 @@ public class WalletModule implements ContextWrapper{
         profile.setImg(profImgData);
 
         if (context.getProfileServerManager().isIdentityCreated()) {
-
             // update the profile server
             context.getProfileServerManager().updateProfileRequest(profile, profileVersion, username, profImgData, 0, 0, null);
         }else {
@@ -205,153 +236,70 @@ public class WalletModule implements ContextWrapper{
         return walletManager;
     }
 
-    private long id=0;
 
-    public void sendProposal(Proposal proposal) throws CantSendProposalException, InsuficientBalanceException, CantSaveProposalException {
+    public boolean sendProposal(Proposal proposal) throws CantSendProposalException, InsuficientBalanceException, CantSaveProposalException, InvalidProposalException {
 
+        LOG.info("SendProposal, title: "+proposal.getTitle());
         // lock to not to spend the same UTXO twice for error.
-
         synchronized (lock) {
-
             try {
+                // check if the proposal is the same
+                if(forumClient.getAndCheckValid(proposal)) {
 
-//                if (proposalsDao.exist(proposal.getIoPIP())) throw new CantSendProposalException("Proposal already exist");
-
-                // lazy lazy test
-                id++;
-                proposal.setId(id);
-
-                // save proposal to send
-                try {
-                    if (!proposalsDao.saveProposal(proposal))
-                        throw new CantSaveProposalException("database error, please check the log");
-                } catch (CantSaveProposalException e) {
-                    throw new CantSendProposalException("database fail", e);
-                } catch (Exception e) {
-                    throw new CantSaveProposalException("database error, please check the log");
-                }
-
-                org.bitcoinj.core.Context.propagate(WalletConstants.CONTEXT);
-
-                ProposalTransactionBuilder proposalTransactionBuilder = new ProposalTransactionBuilder(
-                        WalletConstants.NETWORK_PARAMETERS,
-                        blockchainManager.getChainHeadHeight()
-                );
-
-                Wallet wallet = walletManager.getWallet();
-
-                Coin totalOuputsValue = Coin.ZERO;
-                for (Long aLong : proposal.getBeneficiaries().values()) {
-                    totalOuputsValue = totalOuputsValue.add(Coin.valueOf(aLong));
-                }
-
-                // locked coins 1000 IoPs
-                totalOuputsValue = totalOuputsValue.add(Coin.valueOf(1000, 0));
-
-                List<TransactionOutput> unspentTransactions = new ArrayList<>();
-                Coin totalInputsValue = Coin.ZERO;
-                boolean inputsSatisfiedContractValue = false;
-                for (TransactionOutput transactionOutput : wallet.getUnspents()) {
-                    //
-                    TransactionOutPoint transactionOutPoint = transactionOutput.getOutPointFor();
-                    if (proposalsDao.isLockedOutput(transactionOutPoint.getHash().getBytes(),transactionOutPoint.getIndex())) {
-                        continue;
+                    // save proposal to send
+                    try {
+                        proposalsDao.saveIfChange(proposal);
+                    } catch (CantGetProposalException e) {
+                        throw new CantSendProposalException("Proposal title changes or not exist", e);
+                    } catch (CantUpdateProposalException e) {
+                        throw new CantSendProposalException("Cant update proposal", e);
+                    } catch (Exception e) {
+                        throw new CantSendProposalException("Cant save proposal, db problem", e);
                     }
-                    totalInputsValue = totalInputsValue.add(transactionOutput.getValue());
-                    unspentTransactions.add(transactionOutput);
-                    if (totalInputsValue.isGreaterThan(totalOuputsValue)) {
-                        inputsSatisfiedContractValue = true;
-                        break;
+
+                    try {
+                        ProposalTransactionRequest proposalTransactionRequest = new ProposalTransactionRequest(blockchainManager, walletManager, proposalsDao);
+                        proposalTransactionRequest.forProposal(proposal);
+                        proposalTransactionRequest.broadcast();
+
+                        proposalsDao.lockOutput(proposal.getTitle(), proposalTransactionRequest.getLockedOutputHash(), proposalTransactionRequest.getLockedOutputPosition());
+                        // mark proposal sent
+                        proposalsDao.markSentProposal(proposal.getTitle());
+
+                        LOG.info("sendProposal finished");
+
+                        return true;
+
+                    } catch (InsufficientMoneyException e) {
+                        e.printStackTrace();
+                        LOG.info("fondos disponibles: " + walletManager.getWallet().getBalance());
                     }
+                }else {
+                    throw new InvalidProposalException("Proposal is not the same as in the forum");
                 }
 
-                if (!inputsSatisfiedContractValue)
-                    throw new InsuficientBalanceException("Inputs not satisfied contract value");
-
-                // add inputs..
-                proposalTransactionBuilder.addInputs(unspentTransactions);
-
-                // lock address output
-                Address lockAddress = wallet.freshReceiveAddress();
-                TransactionOutput transactionOutputToLock = proposalTransactionBuilder.addLockedAddressOutput(lockAddress);
-                // lock address
-                byte[] parentTransactionHash = transactionOutputToLock.getParentTransactionHash().getBytes();
-                proposalsDao.lockOutput(proposal.getId(),parentTransactionHash,0);
-                proposal.setLockedOutputHash(parentTransactionHash);
-                proposal.setLockedOutputIndex(0);
-                // lock balance
-                lockedBalance+=transactionOutputToLock.getValue().value;
-
-                // refund transaction, tengo el fee agregado al totalOutputsValue
-                Coin flyingCoins = totalInputsValue.minus(totalOuputsValue);
-                // le resto el fee
-                flyingCoins = flyingCoins.minus(Coin.valueOf(proposal.getExtraFeeValue())).minus(WalletConstants.CONTEXT.getFeePerKb());
-                proposalTransactionBuilder.addRefundOutput(flyingCoins, wallet.freshReceiveAddress());
-
-
-                // contract
-                proposalTransactionBuilder.addContract(
-                        proposal.getStartBlock(),
-                        proposal.getEndBlock(),
-                        proposal.getBlockReward(),
-                        proposal.getOwnerPubKey(),
-                        proposal.hash()
-                );
-
-                // beneficiaries outputs
-                for (Map.Entry<String, Long> beneficiary : proposal.getBeneficiaries().entrySet()) {
-                    proposalTransactionBuilder.addBeneficiary(
-                            Address.fromBase58(WalletConstants.NETWORK_PARAMETERS, beneficiary.getKey()),
-                            Coin.valueOf(beneficiary.getValue())
-                    );
-
-                }
-                // build the transaction..
-                Transaction tran = proposalTransactionBuilder.build();
-
-                LOG.info("Transaction fee: " + tran.getFee());
-
-                SendRequest sendRequest = SendRequest.forTx(tran);
-
-                sendRequest.signInputs = true;
-                sendRequest.shuffleOutputs = false;
-                sendRequest.coinSelector = new MyCoinSelector();
-
-
-                LOG.info("inputs value: " + tran.getInputSum().toFriendlyString() + ", outputs value: " + tran.getOutputSum().toFriendlyString() + ", fee: " + tran.getFee().toFriendlyString());
-                LOG.info("total en el aire: " + tran.getInputSum().minus(tran.getOutputSum().minus(tran.getFee())).toFriendlyString());
-
-                try {
-//                    wallet.completeTx(sendRequest);
-//
-//                    wallet.commitTx(sendRequest.tx);
-//
-//                    blockchainManager.broadcastTransaction(sendRequest.tx.getHash().getBytes()).get();;
-
-                    LOG.info("TRANSACCION BROADCASTEADA EXITOSAMENTE!");
-
-                    // server update data
-                    context.getProfileServerManager().updateExtraData(profile,proposal.buildExtraData());
-
-                } catch (InsufficientMoneyException e) {
-                    e.printStackTrace();
-                    LOG.info("fondos disponibles: " + wallet.getBalance());
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } catch (ExecutionException e) {
-                    e.printStackTrace();
-                }
-
-            }catch (CantSaveProposalException e){
-                throw e;
-            }catch (InsuficientBalanceException e) {
+            } catch (InsuficientBalanceException e) {
                 throw e;
             }catch (CantSendProposalException e){
                 throw e;
-            }catch (Exception e){
-                e.printStackTrace();
             }
         }
+        return false;
+    }
+
+    public void sendTransaction(String address, long amount) throws InsufficientMoneyException {
+        try {
+            Transaction tx = walletManager.createAndLockTransaction(address,amount);
+            blockchainManager.broadcastTransaction(tx.getHash().getBytes()).get();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void cancelProposalOnBLockchain(Proposal proposal) {
+        LOG.info("cancelProposalOnBLockchain");
     }
 
     public List<Proposal> getProposals() {
@@ -359,16 +307,135 @@ public class WalletModule implements ContextWrapper{
     }
 
     public String getNewAddress() {
-        return walletManager.getWallet().freshReceiveAddress().toBase58();
+        String address = walletManager.getWallet().freshReceiveAddress().toBase58();;
+        LOG.info("Fresh new address: "+address);
+        return address;
     }
 
-    public long getAvailableBalance() {
-        return walletManager.getWallet().getBalance(Wallet.BalanceType.AVAILABLE_SPENDABLE).value-lockedBalance;
+    public CharSequence getAvailableBalance() {
+        long balance = walletManager.getWallet().getBalance(Wallet.BalanceType.AVAILABLE_SPENDABLE).value-lockedBalance;
+        return MonetaryFormat.BTC.format(Coin.valueOf(balance));
     }
 
     public long getLockedBalance() {
         return lockedBalance;
     }
+
+    public boolean isWalletEncrypted() {
+        return walletManager.getWallet().isEncrypted();
+    }
+
+    public void backupWallet(File file, String password) throws IOException {
+        walletManager.backupWallet(file,password);
+    }
+
+    public void restoreWalletFromProtobuf(File file) {
+        try {
+            walletManager.restoreWalletFromProtobuf(file);
+        }catch (final IOException x)
+        {
+            final DialogBuilder dialog = DialogBuilder.warn(context, R.string.import_export_keys_dialog_failure_title);
+            dialog.setMessage(context.getString(R.string.import_keys_dialog_failure, x.getMessage()));
+            dialog.setPositiveButton(R.string.button_dismiss, null);
+            dialog.setNegativeButton(R.string.button_retry, new DialogInterface.OnClickListener()
+            {
+                @Override
+                public void onClick(final DialogInterface dialog, final int id)
+                {
+                    //showDialog(DIALOG_RESTORE_WALLET);
+                }
+            });
+            dialog.show();
+
+            LOG.info("problem restoring wallet", x);
+        }
+    }
+
+    public void restorePrivateKeysFromBase58(File file) {
+        try{
+            walletManager.restorePrivateKeysFromBase58(file);
+        }catch (final IOException x) {
+            final DialogBuilder dialog = DialogBuilder.warn(context, R.string.import_export_keys_dialog_failure_title);
+            dialog.setMessage(context.getString(R.string.import_keys_dialog_failure, x.getMessage()));
+            dialog.setPositiveButton(R.string.button_dismiss, null);
+            dialog.setNegativeButton(R.string.button_retry, new DialogInterface.OnClickListener()
+            {
+                @Override
+                public void onClick(final DialogInterface dialog, final int id)
+                {
+                    //showDialog(DIALOG_RESTORE_WALLET);
+                }
+            });
+            dialog.show();
+
+            LOG.info("problem restoring private keys", x);
+        }
+    }
+
+    public void restoreWalletFromEncrypted(final File file, final String password) {
+        try
+        {
+            walletManager.restoreWalletFromEncrypted(file,password);
+        }
+        catch (final IOException x)
+        {
+            final DialogBuilder dialog = DialogBuilder.warn(context, R.string.import_export_keys_dialog_failure_title);
+            dialog.setMessage(context.getString(R.string.import_keys_dialog_failure, x.getMessage()));
+            dialog.setPositiveButton(R.string.button_dismiss, null);
+            dialog.setNegativeButton(R.string.button_retry, new DialogInterface.OnClickListener()
+            {
+                @Override
+                public void onClick(final DialogInterface dialog, final int id)
+                {
+                    //showDialog(DIALOG_RESTORE_WALLET);
+                }
+            });
+            dialog.show();
+
+            LOG.info("problem restoring wallet", x);
+        }
+    }
+
+    public boolean createForumProposal(Proposal proposal) throws CantCreateTopicException, CantSaveProposalException, CantSaveProposalExistException {
+        int forumId = forumClient.createTopic(proposal.getTitle(),proposal.getCategory(),proposal.toForumBody());
+        boolean resp = false;
+        if (forumId>0) {
+            proposal.setForumId(forumId);
+            proposalsDao.saveProposal(proposal);
+            resp = true;
+        }
+        return resp;
+    }
+
+    public boolean editForumProposal(Proposal proposal) throws CantUpdateProposalException {
+        boolean resp = forumClient.updatePost(proposal.getTitle(),proposal.getForumId(),proposal.getCategory(),proposal.toForumBody());
+        if (resp) {
+            proposalsDao.updateProposal(proposal);
+        }
+        return resp;
+    }
+
+    public Proposal getProposal(String forumTitle) throws CantGetProposalException {
+        LOG.info("### getProposal");
+        return proposalsDao.findProposal(forumTitle);
+    }
+
+    public Proposal getProposal(int forumId) throws CantGetProposalException {
+        LOG.info("### getProposal");
+        return proposalsDao.findProposal(forumId);
+    }
+
+
+    public boolean isProposalMine(String title) {
+        return proposalsDao.isProposalMine(title);
+    }
+
+    public boolean isProposalMine(int forumId){
+        return proposalsDao.isProposalMine(forumId);
+    }
+
+
+
 
     private class MyCoinSelector implements org.bitcoinj.wallet.CoinSelector {
         @Override
@@ -384,44 +451,41 @@ public class WalletModule implements ContextWrapper{
 
 
     public boolean isForumRegistered() {
-        return flarumClient.isRegistered();
+        return forumClient.isRegistered();
     }
 
     public ForumProfile getForumProfile(){
-        return forumProfile;
+        return forumClient.getForumProfile();
     }
 
-    public boolean registerForumUser(String username, String password, String email) throws FlarumClientInvalidDataException {
-        forumProfile = new ForumProfile(username,password,email);
-        boolean response = flarumClient.registerUser(username,password,email);
-        if (response){
-            forumConfigurations.setIsRegistered(true);
-            forumConfigurations.setForumUser(username,password,email);
-        }
-        return response;
+    public boolean registerForumUser(String username, String password, String email) throws InvalidUserParametersException {
+        return forumClient.registerUser(username,password,email);
     }
 
-    public boolean connectToForum(String username,String password) throws FlarumClientInvalidDataException{
-        boolean response = flarumClient.connect(username,password);
-        if (response) {
-            forumConfigurations.setIsRegistered(true);
-            forumConfigurations.setForumUser(username,password,null);
-        }
-        return response;
+    public boolean connectToForum(String username,String password) throws InvalidUserParametersException {
+        return forumClient.connect(username,password);
     }
+
 
     public boolean startDiscussion(Proposal proposal) throws FlarumClientInvalidDataException {
-        boolean response =  flarumClient.createDiscussion(proposal.getTitle(),proposal.getBody());
-        return response;
+//        boolean response =  ForumClient.createDiscussion(proposal.getTitle(),proposal.getBody());
+        return false;
     }
 
     public boolean connectToForum() throws FlarumClientInvalidDataException {
-        boolean response = flarumClient.connect(forumProfile.getUsername(),forumProfile.getPassword());
-        return response;
+//        boolean response = ForumClient.connect(forumProfile.getUsername(),forumProfile.getPassword());
+//        return response;
+        return false;
     }
 
     public String getForumToken() {
-        return flarumClient.getToken();
+        return null;//ForumClient.getToken();
+    }
+
+    public void cleanEverything(){
+        forumConfigurations.remove();
+        configuration.remove();
+
     }
 
 }

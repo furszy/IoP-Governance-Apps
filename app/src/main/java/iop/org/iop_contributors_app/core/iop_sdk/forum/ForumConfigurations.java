@@ -12,7 +12,12 @@ public interface ForumConfigurations {
 
     void setForumUser(String name,String password,String mail);
 
+    void setApiKey(String apiKey);
+
     ForumProfile getForumUser();
 
+    String getApiKey();
+
+    void remove();
 
 }

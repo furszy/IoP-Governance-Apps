@@ -1,5 +1,6 @@
 package iop.org.iop_contributors_app.wallet;
 
+import android.content.Intent;
 import android.content.pm.PackageInfo;
 
 import java.io.File;
@@ -33,4 +34,11 @@ public interface ContextWrapper {
     boolean isMemoryLow();
 
     InputStream openAssestsStream(String name) throws IOException;
+
+    String getPackageName();
+
+
+    void sendLocalBroadcast(Intent broadcast);
+
+    void showDialog(String id);
 }

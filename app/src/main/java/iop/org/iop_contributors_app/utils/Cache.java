@@ -10,6 +10,7 @@ public class Cache {
 
     private static Bitmap qrLittleBitmapCache;
     private static Bitmap qrBigBitmapCache;
+    private static String cacheAddress;
 
     public static Bitmap getQrLittleBitmapCache() {
         return qrLittleBitmapCache;
@@ -26,5 +27,13 @@ public class Cache {
 
     public static void setQrBigBitmapCache(Bitmap qrBigBitmapCache) {
         Cache.qrBigBitmapCache = qrBigBitmapCache;
+    }
+
+    public static String getCacheAddress() {
+        return cacheAddress;
+    }
+
+    public static void setCacheAddress(String cacheAddress) {
+        Cache.cacheAddress = cacheAddress;
     }
 }

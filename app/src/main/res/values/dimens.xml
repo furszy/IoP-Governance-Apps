@@ -15,4 +15,8 @@
     <dimen name="elevation_low">9dp</dimen>
     <dimen name="elevation_high">12dp</dimen>
     <dimen name="status_bar_height">25dp</dimen>
+
+    <!-- btn  -->
+    <dimen name="standard_btn_widht">170dp</dimen>
+    <dimen name="little_btn_widht">125dp</dimen>
 </resources>

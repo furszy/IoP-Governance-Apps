@@ -1,4 +1,4 @@
-package iop.org.iop_contributors_app.ui;
+package iop.org.iop_contributors_app.ui.settings.fragments;
 
 import android.content.Intent;
 import android.graphics.Color;
@@ -15,8 +15,14 @@ import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import java.io.IOException;
+
+import iop.org.iop_contributors_app.ApplicationController;
 import iop.org.iop_contributors_app.R;
+import iop.org.iop_contributors_app.ui.dialogs.ReportIssueDialogBuilder;
 import iop.org.iop_contributors_app.ui.settings.IoPBalanceActivity;
+import iop.org.iop_contributors_app.utils.CrashReporter;
+import iop.org.iop_contributors_app.wallet.WalletConstants;
 
 import static android.widget.Toast.*;
 
@@ -61,8 +67,54 @@ public class SettingsFragment extends PreferenceFragment {
 
         if (preference.getKey().equals(getString(R.string.id_balance))){
             startActivity(new Intent(getActivity(), IoPBalanceActivity.class));
+        }else if (preference.getKey().equals("id_report")){
+
         }
 
         return super.onPreferenceTreeClick(preferenceScreen, preference);
+    }
+
+
+
+    private void handleReportIssue()
+    {
+        final ReportIssueDialogBuilder dialog = new ReportIssueDialogBuilder(getActivity(), R.string.report_issue_dialog_title_issue,
+                R.string.report_issue_dialog_message_issue)
+        {
+            @Override
+            protected CharSequence subject()
+            {
+                return WalletConstants.REPORT_SUBJECT_ISSUE + " " + ApplicationController.getInstance().packageInfo().versionName;
+            }
+
+            @Override
+            protected CharSequence collectApplicationInfo() throws IOException
+            {
+                final StringBuilder applicationInfo = new StringBuilder();
+                CrashReporter.appendApplicationInfo(applicationInfo, ApplicationController.getInstance());
+                return applicationInfo;
+            }
+
+            @Override
+            protected CharSequence collectStackTrace()
+            {
+                return null;
+            }
+
+            @Override
+            protected CharSequence collectDeviceInfo() throws IOException
+            {
+                final StringBuilder deviceInfo = new StringBuilder();
+                CrashReporter.appendDeviceInfo(deviceInfo, getActivity());
+                return deviceInfo;
+            }
+
+            @Override
+            protected CharSequence collectWalletDump()
+            {
+                return ApplicationController.getInstance().getWalletModule().getWalletManager().getWallet().toString(false, true, true, null);
+            }
+        };
+        dialog.show();
     }
 }

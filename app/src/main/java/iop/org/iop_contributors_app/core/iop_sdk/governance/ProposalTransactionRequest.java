@@ -119,6 +119,7 @@ public class ProposalTransactionRequest {
 
         // beneficiaries outputs
         for (Map.Entry<String, Long> beneficiary : proposal.getBeneficiaries().entrySet()) {
+            LOG.info("beneficiary address: "+beneficiary.getKey());
             proposalTransactionBuilder.addBeneficiary(
                     Address.fromBase58(WalletConstants.NETWORK_PARAMETERS, beneficiary.getKey()),
                     Coin.valueOf(beneficiary.getValue())

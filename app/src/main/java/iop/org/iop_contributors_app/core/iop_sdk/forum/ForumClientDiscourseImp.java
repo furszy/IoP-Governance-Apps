@@ -101,7 +101,7 @@ public class ForumClientDiscourseImp implements ForumClient {
     public boolean connect(String username, String password) throws InvalidUserParametersException {
         if (isActive) throw new IllegalStateException("Forum is already connected");
         //init();
-        LOG.debug("connect");
+        LOG.info("connect");
         if (apiKey == null) {
             try {
                 // request api key to Mati server, if the user exist the api key will be created.
@@ -168,7 +168,8 @@ public class ForumClientDiscourseImp implements ForumClient {
             }catch (Exception e){
                 e.printStackTrace();
             }
-        }
+        }else
+            LOG.error("Api key != null");
         return false;
     }
 
@@ -280,6 +281,7 @@ public class ForumClientDiscourseImp implements ForumClient {
             // body
             String formatedBody = jsonObject.getString("cooked");
             proposal = Proposal.buildFromBody(formatedBody);
+            proposal.setForumId(forumId);
 
         } catch (JSONException e) {
             e.printStackTrace();
@@ -290,15 +292,14 @@ public class ForumClientDiscourseImp implements ForumClient {
 
     @Override
     public boolean getAndCheckValid(Proposal proposal) {
-        return true;
-//        Proposal forumProposal = getProposal(proposal.getForumId());
-//        boolean result = false;
-//        try {
-//            result = proposal.equals(forumProposal);
-//        } catch (NotValidParametersException e) {
-//            result = false;
-//        }
-//        return result;
+        Proposal forumProposal = getProposal(proposal.getForumId());
+        boolean result = false;
+        try {
+            result = proposal.equals(forumProposal);
+        } catch (NotValidParametersException e) {
+            result = false;
+        }
+        return result;
     }
 
 

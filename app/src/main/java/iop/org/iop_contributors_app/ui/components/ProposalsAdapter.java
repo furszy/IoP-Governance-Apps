@@ -48,7 +48,13 @@ public class ProposalsAdapter extends FermatAdapterImproved<Proposal,ProposalsHo
         holder.btn_read_more.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(context,"Go to another screen",Toast.LENGTH_SHORT).show();
+                String forumTitle = data.getTitle();
+                int forumId = data.getForumId();
+                Intent intent1 = new Intent(context,CreateProposalActivity.class);
+                intent1.setAction(CreateProposalActivity.ACTION_EDIT_PROPOSAL);
+                intent1.putExtra(CreateProposalActivity.INTENT_DATA_FORUM_ID,Integer.valueOf(forumId));
+                intent1.putExtra(CreateProposalActivity.INTENT_DATA_FORUM_TITLE,forumTitle);
+                context.startActivity(intent1);
             }
         });
         holder.txt_start_block.setText(String.valueOf(data.getStartBlock()));
@@ -58,16 +64,9 @@ public class ProposalsAdapter extends FermatAdapterImproved<Proposal,ProposalsHo
             @Override
             public void onClick(View v) {
                 // posts http://fermat.community/t/propuesta-numero-4/19
-//                forumIntent.putExtra(INTENT_FORUM_ID,data.getTitle()+"/"+(data.getForumId()-3));
-//                context.startActivity(forumIntent);
-
-
-                String forumTitle = data.getTitle();
-                int forumId = data.getForumId();
-                Intent intent1 = new Intent(context,CreateProposalActivity.class);
-                intent1.setAction(CreateProposalActivity.ACTION_EDIT_PROPOSAL);
-                intent1.putExtra(CreateProposalActivity.INTENT_DATA_FORUM_ID,Integer.valueOf(forumId));
-                intent1.putExtra(CreateProposalActivity.INTENT_DATA_FORUM_TITLE,forumTitle);
+                Intent intent1 = new Intent(context,ForumActivity.class);
+                String url = ForumActivity.FORUM_URL+"/t/"+data.getTitle().replace(" ","-")+"/"+data.getForumId();
+                intent1.putExtra(ForumActivity.INTENT_URL,url);
                 context.startActivity(intent1);
 
             }

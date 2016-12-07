@@ -19,7 +19,6 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void beforeCreate(Bundle savedInstanceState) {
         super.beforeCreate(savedInstanceState);
-        isStarted = module.isForumRegistered();
     }
 
 
@@ -115,7 +114,7 @@ public class MainActivity extends BaseActivity {
     }
 
     @Override
-    protected boolean onBroadcastReceive(String action, Bundle data) {
+    protected boolean onBroadcastReceive(Bundle data) {
         return false;
     }
 

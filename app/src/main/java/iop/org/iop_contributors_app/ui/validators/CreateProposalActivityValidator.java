@@ -1,6 +1,8 @@
 package iop.org.iop_contributors_app.ui.validators;
 
 import org.bitcoinj.core.Address;
+import org.bitcoinj.core.AddressFormatException;
+import org.bitcoinj.core.Base58;
 
 import java.util.Map;
 
@@ -48,7 +50,9 @@ public class CreateProposalActivityValidator {
         return blockReward;
     }
 
-    public boolean validateBeneficiary(String addressBen1, long value) {
+    public boolean validateBeneficiary(String addressBen1, long value) throws ValidationException {
+
+        if (!checkAddress(addressBen1)) throwValidationException("Address not valid");
         return true;
     }
 
@@ -62,5 +66,18 @@ public class CreateProposalActivityValidator {
 
     private void throwValidationException(String message) throws ValidationException {
         throw new ValidationException(message);
+    }
+
+    private boolean checkAddress(String addressBase58) {
+        try {
+            Address.fromBase58(WalletConstants.NETWORK_PARAMETERS,addressBase58);
+        }catch (AddressFormatException e){
+            return false;
+        }
+        return true;
+    }
+
+    public void validateAddress(String text) throws ValidationException {
+        checkAddress(text);
     }
 }

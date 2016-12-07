@@ -41,6 +41,7 @@ import iop.org.iop_contributors_app.ApplicationController;
 import iop.org.iop_contributors_app.configurations.WalletPreferencesConfiguration;
 import iop.org.iop_contributors_app.core.iop_sdk.governance.Proposal;
 import iop.org.iop_contributors_app.ui.CreateProposalActivity;
+import iop.org.iop_contributors_app.ui.base.BaseActivity;
 import iop.org.iop_contributors_app.wallet.BlockchainManager;
 import iop.org.iop_contributors_app.wallet.InvalidProposalException;
 import iop.org.iop_contributors_app.wallet.db.CantSaveProposalException;
@@ -52,6 +53,7 @@ import iop.org.iop_contributors_app.wallet.exceptions.InsuficientBalanceExceptio
 import static iop.org.iop_contributors_app.ui.CreateProposalActivity.CANT_SAVE_PROPOSAL_DIALOG;
 import static iop.org.iop_contributors_app.ui.CreateProposalActivity.COMMON_ERROR_DIALOG;
 import static iop.org.iop_contributors_app.ui.CreateProposalActivity.INSUFICIENTS_FUNDS_DIALOG;
+import static iop.org.iop_contributors_app.ui.CreateProposalActivity.INVALID_PROPOSAL_DIALOG;
 import static iop.org.iop_contributors_app.ui.CreateProposalActivity.UNKNOWN_ERROR_DIALOG;
 import static iop.org.iop_contributors_app.wallet.WalletConstants.BLOCKCHAIN_STATE_BROADCAST_THROTTLE_MS;
 
@@ -323,7 +325,7 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
                         }catch (CantSaveProposalException e){
                             showDialogException(CANT_SAVE_PROPOSAL_DIALOG,e.getMessage());
                         } catch (InvalidProposalException e) {
-                            showDialogException(COMMON_ERROR_DIALOG, e.getMessage());
+                            showDialogException(INVALID_PROPOSAL_DIALOG, e.getMessage()+".\n\nEdit in the forum first if you want any change.");
                         } catch (Exception e){
                             e.printStackTrace();
                         }
@@ -362,9 +364,10 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
     }
 
     private void broadcastProposalSuced(String title){
-        Intent intent = new Intent(CreateProposalActivity.ACTION_PROPOSAL_BROADCASTED);
+        Intent intent = new Intent(BaseActivity.ACTION_NOTIFICATION);
         intent.putExtra("title",title);
-        sendBroadcast(intent);
+        intent.putExtra(BaseActivity.INTENT_NOTIFICATION_TYPE,CreateProposalActivity.ACTION_PROPOSAL_BROADCASTED);
+        localBroadcast.sendBroadcast(intent);
     }
 
     @Override

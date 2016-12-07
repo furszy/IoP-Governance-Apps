@@ -19,6 +19,7 @@ import android.webkit.WebView;
 import android.widget.ProgressBar;
 
 import iop.org.iop_contributors_app.R;
+import iop.org.iop_contributors_app.core.iop_sdk.forum.discourge.com.wareninja.opensource.discourse.DiscouseApiConstants;
 import iop.org.iop_contributors_app.ui.base.BaseActivity;
 
 
@@ -38,7 +39,7 @@ public class ForumActivity extends BaseActivity {
     private String address;
     private FloatingActionButton fab_edit;
 
-    private static final String FORUM_URL = "http://fermat.community/";//104.199.78.250/";//"fermat.community/";
+    public static final String FORUM_URL = DiscouseApiConstants.FORUM_URL;//"http://test.fermat.community/";//104.199.78.250/";//"fermat.community/";
 
     @Override
     protected boolean hasDrawer() {
@@ -119,7 +120,7 @@ public class ForumActivity extends BaseActivity {
     }
 
     @Override
-    protected boolean onBroadcastReceive(String action, Bundle data) {
+    protected boolean onBroadcastReceive(Bundle data) {
         return false;
     }
 
@@ -161,9 +162,13 @@ public class ForumActivity extends BaseActivity {
         public void onLoadResource(WebView view, String url) {
             super.onLoadResource(view, url);
             Log.d(TAG,"onLoadResource");
-            if (!webView.getUrl().equals(address)){
-                checkUrl(webView.getUrl());
-                address = webView.getUrl();
+            try {
+                if (!webView.getUrl().equals(address)) {
+                    checkUrl(webView.getUrl());
+                    address = webView.getUrl();
+                }
+            }catch (Exception e){
+                e.printStackTrace();
             }
         }
 
@@ -188,6 +193,12 @@ public class ForumActivity extends BaseActivity {
             return true;
         }
         return super.onKeyDown(keyCode, event);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        webView = null;
     }
 
     /**

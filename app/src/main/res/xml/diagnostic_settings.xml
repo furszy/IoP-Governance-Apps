@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    >
+
+    <Preference android:key="id_report" android:title="Report issue" />
+
+    <!--<Preference android:key="id_donate" android:title="Donate"/>-->
+
+    <!--<Preference android:key="id_about" android:title="About"/>-->
+
+</PreferenceScreen>

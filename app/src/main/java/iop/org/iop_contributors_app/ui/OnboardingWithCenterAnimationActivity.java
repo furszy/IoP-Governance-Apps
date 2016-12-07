@@ -1,9 +1,12 @@
 package iop.org.iop_contributors_app.ui;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
@@ -116,28 +119,32 @@ public class OnboardingWithCenterAnimationActivity extends AppCompatActivity {
             public void onClick(View v) {
                 try {
 
-                    progressBar.setVisibility(View.VISIBLE);
+                    if (isOnline()) {
 
-                    String username = txt_name.getText().toString();
-                    String password = txt_password.getText().toString();
+                        progressBar.setVisibility(View.VISIBLE);
 
-                    checkUsername(username);
-                    checkPassword(password);
+                        String username = txt_name.getText().toString();
+                        String password = txt_password.getText().toString();
 
-                    if (isUsernameCorrect) {
-                        if (isPasswordCorrect) {
-                            if (!module.isForumRegistered()) {
-                                loginUser(username,password);
+                        checkUsername(username);
+                        checkPassword(password);
+
+                        if (isUsernameCorrect) {
+                            if (isPasswordCorrect) {
+                                if (!module.isForumRegistered()) {
+                                    loginUser(username, password);
+                                } else
+                                    Log.e(TAG, "IsRegistered true, error!!");
                             } else
-                                Log.e(TAG, "IsRegistered true, error!!");
-                        } else
-                            Toast.makeText(OnboardingWithCenterAnimationActivity.this, "Error password is invalid", Toast.LENGTH_LONG).show();
+                                Toast.makeText(OnboardingWithCenterAnimationActivity.this, "Error password is invalid", Toast.LENGTH_LONG).show();
 
-                    } else {
-                        Toast.makeText(OnboardingWithCenterAnimationActivity.this, "Username invalid, please add your nickname", Toast.LENGTH_LONG).show();
-                    }
-                    // invisible progress bar
-                    progressBar.setVisibility(View.INVISIBLE);
+                        } else {
+                            Toast.makeText(OnboardingWithCenterAnimationActivity.this, "Username invalid, please add your nickname", Toast.LENGTH_LONG).show();
+                        }
+                        // invisible progress bar
+                        progressBar.setVisibility(View.INVISIBLE);
+                    }else
+                        Toast.makeText(v.getContext(),"No internet connection available\nplease retry again later",Toast.LENGTH_LONG).show();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -318,6 +325,18 @@ public class OnboardingWithCenterAnimationActivity extends AppCompatActivity {
         executor = Executors.newSingleThreadExecutor();
         Future future = executor.submit(runnable);
         executor.shutdown();
+    }
+
+    /**
+     * Check internet connectivity
+     *
+     * @return
+     */
+    private boolean isOnline(){
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = cm.getActiveNetworkInfo();
+        return networkInfo!= null &&  networkInfo.isConnected();
+
     }
 
     private void buildFailDialog(String message) {

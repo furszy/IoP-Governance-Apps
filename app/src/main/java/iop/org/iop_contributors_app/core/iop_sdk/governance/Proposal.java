@@ -54,7 +54,7 @@ public class Proposal implements Serializable {
 
     private boolean isMine = true;
     private boolean isSent = false;
-    private byte[] lockedOutputHash;
+    private String lockedOutputHashHex;
     private long lockedOutputIndex;
     private ProposalState state = ProposalState.ACTIVE;
     // IoPIP -> IoP improvement proposal
@@ -147,7 +147,7 @@ public class Proposal implements Serializable {
         beneficiaries = new HashMap<>();
     }
 
-    public Proposal(boolean isMine, String title, String subTitle, String category,String body, int startBlock, int endBlock, long blockReward, int forumId, Map<String, Long> beneficiaries,long extraFeeValue,boolean isSent,byte[] lockedOutputHash,long lockedOutputIndex,short version,byte[] ownerPk) {
+    public Proposal(boolean isMine, String title, String subTitle, String category,String body, int startBlock, int endBlock, long blockReward, int forumId, Map<String, Long> beneficiaries,long extraFeeValue,boolean isSent,String lockedOutputHashhex,long lockedOutputIndex,short version,byte[] ownerPk) {
         this.isMine = isMine;
         this.title = title;
         this.subTitle = subTitle;
@@ -160,7 +160,7 @@ public class Proposal implements Serializable {
         this.beneficiaries = beneficiaries;
         this.extraFeeValue = extraFeeValue;
         this.isSent = isSent;
-        this.lockedOutputHash = lockedOutputHash;
+        this.lockedOutputHashHex = lockedOutputHashhex;
         this.lockedOutputIndex = lockedOutputIndex;
         this.version = version;
         this.ownerPubKey = ownerPk;
@@ -289,8 +289,8 @@ public class Proposal implements Serializable {
         return isSent;
     }
 
-    public byte[] getLockedOutputHash() {
-        return lockedOutputHash;
+    public String getLockedOutputHashHex() {
+        return lockedOutputHashHex;
     }
 
     public void setTitle(String title) {
@@ -305,8 +305,8 @@ public class Proposal implements Serializable {
         isSent = sent;
     }
 
-    public void setLockedOutputHash(byte[] lockedOutputHash) {
-        this.lockedOutputHash = lockedOutputHash;
+    public void setLockedOutputHashHex(String lockedOutputHashHex) {
+        this.lockedOutputHashHex = lockedOutputHashHex;
     }
 
     public int getForumId() {
@@ -405,7 +405,7 @@ public class Proposal implements Serializable {
         return "Proposal{" +
                 "isMine=" + isMine +
                 ", isSent=" + isSent +
-                ", lockedOutputHash=" + Arrays.toString(lockedOutputHash) +
+                ", lockedOutputHash=" + lockedOutputHashHex +
                 ", lockedOutputIndex=" + lockedOutputIndex +
                 ", state=" + state +
                 ", version=" + version +

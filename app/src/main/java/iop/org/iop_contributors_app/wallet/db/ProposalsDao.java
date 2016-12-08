@@ -4,7 +4,10 @@ import android.content.Context;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
+import org.slf4j.LoggerFactory;
+
 import java.util.List;
+import java.util.logging.Logger;
 
 import iop.org.iop_contributors_app.core.iop_sdk.governance.Proposal;
 import iop.org.iop_contributors_app.core.iop_sdk.governance.ProposalTransactionBuilder;
@@ -16,9 +19,9 @@ import iop.org.iop_contributors_app.core.iop_sdk.governance.ProposalsContractDao
 //todo: más que esto, lo que deberia tener es una base de datos de proposals con las transacciones lockeadas correspondientes a cada uno.
 public class ProposalsDao implements ProposalsContractDao {
 
+    private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(ProposalsDao.class);
+
     private ProposalsDatabaseHandler proposalsDatabaseHandler;
-
-
 
     public ProposalsDao(Context context) {
         this.proposalsDatabaseHandler = new ProposalsDatabaseHandler(context);
@@ -27,11 +30,13 @@ public class ProposalsDao implements ProposalsContractDao {
     /**
      * returns true if the transaction is already used in other proposal and is locked.
      *
-     * @param parentTransactionHash
+     * @param parentTransactionHashHex
      * @return
      */
-    public boolean isLockedOutput(byte[] parentTransactionHash,long position){
-        return proposalsDatabaseHandler.isOutputLocked(parentTransactionHash,position);
+    public boolean isLockedOutput(String parentTransactionHashHex,long position){
+        boolean ret = proposalsDatabaseHandler.isOutputLocked(parentTransactionHashHex,position);
+        LOG.info("isLockedOtput ret: "+ret);
+        return ret;
     }
 
     /**
@@ -57,8 +62,8 @@ public class ProposalsDao implements ProposalsContractDao {
         return proposalsDatabaseHandler.exist(title);
     }
 
-    public void lockOutput(String title,byte[] hash, int index) {
-        proposalsDatabaseHandler.lockOutput(title,hash,index);
+    public void lockOutput(int forumId,String hash, int index) {
+        proposalsDatabaseHandler.lockOutput(forumId,hash,index);
     }
 
     public long getTotalLockedBalance() {
@@ -115,7 +120,7 @@ public class ProposalsDao implements ProposalsContractDao {
         return proposalsDatabaseHandler.isProposalMine(forumId);
     }
 
-    public boolean markSentProposal(String title){
-        return proposalsDatabaseHandler.markSentProposal(title)==1;
+    public boolean markSentProposal(int forumId){
+        return proposalsDatabaseHandler.markSentProposal(forumId)==1;
     }
 }

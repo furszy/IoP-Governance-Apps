@@ -50,8 +50,8 @@
 
             </activity>
 
-        <activity android:name=".ui.CreateProposalActivity"/>
-        <activity android:name=".ui.ProposalsActivity"/>
+        <activity android:name=".ui.CreateProposalActivity" android:launchMode="singleInstance"/>
+        <activity android:name=".ui.ProposalsActivity" android:launchMode="singleInstance"/>
         <activity android:name=".ui.settings.IoPBalanceActivity"
             />
 

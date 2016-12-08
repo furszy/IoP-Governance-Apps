@@ -262,9 +262,11 @@ public class WalletModule implements ContextWrapper{
                         proposalTransactionRequest.forProposal(proposal);
                         proposalTransactionRequest.broadcast();
 
-                        proposalsDao.lockOutput(proposal.getTitle(), proposalTransactionRequest.getLockedOutputHash(), proposalTransactionRequest.getLockedOutputPosition());
+                        proposal = proposalTransactionRequest.getUpdatedProposal();
+                        // lock contract output
+                        proposalsDao.lockOutput(proposal.getForumId(), proposalTransactionRequest.getLockedOutputHashHex(), proposalTransactionRequest.getLockedOutputPosition());
                         // mark proposal sent
-                        proposalsDao.markSentProposal(proposal.getTitle());
+                        proposalsDao.markSentProposal(proposal.getForumId());
 
                         LOG.info("sendProposal finished");
 

@@ -33,6 +33,7 @@ import iop.org.iop_contributors_app.core.iop_sdk.forum.CantCreateTopicException;
 import iop.org.iop_contributors_app.core.iop_sdk.governance.Proposal;
 import iop.org.iop_contributors_app.services.BlockchainService;
 import iop.org.iop_contributors_app.ui.base.BaseActivity;
+import iop.org.iop_contributors_app.ui.dialogs.wallet.InsuficientFundsDialog;
 import iop.org.iop_contributors_app.ui.validators.CreateProposalActivityValidator;
 import iop.org.iop_contributors_app.ui.validators.CreateProposalWatcher;
 import iop.org.iop_contributors_app.ui.validators.ValidationException;
@@ -115,6 +116,8 @@ public class CreateProposalActivity extends BaseActivity {
                             Log.e(TAG,"BroadcastReceiver fail");
                             break;
                     }
+                    hideDoneLoading();
+                    lockBroadcast.set(false);
                 }
             });
 
@@ -453,6 +456,10 @@ public class CreateProposalActivity extends BaseActivity {
         img_done.setVisibility(View.VISIBLE);
     }
 
+    private void hideDoneLoading(){
+        container_send.setVisibility(View.INVISIBLE);
+    }
+
 
 
     /**
@@ -535,16 +542,19 @@ public class CreateProposalActivity extends BaseActivity {
 
 
     private void showInsuficientFundsException(){
-        AlertDialog alertDialog = new AlertDialog.Builder(this).create();
-        alertDialog.setTitle("Upss");
-        alertDialog.setMessage("Insuficient funds, please check your available balance");
-        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                });
-        alertDialog.show();
+//        AlertDialog alertDialog = new AlertDialog.Builder(this).create();
+//        alertDialog.setTitle("Error");
+//        alertDialog.setMessage("Insuficient funds, please check your available balance");
+//        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+//                new DialogInterface.OnClickListener() {
+//                    public void onClick(DialogInterface dialog, int which) {
+//                        dialog.dismiss();
+//                    }
+//                });
+//        alertDialog.show();
+
+        InsuficientFundsDialog insuficientFundsDialog = InsuficientFundsDialog.newInstance(module);
+        insuficientFundsDialog.show(getFragmentManager(),"insuficientFundsDialog");
 
     }
 

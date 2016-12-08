@@ -59,6 +59,8 @@ import iop.org.iop_contributors_app.wallet.WalletConstants;
 import iop.org.iop_contributors_app.wallet.WalletModule;
 
 import static android.graphics.Color.WHITE;
+import static iop.org.iop_contributors_app.utils.mine.QrUtils.encodeAsBitmap;
+import static iop.org.iop_contributors_app.utils.mine.SizeUtils.convertDpToPx;
 
 /**
  * Created by mati on 07/11/16.
@@ -359,8 +361,9 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     @Override
     protected void onStop() {
-        super.onDestroy();
         localBroadcastManager.unregisterReceiver(notificationReceiver);
+        super.onStop();
+
     }
 
     private void showQrDialog(){
@@ -391,7 +394,7 @@ public abstract class BaseActivity extends AppCompatActivity {
             Bitmap qrBitmap = Cache.getQrBigBitmapCache();
             if (qrBitmap == null) {
                 Resources r = getResources();
-                int px = convertDpToPx(175);
+                int px = convertDpToPx(getResources(),175);
                 qrBitmap = encodeAsBitmap(address, px, px, Color.parseColor("#1A1A1A"), WHITE );
                 Cache.setQrBigBitmapCache(qrBitmap);
             }
@@ -425,35 +428,6 @@ public abstract class BaseActivity extends AppCompatActivity {
     }
 
 
-
-
-    private int convertDpToPx(int dp){
-        return Math.round(dp*(getResources().getDisplayMetrics().xdpi/ DisplayMetrics.DENSITY_DEFAULT));
-
-    }
-
-    protected Bitmap encodeAsBitmap(String str,int widht,int height,int qrColor,int backgroundColor) throws WriterException {
-        BitMatrix result;
-        try {
-           result = new MultiFormatWriter().encode(str,
-                    BarcodeFormat.QR_CODE, widht, height, null);
-        } catch (IllegalArgumentException iae) {
-            // Unsupported format
-            return null;
-        }
-        int w = result.getWidth();
-        int h = result.getHeight();
-        int[] pixels = new int[w * h];
-        for (int y = 0; y < h; y++) {
-            int offset = y * w;
-            for (int x = 0; x < w; x++) {
-                pixels[offset + x] = result.get(x, y) ? qrColor : backgroundColor;
-            }
-        }
-        Bitmap bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
-        bitmap.setPixels(pixels, 0, w, 0, 0, w, h);
-        return bitmap;
-    }
 
     /**
      * metodo llamado cuando un permiso es otorgado

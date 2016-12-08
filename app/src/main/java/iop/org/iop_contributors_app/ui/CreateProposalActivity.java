@@ -7,9 +7,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
-import android.support.v4.content.LocalBroadcastManager;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -19,13 +16,14 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -35,13 +33,22 @@ import iop.org.iop_contributors_app.core.iop_sdk.forum.CantCreateTopicException;
 import iop.org.iop_contributors_app.core.iop_sdk.governance.Proposal;
 import iop.org.iop_contributors_app.services.BlockchainService;
 import iop.org.iop_contributors_app.ui.base.BaseActivity;
-import iop.org.iop_contributors_app.ui.dialogs.DialogBuilder;
+import iop.org.iop_contributors_app.ui.dialogs.wallet.InsuficientFundsDialog;
 import iop.org.iop_contributors_app.ui.validators.CreateProposalActivityValidator;
+import iop.org.iop_contributors_app.ui.validators.CreateProposalWatcher;
 import iop.org.iop_contributors_app.ui.validators.ValidationException;
-import iop.org.iop_contributors_app.utils.Cache;
 import iop.org.iop_contributors_app.wallet.db.CantGetProposalException;
 import iop.org.iop_contributors_app.wallet.db.CantSaveProposalExistException;
-import iop.org.iop_contributors_app.wallet.db.CantUpdateProposalException;
+
+import static iop.org.iop_contributors_app.core.iop_sdk.governance.ProposalForum.FIELD_ADDRESS;
+import static iop.org.iop_contributors_app.core.iop_sdk.governance.ProposalForum.FIELD_BLOCK_REWARD;
+import static iop.org.iop_contributors_app.core.iop_sdk.governance.ProposalForum.FIELD_BODY;
+import static iop.org.iop_contributors_app.core.iop_sdk.governance.ProposalForum.FIELD_CATEGORY;
+import static iop.org.iop_contributors_app.core.iop_sdk.governance.ProposalForum.FIELD_END_BLOCK;
+import static iop.org.iop_contributors_app.core.iop_sdk.governance.ProposalForum.FIELD_START_BLOCK;
+import static iop.org.iop_contributors_app.core.iop_sdk.governance.ProposalForum.FIELD_SUBTITLE;
+import static iop.org.iop_contributors_app.core.iop_sdk.governance.ProposalForum.FIELD_TITLE;
+import static iop.org.iop_contributors_app.core.iop_sdk.governance.ProposalForum.FIELD_VALUE;
 
 /**
  * Created by mati on 17/11/16.
@@ -52,22 +59,25 @@ public class CreateProposalActivity extends BaseActivity {
 
     private static final String TAG = "CreateProposalActivity";
 
-    public static final String ACTION_RECEIVE_EXCEPTION = "com.your.package.ACTION_RECEIVE_EXCEPTION";
+    public static final String ACTION_PROPOSAL_BROADCASTED = "propBroadcasted";
 
     public static final String INTENT_DIALOG = "intent_dialog";
 
     // dialogs
     public static final String INTENT_EXTRA_MESSAGE_DIALOG = "extraDialogMessage";
+    public static final String ACTION_RECEIVE_EXCEPTION = CreateProposalActivity.class.getName() + "_receive_exception";
 
     public static final int UNKNOWN_ERROR_DIALOG = 0;
     public static final int INSUFICIENTS_FUNDS_DIALOG = 1;
     public static final int CANT_SAVE_PROPOSAL_DIALOG = 2;
     public static final int COMMON_ERROR_DIALOG = 3;
+    public static final int INVALID_PROPOSAL_DIALOG = 4;
 
     // action edit
     public static final String ACTION_EDIT_PROPOSAL = "actionEditProp";
     public static final String INTENT_DATA_FORUM_ID = "propForumId";
     public static final String INTENT_DATA_FORUM_TITLE = "propForumTitle";
+
 
     private boolean isEditing;
     private int forumId;
@@ -79,7 +89,6 @@ public class CreateProposalActivity extends BaseActivity {
     private CreateProposalActivityValidator validator = new CreateProposalActivityValidator();
 
 
-    private LocalBroadcastManager localBroadcastManager;
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, final Intent intent) {
@@ -96,6 +105,10 @@ public class CreateProposalActivity extends BaseActivity {
                         case CANT_SAVE_PROPOSAL_DIALOG:
                             showErrorDialog("Error", intent.getStringExtra(INTENT_EXTRA_MESSAGE_DIALOG));
                             break;
+                        case INVALID_PROPOSAL_DIALOG:
+                            loadProposal();
+                            showErrorDialog("Error",intent.getStringExtra(INTENT_EXTRA_MESSAGE_DIALOG));
+                            break;
                         case COMMON_ERROR_DIALOG:
                             showErrorDialog("Error", intent.getStringExtra(INTENT_EXTRA_MESSAGE_DIALOG));
                             break;
@@ -103,6 +116,8 @@ public class CreateProposalActivity extends BaseActivity {
                             Log.e(TAG,"BroadcastReceiver fail");
                             break;
                     }
+                    hideDoneLoading();
+                    lockBroadcast.set(false);
                 }
             });
 
@@ -112,6 +127,11 @@ public class CreateProposalActivity extends BaseActivity {
 
     // UI
     private View root;
+
+    private View container_send;
+    private ProgressBar progressBar;
+    private ImageView img_done;
+    private TextView txt_done;
 
     private EditText edit_title;
     private EditText edit_subtitle;
@@ -124,6 +144,10 @@ public class CreateProposalActivity extends BaseActivity {
     private EditText edit_beneficiary_value_1;
     private Button btn_create_proposal;
     private Button btn_publish_proposal;
+
+    private Map<String,CreateProposalWatcher> watchers = new HashMap<>();
+    /** broadcast flag */
+    private AtomicBoolean lockBroadcast = new AtomicBoolean(false);
 
     @Override
     protected boolean hasDrawer() {
@@ -149,25 +173,32 @@ public class CreateProposalActivity extends BaseActivity {
     private void completeWithTestData() {
         proposal = new Proposal();
         proposal.setMine(true);
-        proposal.addBeneficiary("uhk9N8Wpw6HWjitFgfmvdLbgX6voUkDYAb", 80000000);
+        String address = module.getNewAddress();
+        Log.d(TAG,"fress address: "+address);
+        proposal.addBeneficiary(address, 80000000);
         forumTitle = proposal.getTitle();
         loadProposal();
     }
 
     @Override
-    protected void onCreateView(ViewGroup container, Bundle savedInstance) {
+    protected void onCreateView(final ViewGroup container, Bundle savedInstance) {
 
         if (getIntent().getAction()!=null) {
             if (getIntent().getAction().equals(ACTION_EDIT_PROPOSAL)) {
                 isEditing = true;
                 forumId = getIntent().getIntExtra(INTENT_DATA_FORUM_ID, -1);
                 forumTitle = getIntent().getStringExtra(INTENT_DATA_FORUM_TITLE);
+                forumTitle = forumTitle.replace("-"," ");
+                Log.i(TAG,"editing mode, title: "+forumTitle+", id: "+forumId);
             }
         }
 
-        localBroadcastManager = LocalBroadcastManager.getInstance(this);
-
         root = getLayoutInflater().inflate(R.layout.create_proposal_main,container);
+
+        container_send = root.findViewById(R.id.container_send);
+        img_done = (ImageView) root.findViewById(R.id.img_done);
+        txt_done = (TextView) root.findViewById(R.id.txt_done);
+        progressBar = (ProgressBar) root.findViewById(R.id.progressBar);
 
         edit_title = (EditText) root.findViewById(R.id.edit_title);
         edit_subtitle = (EditText) root.findViewById(R.id.edit_subtitle);
@@ -181,10 +212,22 @@ public class CreateProposalActivity extends BaseActivity {
         btn_create_proposal = (Button) root.findViewById(R.id.btn_create_proposal);
         btn_publish_proposal = (Button) root.findViewById(R.id.btn_publish_proposal);
 
+        initWatchers();
+
         root.findViewById(R.id.img_help_my_address).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                edit_beneficiary_address_1.setText(module.getNewAddress());
+                if (!isEditing)
+                    edit_beneficiary_address_1.setText(module.getNewAddress());
+            }
+        });
+
+        container_send.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                container_send.setVisibility(View.GONE);
+                isEditing = true;
+                btn_create_proposal.setText("EDIT");
             }
         });
 
@@ -193,71 +236,81 @@ public class CreateProposalActivity extends BaseActivity {
             public void onClick(View v) {
 
                 if (!lock.getAndSet(true)) {
+
+                    if (!isEditing)
+                        preparateLoading("Proposal posted!",R.drawable.icon_done);
+
                     executor.execute(new Runnable() {
                         @Override
                         public void run() {
-                            String toastToShow = null;
+                            String errorTitle = null;
+                            String messageBody = null;
+
+                            boolean result = false;
                             try {
-                                //todo: usar el buildProposal()
-                                Proposal proposal;
                                 if (!isEditing) {
-//                                proposal = new Proposal();
-//                                proposal.addBeneficiary("uhk9N8Wpw6HWjitFgfmvdLbgX6voUkDYAb", 80000000);
                                     proposal = buildProposal();
                                 } else {
                                     proposal = buildProposal();
-                                    //todo: esto está así porque el foro falla..
                                     if (proposal != null)
                                         proposal.setForumId(forumId);
                                 }
 
                                 if (proposal != null) {
                                     if (!isEditing) {
-                                        if (module.createForumProposal(proposal)) {
-                                            toastToShow = "Proposal created!";
+                                        int forumId = 0;
+                                        if ((forumId = module.createForumProposal(proposal))>0) {
+                                            messageBody = "Proposal created!";
+                                            proposal.setForumId(forumId);
+                                            result = true;
                                         } else {
-                                            toastToShow = "Proposal fail!";
+                                            errorTitle = "Error";
+                                            messageBody = "Uknown, proposal fail!\nplease send a report";
                                         }
                                     } else {
-                                        if (module.editForumProposal(proposal)) {
-                                            toastToShow = "Edit succed";
-                                        } else {
-                                            toastToShow = "Edit fail";
-                                        }
-
+//                                        if (module.editForumProposal(proposal)) {
+//                                            toastToShow = "Edit succed";
+//                                        } else {
+//                                            toastToShow = "Edit fail";
+//                                        }
+                                        redirectToForum(proposal);
                                     }
-                                } else
+                                } else {
                                     Log.e(TAG, "proposal null, see logs");
+                                    errorTitle = "Uknown error";
+                                    messageBody =  "please send a report";
+                                }
                             } catch (final CantCreateTopicException e) {
                                 e.printStackTrace();
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        buildFailDialog(getErrorsFromJson(e.getMessage()));
-                                    }
-                                });
-
-                            } catch (final CantUpdateProposalException e) {
-                                e.printStackTrace();
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        buildFailDialog(getErrorsFromJson(e.getMessage()));
-                                    }
-                                });
-                            } catch (Exception e) {
-                                e.printStackTrace();
+                                errorTitle = "Error";
+                                messageBody = getErrorsFromJson(e.getMessage());
                             } catch (CantSaveProposalExistException e) {
-                                showErrorDialog("Error", "Proposal title already exist");
+                                errorTitle = "Error";
+                                messageBody = "Proposal title already exist";
+                            } catch (ValidationException e){
+                                errorTitle = "Validation error";
+                                messageBody = e.getMessage();
+                            } catch(Exception e) {
+                                e.printStackTrace();
                             }
 
-                            final String finalToastToShow = toastToShow;
+                            final boolean finalResult = result;
+                            final String finalMessageBody = messageBody;
+                            final String finalErrorTitle = errorTitle;
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    Toast.makeText(CreateProposalActivity.this, finalToastToShow, Toast.LENGTH_SHORT).show();
+                                    if (finalResult){
+                                        showDoneLoading();
+                                        //disableEditTexts();
+                                        Toast.makeText(CreateProposalActivity.this, finalMessageBody, Toast.LENGTH_SHORT).show();
+                                    }else {
+                                        container_send.setVisibility(View.INVISIBLE);
+                                        showErrorDialog(finalErrorTitle, finalMessageBody);
+                                    }
                                 }
                             });
+
                             // unlock
                             lock.set(false);
                         }
@@ -269,6 +322,7 @@ public class CreateProposalActivity extends BaseActivity {
 
         if (isEditing) {
 
+            //disableEditTexts();
             btn_create_proposal.setText("EDIT");
 
             executor.submit(new Runnable() {
@@ -297,17 +351,31 @@ public class CreateProposalActivity extends BaseActivity {
 
     }
 
+    private void initWatchers(){
+        setWatcher(FIELD_TITLE,edit_title,null);
+        setWatcher(FIELD_SUBTITLE,edit_subtitle,null);
+        setWatcher(FIELD_CATEGORY,edit_category,null);
+        setWatcher(FIELD_BODY,edit_body,null);
+        setWatcher(FIELD_START_BLOCK,edit_start_block,null);
+        setWatcher(FIELD_END_BLOCK,edit_end_block,null);
+        setWatcher(FIELD_BLOCK_REWARD,edit_block_reward,null);
+        setWatcher(FIELD_ADDRESS,edit_beneficiary_address_1,null);
+        setWatcher(FIELD_VALUE,edit_beneficiary_value_1,null);
+    }
+
+    private void setWatcher(String id,EditText editText,View errorView){
+        CreateProposalWatcher createProposalWatcher = new CreateProposalWatcher(id,validator,errorView);
+        editText.addTextChangedListener(createProposalWatcher);
+        watchers.put(id,createProposalWatcher);
+    }
 
 
     @Override
-    protected boolean onBroadcastReceive(String action, Bundle data) {
-        if (action.equals(ACTION_PROPOSAL_BROADCASTED)){
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(CreateProposalActivity.this,"Proposal broadcasted!, publishing in the forum..",Toast.LENGTH_SHORT).show();
-                }
-            });
+    protected boolean onBroadcastReceive(Bundle data) {
+        if (data.getString(INTENT_NOTIFICATION_TYPE).equals(ACTION_PROPOSAL_BROADCASTED)){
+            showDoneLoading();
+            lockBroadcast.set(false);
+            Toast.makeText(CreateProposalActivity.this,"Proposal broadcasted!, publishing in the forum..",Toast.LENGTH_SHORT).show();
         }
         return false;
     }
@@ -321,6 +389,7 @@ public class CreateProposalActivity extends BaseActivity {
         edit_end_block.setText(String.valueOf(proposal.getEndBlock()));
         edit_block_reward.setText(String.valueOf(proposal.getBlockReward()));
         for (Map.Entry<String, Long> beneficiary : proposal.getBeneficiaries().entrySet()) {
+            Log.d(TAG,"setting beneficiary key: "+beneficiary.getKey());
             edit_beneficiary_address_1.setText(beneficiary.getKey());
             edit_beneficiary_value_1.setText(String.valueOf(beneficiary.getValue()));
         }
@@ -331,7 +400,7 @@ public class CreateProposalActivity extends BaseActivity {
         View.OnClickListener onClickListener;
         if (proposal.isSent()){
             btn_create_proposal.setVisibility(View.GONE);
-            btn_publish_proposal.setText("UNPUBLISH");
+            btn_publish_proposal.setText("CANCEL");
             onClickListener = new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -340,18 +409,72 @@ public class CreateProposalActivity extends BaseActivity {
                 }
             };
         }else {
-            btn_publish_proposal.setText("PUBLISH");
+            btn_publish_proposal.setText("BRODCAST");
             onClickListener = new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Bundle bundle = new Bundle();
-                    bundle.putSerializable(BlockchainService.INTENT_EXTRA_PROPOSAL,proposal);
-                    sendWorkToBlockchainService(BlockchainService.ACTION_BROADCAST_PROPOSAL_TRANSACTION,bundle);
+                    if (isEditing) {
+                        try{
+                            if(lockBroadcast.compareAndSet(false,true)) {
+                                // loading
+                                preparateLoading("Proposal broadcasted!",R.drawable.icon_done);
+
+                                Bundle bundle = new Bundle();
+                                Proposal proposalNew = buildProposal();
+                                proposalNew.setForumId(proposal.getForumId());
+                                bundle.putSerializable(BlockchainService.INTENT_EXTRA_PROPOSAL, proposalNew);
+                                sendWorkToBlockchainService(BlockchainService.ACTION_BROADCAST_PROPOSAL_TRANSACTION, bundle);
+                            }else
+                                Log.e(TAG,"Toco dos veces el broadcast..");
+                        } catch (ValidationException e) {
+                            showErrorDialog("Validation error",e.getMessage());
+                            lockBroadcast.set(false);
+                        }
+                    }else
+                        Toast.makeText(v.getContext(),"You have to post before publish on blockchain",Toast.LENGTH_LONG).show();
                 }
             };
+
         }
 
         btn_publish_proposal.setOnClickListener(onClickListener);
+    }
+
+
+    private void preparateLoading(String textDone, int resImgDone){
+        container_send.setVisibility(View.VISIBLE);
+        progressBar.setVisibility(View.VISIBLE);
+        txt_done.setText(textDone);
+        img_done.setImageResource(resImgDone);
+        txt_done.setVisibility(View.INVISIBLE);
+        img_done.setVisibility(View.INVISIBLE);
+    }
+
+    private void showDoneLoading(){
+        progressBar.setVisibility(View.INVISIBLE);
+        txt_done.setVisibility(View.VISIBLE);
+        img_done.setVisibility(View.VISIBLE);
+    }
+
+    private void hideDoneLoading(){
+        container_send.setVisibility(View.INVISIBLE);
+    }
+
+
+
+    /**
+     * Disable edit
+     */
+    private void disableEditTexts() {
+        edit_title.setEnabled(false);
+        edit_subtitle.setEnabled(false);
+        edit_category.setEnabled(false);
+        edit_body.setEnabled(false);
+        edit_start_block.setEnabled(false);
+        edit_end_block.setEnabled(false);
+        edit_block_reward.setEnabled(false);
+        edit_beneficiary_address_1.setEnabled(false);
+        edit_beneficiary_value_1.setEnabled(false);
 
     }
 
@@ -362,8 +485,9 @@ public class CreateProposalActivity extends BaseActivity {
      * todo: falta hacer las validaciones
      * @return
      */
-    private Proposal buildProposal(){
+    private Proposal buildProposal() throws ValidationException{
         Proposal proposal = new Proposal();
+
         String title = edit_title.getText().toString();
         String subtitle = edit_subtitle.getText().toString();
         String category = edit_category.getText().toString();
@@ -375,25 +499,21 @@ public class CreateProposalActivity extends BaseActivity {
         String addressBen1 = edit_beneficiary_address_1.getText().toString();
         long value = Long.parseLong(edit_beneficiary_value_1.getText().toString());
         beneficiaries.put(addressBen1,value);
-        //todo: faltan los beneficiarios y las validaciones..
-        try {
-            proposal.setTitle(validator.validateTitle(title));
-            proposal.setSubTitle(validator.validateSubTitle(subtitle));
-            proposal.setCategory(validator.validatCategory(category));
-            proposal.setBody(validator.validateBody(body));
-            proposal.setStartBlock(validator.validateStartBlock(startBlock));
-            proposal.setEndBlock(validator.validateEndBlock(endBlock));
-            proposal.setBlockReward(validator.validateBlockReward(blockReward));
-            if (validator.validateBeneficiary(addressBen1, value)) {
-                proposal.addBeneficiary(addressBen1,value);
-            }
-            validator.validateBeneficiaries(proposal.getBeneficiaries(),proposal.getBlockReward());
-        } catch (ValidationException e) {
-            buildFailDialog(e.getMessage());
-            proposal = null;
-        }
-        return proposal;
 
+        //todo: faltan los beneficiarios y las validaciones..
+        proposal.setTitle(validator.validateTitle(title));
+        proposal.setSubTitle(validator.validateSubTitle(subtitle));
+        proposal.setCategory(validator.validatCategory(category));
+        proposal.setBody(validator.validateBody(body));
+        proposal.setStartBlock(validator.validateStartBlock(startBlock));
+        proposal.setEndBlock(validator.validateEndBlock(endBlock));
+        proposal.setBlockReward(validator.validateBlockReward(blockReward));
+        if (validator.validateBeneficiary(addressBen1, value)) {
+            proposal.addBeneficiary(addressBen1,value);
+        }
+        validator.validateBeneficiaries(proposal.getBeneficiaries(),proposal.getBlockReward());
+
+        return proposal;
     }
 
     @Override
@@ -407,23 +527,34 @@ public class CreateProposalActivity extends BaseActivity {
     protected void onStop() {
         super.onStop();
         try {
-            unregisterReceiver(receiver);
+            localBroadcastManager.unregisterReceiver(receiver);
         } catch (Exception e) {
             // nothing
         }
     }
 
+    private void redirectToForum(Proposal proposal) {
+        Intent intent1 = new Intent(CreateProposalActivity.this,ForumActivity.class);
+        String url = ForumActivity.FORUM_URL+"/t/"+proposal.getTitle().toLowerCase().replace(" ","-")+"/"+proposal.getForumId();
+        intent1.putExtra(ForumActivity.INTENT_URL,url);
+        startActivity(intent1);
+    }
+
+
     private void showInsuficientFundsException(){
-        AlertDialog alertDialog = new AlertDialog.Builder(this).create();
-        alertDialog.setTitle("Upss");
-        alertDialog.setMessage("Insuficient funds, please check your available balance");
-        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                });
-        alertDialog.show();
+//        AlertDialog alertDialog = new AlertDialog.Builder(this).create();
+//        alertDialog.setTitle("Error");
+//        alertDialog.setMessage("Insuficient funds, please check your available balance");
+//        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+//                new DialogInterface.OnClickListener() {
+//                    public void onClick(DialogInterface dialog, int which) {
+//                        dialog.dismiss();
+//                    }
+//                });
+//        alertDialog.show();
+
+        InsuficientFundsDialog insuficientFundsDialog = InsuficientFundsDialog.newInstance(module);
+        insuficientFundsDialog.show(getFragmentManager(),"insuficientFundsDialog");
 
     }
 
@@ -440,12 +571,6 @@ public class CreateProposalActivity extends BaseActivity {
         alertDialog.show();
     }
 
-    private void buildFailDialog(String message) {
-        DialogBuilder dialogBuilder = new DialogBuilder(this);
-        dialogBuilder.setTitle("Error");
-        dialogBuilder.setMessage(message);
-        dialogBuilder.show();
-    }
 
     private void showCantSendProposalDialog() {
         AlertDialog alertDialog = new AlertDialog.Builder(this).create();

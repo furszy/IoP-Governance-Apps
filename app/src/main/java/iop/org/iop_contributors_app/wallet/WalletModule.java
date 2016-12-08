@@ -262,9 +262,11 @@ public class WalletModule implements ContextWrapper{
                         proposalTransactionRequest.forProposal(proposal);
                         proposalTransactionRequest.broadcast();
 
-                        proposalsDao.lockOutput(proposal.getTitle(), proposalTransactionRequest.getLockedOutputHash(), proposalTransactionRequest.getLockedOutputPosition());
+                        proposal = proposalTransactionRequest.getUpdatedProposal();
+                        // lock contract output
+                        proposalsDao.lockOutput(proposal.getForumId(), proposalTransactionRequest.getLockedOutputHashHex(), proposalTransactionRequest.getLockedOutputPosition());
                         // mark proposal sent
-                        proposalsDao.markSentProposal(proposal.getTitle());
+                        proposalsDao.markSentProposal(proposal.getForumId());
 
                         LOG.info("sendProposal finished");
 
@@ -372,39 +374,28 @@ public class WalletModule implements ContextWrapper{
         }
     }
 
-    public void restoreWalletFromEncrypted(final File file, final String password) {
-        try
-        {
+    public void restoreWalletFromEncrypted(final File file, final String password) throws CantRestoreEncryptedWallet {
+        try {
             walletManager.restoreWalletFromEncrypted(file,password);
         }
-        catch (final IOException x)
-        {
-            final DialogBuilder dialog = DialogBuilder.warn(context, R.string.import_export_keys_dialog_failure_title);
-            dialog.setMessage(context.getString(R.string.import_keys_dialog_failure, x.getMessage()));
-            dialog.setPositiveButton(R.string.button_dismiss, null);
-            dialog.setNegativeButton(R.string.button_retry, new DialogInterface.OnClickListener()
-            {
-                @Override
-                public void onClick(final DialogInterface dialog, final int id)
-                {
-                    //showDialog(DIALOG_RESTORE_WALLET);
-                }
-            });
-            dialog.show();
+        catch (final IOException x) {
+
+            x.printStackTrace();
 
             LOG.info("problem restoring wallet", x);
+
+            throw new CantRestoreEncryptedWallet(x);
         }
     }
 
-    public boolean createForumProposal(Proposal proposal) throws CantCreateTopicException, CantSaveProposalException, CantSaveProposalExistException {
+    public int createForumProposal(Proposal proposal) throws CantCreateTopicException, CantSaveProposalException, CantSaveProposalExistException {
+        LOG.info("createForumProposal");
         int forumId = forumClient.createTopic(proposal.getTitle(),proposal.getCategory(),proposal.toForumBody());
-        boolean resp = false;
         if (forumId>0) {
             proposal.setForumId(forumId);
             proposalsDao.saveProposal(proposal);
-            resp = true;
         }
-        return resp;
+        return forumId;
     }
 
     public boolean editForumProposal(Proposal proposal) throws CantUpdateProposalException {

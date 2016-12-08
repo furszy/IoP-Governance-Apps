@@ -6,6 +6,6 @@ package iop.org.iop_contributors_app.core.iop_sdk.governance;
 
 public interface ProposalsContractDao {
 
-    boolean isLockedOutput(byte[] bytes, long index);
+    boolean isLockedOutput(String hashHex, long index);
 
 }

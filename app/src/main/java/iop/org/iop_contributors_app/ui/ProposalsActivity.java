@@ -64,7 +64,7 @@ public class ProposalsActivity extends BaseActivity {
     }
 
     @Override
-    protected boolean onBroadcastReceive(String action, Bundle data) {
+    protected boolean onBroadcastReceive(Bundle data) {
         return false;
     }
 

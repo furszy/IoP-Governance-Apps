@@ -1,10 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    >
 
-    <Preference android:key="id_balance" android:title="Balance"/>
+    <PreferenceCategory android:title="Wallet">
 
-    <Preference android:key="id_donate" android:title="Donate"/>
+        <Preference android:key="id_balance" android:title="Balance" />
 
-    <Preference android:key="id_about" android:title="About"/>
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="Diagnostic">
+
+        <Preference android:key="id_report" android:title="Report issue" />
+
+    </PreferenceCategory>
+
+    <!--<Preference android:key="id_donate" android:title="Donate"/>-->
+
+    <!--<Preference android:key="id_about" android:title="About"/>-->
 
 </PreferenceScreen>

@@ -13,16 +13,24 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import iop.org.iop_contributors_app.utils.exceptions.NotValidParametersException;
 
+import static iop.org.iop_contributors_app.core.iop_sdk.governance.ProposalForum.TAG_BENEFICIARY_ADDRESS;
+import static iop.org.iop_contributors_app.core.iop_sdk.governance.ProposalForum.TAG_BENEFICIARY_VALUE;
+import static iop.org.iop_contributors_app.core.iop_sdk.governance.ProposalForum.TAG_BLOCK_REWARD;
+import static iop.org.iop_contributors_app.core.iop_sdk.governance.ProposalForum.TAG_BODY;
+import static iop.org.iop_contributors_app.core.iop_sdk.governance.ProposalForum.TAG_END_BLOCK;
+import static iop.org.iop_contributors_app.core.iop_sdk.governance.ProposalForum.TAG_START_BLOCK;
+import static iop.org.iop_contributors_app.core.iop_sdk.governance.ProposalForum.TAG_SUBTITLE;
+import static iop.org.iop_contributors_app.core.iop_sdk.governance.ProposalForum.TAG_TITLE;
 import static iop.org.iop_contributors_app.utils.Preconditions.checkEquals;
 
 /**
  * Created by mati on 07/11/16.
+ * //todo: ponerle el class en el tag para determinar que campo es.
  */
 
 public class Proposal implements Serializable {
@@ -46,7 +54,7 @@ public class Proposal implements Serializable {
 
     private boolean isMine = true;
     private boolean isSent = false;
-    private byte[] lockedOutputHash;
+    private String lockedOutputHashHex;
     private long lockedOutputIndex;
     private ProposalState state = ProposalState.ACTIVE;
     // IoPIP -> IoP improvement proposal
@@ -92,42 +100,30 @@ public class Proposal implements Serializable {
      */
     public static Proposal buildFromBody(String formatedBody) {
         Proposal proposal = new Proposal();
-        proposal.setTitle(getTagValue(formatedBody,TAG_TITLE));
-        proposal.setSubTitle(getTagValue(formatedBody,TAG_SUBTITLE));
-        proposal.setBody(getTagValue(formatedBody,TAG_BODY));
-        proposal.setStartBlock(Integer.parseInt(getTagValue(formatedBody,TAG_START_BLOCK)));
-        proposal.setEndBlock(Integer.parseInt(getTagValue(formatedBody,TAG_END_BLOCK)));
-        proposal.setBlockReward(Long.parseLong(getTagValue(formatedBody,TAG_BLOCK_REWARD)));
-        String address = getTagValue(formatedBody,TAG_BENEFICIARY_ADDRESS);
-        long value = Long.parseLong(getTagValue(formatedBody,TAG_BENEFICIARY_VALUE));
+        proposal.setTitle(getTagValue(formatedBody, PATTERN_TAG_TITLE,0));
+        proposal.setSubTitle(getTagValue(formatedBody, PATTERN_TAG_SUBTITLE,0));
+        proposal.setBody(getTagValue(formatedBody,PATTERN_TAG_BODY,0));
+        proposal.setStartBlock(Integer.parseInt(getTagValue(formatedBody,PATTERN_TAG_START_BLOCK,1)));
+        proposal.setEndBlock(Integer.parseInt(getTagValue(formatedBody,PATTERN_TAG_END_BLOCK,2)));
+        proposal.setBlockReward(Long.parseLong(getTagValue(formatedBody,PATTERN_TAG_BLOCK_REWARD,3)));
+        String address = getTagValue(formatedBody,PATTERN_TAG_BENEFICIARY_ADDRESS,4);
+        long value = Long.parseLong(getTagValue(formatedBody,PATTERN_TAG_BENEFICIARY_VALUE,5));
         proposal.addBeneficiary(address,value);
         return proposal;
     }
-    private static final Pattern TAG_REGEX = Pattern.compile("" +
-            "<h1>(.+?)</h1>" +
-            "|" +
-            "<h2>(.+?)</h2>" +
-            "|" +
-            "<body>(.+?)</body>" +
-            "|"+
-            "<startBlock>(.+?)</startBlock>" +
-            "|"+
-            "<endBlock>(.+?)</endBlock>" +
-            "|"+
-            "<address>(.+?)</address>" +
-            "|"+
-            "<value>(.+?)</value>"
-    );
 
-    private static final Pattern TAG_TITLE = Pattern.compile("<h1>(.+?)</h1>");
-    private static final Pattern TAG_SUBTITLE = Pattern.compile("<h2>(.+?)</h2>");
-    private static final Pattern TAG_BODY = Pattern.compile("<contract_body>(.+?)</contract_body>");
-    private static final Pattern TAG_START_BLOCK = Pattern.compile("<startBlock>(.+?)</startBlock>");
-    private static final Pattern TAG_END_BLOCK = Pattern.compile("<endBlock>(.+?)</endBlock>");
-    private static final Pattern TAG_BLOCK_REWARD = Pattern.compile("<blockReward>(.+?)</blockReward>");
-    private static final Pattern TAG_BENEFICIARY_ADDRESS = Pattern.compile("<address>(.+?)</address>");
-    private static final Pattern TAG_BENEFICIARY_VALUE = Pattern.compile("<value>(.+?)</value>");
+    private static final Pattern PATTERN_TAG_TITLE = Pattern.compile(replaceTag(TAG_TITLE,"(.+?)"));//("<h1>(.+?)</h1>");
+    private static final Pattern PATTERN_TAG_SUBTITLE = Pattern.compile(replaceTag(ProposalForum.TAG_SUBTITLE,"(.+?)"));//("<h2>(.+?)</h2>");
+    private static final Pattern PATTERN_TAG_BODY = Pattern.compile(replaceTag(ProposalForum.TAG_BODY,"(.+?)"));//("<contract_body>(.+?)</contract_body>");
+    private static final Pattern PATTERN_TAG_START_BLOCK = Pattern.compile(replaceTag(ProposalForum.TAG_START_BLOCK,"(.+?)"));//("<startBlock>(.+?)</startBlock>");
+    private static final Pattern PATTERN_TAG_END_BLOCK = Pattern.compile(replaceTag(ProposalForum.TAG_END_BLOCK,"(.+?)"));//("<endBlock>(.+?)</endBlock>");
+    private static final Pattern PATTERN_TAG_BLOCK_REWARD = Pattern.compile(replaceTag(ProposalForum.TAG_BLOCK_REWARD,"(.+?)"));//("<blockReward>(.+?)</blockReward>");
+    private static final Pattern PATTERN_TAG_BENEFICIARY_ADDRESS = Pattern.compile(replaceTag(ProposalForum.TAG_BENEFICIARY_ADDRESS,"(.+?)"));//("<address>(.+?)</address>");
+    private static final Pattern PATTERN_TAG_BENEFICIARY_VALUE = Pattern.compile(replaceTag(ProposalForum.TAG_BENEFICIARY_VALUE,"(.+?)"));//("<value>(.+?)</value>");
 
+    private static String replaceTag(String tag,String replace){
+        return tag.replace("?",replace);
+    }
 
     private static List<String> getTagValues(final String str, Pattern pattern) {
         final List<String> tagValues = new ArrayList<String>();
@@ -138,10 +134,10 @@ public class Proposal implements Serializable {
         return tagValues;
     }
 
-    private static String getTagValue(final String str,Pattern pattern){
+    private static String getTagValue(final String str,Pattern pattern, int index){
         List<String> list = getTagValues(str,pattern);
         if (!list.isEmpty()){
-            return list.get(0);
+            return list.get(index);
         }else
             LOG.info("Tag not found for pattern: "+pattern.toString());
         return null;
@@ -151,7 +147,7 @@ public class Proposal implements Serializable {
         beneficiaries = new HashMap<>();
     }
 
-    public Proposal(boolean isMine, String title, String subTitle, String category,String body, int startBlock, int endBlock, long blockReward, int forumId, Map<String, Long> beneficiaries,long extraFeeValue,boolean isSent,byte[] lockedOutputHash,long lockedOutputIndex,short version,byte[] ownerPk) {
+    public Proposal(boolean isMine, String title, String subTitle, String category,String body, int startBlock, int endBlock, long blockReward, int forumId, Map<String, Long> beneficiaries,long extraFeeValue,boolean isSent,String lockedOutputHashhex,long lockedOutputIndex,short version,byte[] ownerPk) {
         this.isMine = isMine;
         this.title = title;
         this.subTitle = subTitle;
@@ -164,7 +160,7 @@ public class Proposal implements Serializable {
         this.beneficiaries = beneficiaries;
         this.extraFeeValue = extraFeeValue;
         this.isSent = isSent;
-        this.lockedOutputHash = lockedOutputHash;
+        this.lockedOutputHashHex = lockedOutputHashhex;
         this.lockedOutputIndex = lockedOutputIndex;
         this.version = version;
         this.ownerPubKey = ownerPk;
@@ -217,20 +213,20 @@ public class Proposal implements Serializable {
     public String toForumBody(){
 
         StringBuilder stringBuilder = new StringBuilder()
-                        .append("<h1>"+title+"</h1>")
-                        .append("<h2>"+subTitle+"</h2>")
+                        .append(replaceTag(TAG_TITLE,title))//"<h1>"+title+"</h1>")
+                        .append(replaceTag(TAG_SUBTITLE,subTitle))//"<h2>"+subTitle+"</h2>")
                         .append("<br/>")
-                        .append("<contract_body><p><body>"+body+"</body></p></contract_body>")
-                        .append("Start block: <startBlock>"+startBlock+"</startBlock>")
+                        .append("<p><body>"+replaceTag(TAG_BODY,body)+"</body></p>")
+                        .append("Start block: "+replaceTag(TAG_START_BLOCK, String.valueOf(startBlock)))
                         .append("   ")
-                        .append("EndBlock: <endBlock>"+endBlock+"</endBlock>")
+                        .append("EndBlock: "+replaceTag(TAG_END_BLOCK, String.valueOf(endBlock)))
                         .append("<br/>")
-                        .append("Block reward <blockReward>"+blockReward+"</blockReward>")
+                        .append("Block reward "+replaceTag(TAG_BLOCK_REWARD, String.valueOf(blockReward)))
                         .append("<br/>");
 
         int pos = 1;
         for (Map.Entry<String, Long> beneficiary : beneficiaries.entrySet()) {
-            stringBuilder.append("Beneficiary"+pos+": Address: <address>"+beneficiary.getKey()+"</address>   value: <value>"+beneficiary.getValue()+"</value> IoPs");
+            stringBuilder.append("Beneficiary"+pos+": Address: <address>"+replaceTag(TAG_BENEFICIARY_ADDRESS,beneficiary.getKey())+"</address>   value: "+replaceTag(TAG_BENEFICIARY_VALUE, String.valueOf(beneficiary.getValue()))+" IoPs");
         }
 
         return stringBuilder.toString();
@@ -293,8 +289,8 @@ public class Proposal implements Serializable {
         return isSent;
     }
 
-    public byte[] getLockedOutputHash() {
-        return lockedOutputHash;
+    public String getLockedOutputHashHex() {
+        return lockedOutputHashHex;
     }
 
     public void setTitle(String title) {
@@ -309,8 +305,8 @@ public class Proposal implements Serializable {
         isSent = sent;
     }
 
-    public void setLockedOutputHash(byte[] lockedOutputHash) {
-        this.lockedOutputHash = lockedOutputHash;
+    public void setLockedOutputHashHex(String lockedOutputHashHex) {
+        this.lockedOutputHashHex = lockedOutputHashHex;
     }
 
     public int getForumId() {
@@ -409,7 +405,7 @@ public class Proposal implements Serializable {
         return "Proposal{" +
                 "isMine=" + isMine +
                 ", isSent=" + isSent +
-                ", lockedOutputHash=" + Arrays.toString(lockedOutputHash) +
+                ", lockedOutputHash=" + lockedOutputHashHex +
                 ", lockedOutputIndex=" + lockedOutputIndex +
                 ", state=" + state +
                 ", version=" + version +

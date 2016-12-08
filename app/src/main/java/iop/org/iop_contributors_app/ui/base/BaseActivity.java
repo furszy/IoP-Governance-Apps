@@ -1,20 +1,16 @@
 package iop.org.iop_contributors_app.ui.base;
 
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
-import android.content.ClipData;
-import android.content.ClipboardManager;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
+import android.content.IntentFilter;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -24,64 +20,47 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
-import android.widget.CheckBox;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.common.base.Charsets;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 
 import org.bitcoinj.core.Context;
-import org.bitcoinj.wallet.Wallet;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import iop.org.iop_contributors_app.ApplicationController;
-import iop.org.iop_contributors_app.services.BlockchainServiceImpl;
 import iop.org.iop_contributors_app.R;
+import iop.org.iop_contributors_app.services.BlockchainServiceImpl;
 import iop.org.iop_contributors_app.ui.CreateProposalActivity;
 import iop.org.iop_contributors_app.ui.ForumActivity;
 import iop.org.iop_contributors_app.ui.MainActivity;
 import iop.org.iop_contributors_app.ui.ProfileActivity;
 import iop.org.iop_contributors_app.ui.ProposalsActivity;
 import iop.org.iop_contributors_app.ui.SettingsActivity;
-import iop.org.iop_contributors_app.ui.StartActivity;
 import iop.org.iop_contributors_app.ui.components.sdk.FermatListItemListeners;
-import iop.org.iop_contributors_app.ui.dialogs.Crypto;
-import iop.org.iop_contributors_app.ui.dialogs.ShowPasswordCheckListener;
-import iop.org.iop_contributors_app.ui.dialogs.WalletUtils;
 import iop.org.iop_contributors_app.ui.dialogs.wallet.BackupDialog;
-import iop.org.iop_contributors_app.ui.dialogs.DialogBuilder;
-import iop.org.iop_contributors_app.ui.dialogs.wallet.ImportDialogButtonEnablerListener;
-import iop.org.iop_contributors_app.ui.dialogs.wallet.RestoreDialogFragment;
-import iop.org.iop_contributors_app.ui.dialogs.wallet.RestoreDialogFragmentMati;
+import iop.org.iop_contributors_app.ui.dialogs.wallet.RestoreDialogFragment2;
 import iop.org.iop_contributors_app.utils.Cache;
-import iop.org.iop_contributors_app.utils.Io;
 import iop.org.iop_contributors_app.wallet.WalletConstants;
 import iop.org.iop_contributors_app.wallet.WalletModule;
 
 import static android.graphics.Color.WHITE;
+import static iop.org.iop_contributors_app.utils.mine.QrUtils.encodeAsBitmap;
+import static iop.org.iop_contributors_app.utils.mine.SizeUtils.convertDpToPx;
 
 /**
  * Created by mati on 07/11/16.
@@ -91,9 +70,11 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     private static final String TAG = "BaseActivity";
 
-    public static final String ACTION_PROPOSAL_BROADCASTED = "propBroadcasted";
+    public static final String ACTION_NOTIFICATION = BaseActivity.class.getPackage().toString() + "_action_notification";
+    public static final String INTENT_NOTIFICATION_TYPE = BaseActivity.class.getPackage().toString() + "_intentet_notification_type";
 
-    NotificationManager notificationManager;
+    protected NotificationManager notificationManager;
+    protected LocalBroadcastManager localBroadcastManager;
 
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
@@ -109,34 +90,37 @@ public abstract class BaseActivity extends AppCompatActivity {
     private TextView txt_drawer_name;
     private ImageView imgQr;
 
+    private NotificationReceiver notificationReceiver = new NotificationReceiver();
+
     protected ApplicationController application;
     protected WalletModule module;
 
     protected ExecutorService executor;
 
-    protected boolean isStarted = true;
-
     @Override
     public final void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        try {
 
-        application = ApplicationController.getInstance();
-        module = application.getWalletModule();
+            notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+            localBroadcastManager = LocalBroadcastManager.getInstance(this);
 
-        executor = Executors.newFixedThreadPool(3);
+            application = ApplicationController.getInstance();
+            module = application.getWalletModule();
 
-        beforeCreate(savedInstanceState);
+            executor = Executors.newFixedThreadPool(3);
 
-        if (isStarted) {
+            beforeCreate(savedInstanceState);
+
             setContentView(R.layout.base_main);
             initToolbar();
-            if (hasDrawer())setupDrawerLayout();
+            if (hasDrawer()) setupDrawerLayout();
             container = (ViewGroup) findViewById(R.id.container);
-            onCreateView(container,savedInstanceState);
-        }else {
-            startActivity(new Intent(this, StartActivity.class));
+            onCreateView(container, savedInstanceState);
+
+        }catch (Exception e){
+            e.printStackTrace();
         }
     }
 
@@ -162,7 +146,7 @@ public abstract class BaseActivity extends AppCompatActivity {
                 return true;
 
             case R.id.action_restore:
-                RestoreDialogFragment restoreDialogFragment = RestoreDialogFragment.factory(this);
+                RestoreDialogFragment2 restoreDialogFragment = RestoreDialogFragment2.newInstance();
                 restoreDialogFragment.show(getFragmentManager(),"restore_dialog");
                 return true;
 
@@ -274,12 +258,7 @@ public abstract class BaseActivity extends AppCompatActivity {
         imgQr.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        showQrDialog();
-                    }
-                });
+                showQrDialog();
             }
         });
 
@@ -373,6 +352,19 @@ public abstract class BaseActivity extends AppCompatActivity {
         return true;
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        localBroadcastManager.registerReceiver(notificationReceiver,new IntentFilter(ACTION_NOTIFICATION));
+
+    }
+
+    @Override
+    protected void onStop() {
+        localBroadcastManager.unregisterReceiver(notificationReceiver);
+        super.onStop();
+
+    }
 
     private void showQrDialog(){
 
@@ -402,7 +394,7 @@ public abstract class BaseActivity extends AppCompatActivity {
             Bitmap qrBitmap = Cache.getQrBigBitmapCache();
             if (qrBitmap == null) {
                 Resources r = getResources();
-                int px = convertDpToPx(175);
+                int px = convertDpToPx(getResources(),175);
                 qrBitmap = encodeAsBitmap(address, px, px, Color.parseColor("#1A1A1A"), WHITE );
                 Cache.setQrBigBitmapCache(qrBitmap);
             }
@@ -436,35 +428,6 @@ public abstract class BaseActivity extends AppCompatActivity {
     }
 
 
-
-
-    private int convertDpToPx(int dp){
-        return Math.round(dp*(getResources().getDisplayMetrics().xdpi/ DisplayMetrics.DENSITY_DEFAULT));
-
-    }
-
-    protected Bitmap encodeAsBitmap(String str,int widht,int height,int qrColor,int backgroundColor) throws WriterException {
-        BitMatrix result;
-        try {
-           result = new MultiFormatWriter().encode(str,
-                    BarcodeFormat.QR_CODE, widht, height, null);
-        } catch (IllegalArgumentException iae) {
-            // Unsupported format
-            return null;
-        }
-        int w = result.getWidth();
-        int h = result.getHeight();
-        int[] pixels = new int[w * h];
-        for (int y = 0; y < h; y++) {
-            int offset = y * w;
-            for (int x = 0; x < w; x++) {
-                pixels[offset + x] = result.get(x, y) ? qrColor : backgroundColor;
-            }
-        }
-        Bitmap bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
-        bitmap.setPixels(pixels, 0, w, 0, 0, w, h);
-        return bitmap;
-    }
 
     /**
      * metodo llamado cuando un permiso es otorgado
@@ -503,7 +466,7 @@ public abstract class BaseActivity extends AppCompatActivity {
      *
      * @return false if the activity don't know how to do with that broadcast and this activity send a notification
      */
-    protected abstract boolean onBroadcastReceive(String action,Bundle data);
+    protected abstract boolean onBroadcastReceive(Bundle data);
 
     /**
      * Enable drawer
@@ -518,9 +481,9 @@ public abstract class BaseActivity extends AppCompatActivity {
         @Override
         public void onReceive(android.content.Context context, Intent intent) {
 
-            if (intent.getAction().equals(ACTION_PROPOSAL_BROADCASTED)){
+            if (intent.getAction().equals(ACTION_NOTIFICATION)){
 
-                if (!onBroadcastReceive(ACTION_PROPOSAL_BROADCASTED,intent.getExtras())){
+                if (!onBroadcastReceive(intent.getExtras())){
                     android.support.v4.app.NotificationCompat.Builder mBuilder =
                             new NotificationCompat.Builder(getApplicationContext())
                                     .setSmallIcon(R.mipmap.ic_launcher)

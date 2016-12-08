@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
+import iop.org.iop_contributors_app.core.iop_sdk.crypto.CryptoBytes;
 import iop.org.iop_contributors_app.wallet.BlockchainManager;
 import iop.org.iop_contributors_app.wallet.WalletConstants;
 import iop.org.iop_contributors_app.wallet.WalletManager;
@@ -34,8 +35,9 @@ public class ProposalTransactionRequest {
     private WalletManager walletManager;
     private ProposalsContractDao proposalsDao;
 
-    private byte[] lockedOutputHash;
-    private int lockedOutputPosition;
+    private Proposal proposal;
+    private String lockedOutputHashHex;
+    private int lockedOutputPosition = 0;
     private long lockedBalance;
 
     private SendRequest sendRequest;
@@ -47,6 +49,8 @@ public class ProposalTransactionRequest {
     }
 
     public void forProposal(Proposal proposal) throws InsuficientBalanceException, InsufficientMoneyException {
+
+        this.proposal = proposal;
 
         org.bitcoinj.core.Context.propagate(WalletConstants.CONTEXT);
 
@@ -71,9 +75,10 @@ public class ProposalTransactionRequest {
         for (TransactionOutput transactionOutput : wallet.getUnspents()) {
             //
             TransactionOutPoint transactionOutPoint = transactionOutput.getOutPointFor();
-            if (proposalsDao.isLockedOutput(transactionOutPoint.getHash().getBytes(), transactionOutPoint.getIndex())) {
+            if (proposalsDao.isLockedOutput(transactionOutPoint.getHash().toString(), transactionOutPoint.getIndex())) {
                 continue;
             }
+            LOG.info("adding non locked transaction to spend as an input: postion:"+transactionOutPoint.getIndex()+", parent hash: "+transactionOutPoint.toString());
             totalInputsValue = totalInputsValue.add(transactionOutput.getValue());
             unspentTransactions.add(transactionOutput);
             if (totalInputsValue.isGreaterThan(totalOuputsValue)) {
@@ -91,13 +96,6 @@ public class ProposalTransactionRequest {
         // lock address output
         Address lockAddress = wallet.freshReceiveAddress();
         TransactionOutput transactionOutputToLock = proposalTransactionBuilder.addLockedAddressOutput(lockAddress);
-        // lock address
-        byte[] parentTransactionHash = transactionOutputToLock.getParentTransactionHash().getBytes();
-        proposal.setLockedOutputHash(parentTransactionHash);
-        proposal.setLockedOutputIndex(lockedOutputPosition);
-        lockedOutputHash = parentTransactionHash;
-        lockedOutputPosition = 0;
-
 
         // lock balance
         lockedBalance += transactionOutputToLock.getValue().value;
@@ -119,6 +117,7 @@ public class ProposalTransactionRequest {
 
         // beneficiaries outputs
         for (Map.Entry<String, Long> beneficiary : proposal.getBeneficiaries().entrySet()) {
+            LOG.info("beneficiary address: "+beneficiary.getKey());
             proposalTransactionBuilder.addBeneficiary(
                     Address.fromBase58(WalletConstants.NETWORK_PARAMETERS, beneficiary.getKey()),
                     Coin.valueOf(beneficiary.getValue())
@@ -136,6 +135,8 @@ public class ProposalTransactionRequest {
         sendRequest.shuffleOutputs = false;
         sendRequest.coinSelector = new MyCoinSelector();
 
+        // complete transaction
+        wallet.completeTx(sendRequest);
 
         LOG.info("inputs value: " + tran.getInputSum().toFriendlyString() + ", outputs value: " + tran.getOutputSum().toFriendlyString() + ", fee: " + tran.getFee().toFriendlyString());
         LOG.info("total en el aire: " + tran.getInputSum().minus(tran.getOutputSum().minus(tran.getFee())).toFriendlyString());
@@ -145,18 +146,21 @@ public class ProposalTransactionRequest {
     public void broadcast() throws InsufficientMoneyException {
         Wallet wallet = walletManager.getWallet();
         try {
-
-            wallet.completeTx(sendRequest);
-
             wallet.commitTx(sendRequest.tx);
 
             blockchainManager.broadcastTransaction(sendRequest.tx.getHash().getBytes()).get();
 
-            LOG.info("TRANSACCION BROADCASTEADA EXITOSAMENTE!");
+            // now that the transaction is complete lock the output
+            // lock address
+            String parentTransactionHashHex = sendRequest.tx.getHash().toString();
+            LOG.info("Locking transaction with 1000 IoPs: position: "+0+", parent hash: "+parentTransactionHashHex);
+            proposal.setLockedOutputHashHex(parentTransactionHashHex);
+            proposal.setLockedOutputIndex(lockedOutputPosition);
+            lockedOutputHashHex = parentTransactionHashHex;
+            lockedOutputPosition = 0;
 
-        } catch (InsufficientMoneyException e) {
-            LOG.info("fondos disponibles: " + wallet.getBalance());
-            throw e;
+            LOG.info("TRANSACCION BROADCASTEADA EXITOSAMENTE, hash: "+sendRequest.tx.getHash().toString());
+
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {
@@ -164,6 +168,9 @@ public class ProposalTransactionRequest {
         }
     }
 
+    public Proposal getUpdatedProposal() {
+        return proposal;
+    }
 
 
     private class MyCoinSelector implements org.bitcoinj.wallet.CoinSelector {
@@ -173,8 +180,8 @@ public class ProposalTransactionRequest {
         }
     }
 
-    public byte[] getLockedOutputHash() {
-        return lockedOutputHash;
+    public String getLockedOutputHashHex() {
+        return lockedOutputHashHex;
     }
 
     public int getLockedOutputPosition() {

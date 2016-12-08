@@ -3,6 +3,7 @@
     package="iop.org.iop_contributors_app">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
@@ -16,11 +17,11 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name=".ui.MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+            <!--<intent-filter>-->
+                <!--<action android:name="android.intent.action.MAIN" />-->
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+                <!--<category android:name="android.intent.category.LAUNCHER" />-->
+            <!--</intent-filter>-->
         </activity>
 
         <activity android:name=".ui.ForumActivity"
@@ -39,8 +40,18 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".ui.CreateProposalActivity"/>
-        <activity android:name=".ui.ProposalsActivity"/>
+        <activity android:name=".ui.OnboardingWithCenterAnimationActivity" android:theme="@style/AppTheme.CenterAnimation">
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            </activity>
+
+        <activity android:name=".ui.CreateProposalActivity" android:launchMode="singleInstance"/>
+        <activity android:name=".ui.ProposalsActivity" android:launchMode="singleInstance"/>
         <activity android:name=".ui.settings.IoPBalanceActivity"
             />
 

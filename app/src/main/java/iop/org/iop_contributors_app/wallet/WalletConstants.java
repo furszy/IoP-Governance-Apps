@@ -31,6 +31,11 @@ public class WalletConstants {
     public static final String USER_AGENT = ApplicationController.getInstance().getPackageName()+"_AGENT";
     public static final String SHOW_RESTORE_SUCCED_DIALOG = "restore_succed";
 
+    // report mail
+    public static final String REPORT_EMAIL = "matias.furszyfer@fermat.org";
+    /** Subject line for manually reported issues. */
+    public static final String REPORT_SUBJECT_ISSUE = "Reported issue";
+
     public static final class Files{
 
         private static final String FILENAME_NETWORK_SUFFIX = NETWORK_PARAMETERS.getId();

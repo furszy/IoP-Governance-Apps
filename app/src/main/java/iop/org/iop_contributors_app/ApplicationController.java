@@ -45,6 +45,7 @@ import iop.org.iop_contributors_app.wallet.WalletModule;
 public class ApplicationController extends Application {
 
     private final String TAG = "ApplicationController";
+    public static final long TIME_CREATE_APPLICATION = System.currentTimeMillis();
 
     private static ApplicationController instance;
 

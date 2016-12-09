@@ -62,8 +62,8 @@ public class ProposalsDao implements ProposalsContractDao {
         return proposalsDatabaseHandler.exist(title);
     }
 
-    public void lockOutput(int forumId,String hash, int index) {
-        proposalsDatabaseHandler.lockOutput(forumId,hash,index);
+    public boolean lockOutput(int forumId,String hash, int index) {
+        return proposalsDatabaseHandler.lockOutput(forumId,hash,index)==1;
     }
 
     public long getTotalLockedBalance() {

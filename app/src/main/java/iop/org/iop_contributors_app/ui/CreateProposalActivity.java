@@ -49,6 +49,8 @@ import static iop.org.iop_contributors_app.core.iop_sdk.governance.ProposalForum
 import static iop.org.iop_contributors_app.core.iop_sdk.governance.ProposalForum.FIELD_SUBTITLE;
 import static iop.org.iop_contributors_app.core.iop_sdk.governance.ProposalForum.FIELD_TITLE;
 import static iop.org.iop_contributors_app.core.iop_sdk.governance.ProposalForum.FIELD_VALUE;
+import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_TYPE;
+import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_TRANSACTION_SUCCED;
 
 /**
  * Created by mati on 17/11/16.
@@ -273,7 +275,9 @@ public class CreateProposalActivity extends BaseActivity {
 //                                        } else {
 //                                            toastToShow = "Edit fail";
 //                                        }
+                                        lock.set(false);
                                         redirectToForum(proposal);
+                                        return;
                                     }
                                 } else {
                                     Log.e(TAG, "proposal null, see logs");
@@ -360,7 +364,7 @@ public class CreateProposalActivity extends BaseActivity {
         setWatcher(FIELD_END_BLOCK,edit_end_block,null);
         setWatcher(FIELD_BLOCK_REWARD,edit_block_reward,null);
         setWatcher(FIELD_ADDRESS,edit_beneficiary_address_1,null);
-        setWatcher(FIELD_VALUE,edit_beneficiary_value_1,null);
+//        setWatcher(FIELD_VALUE,edit_beneficiary_value_1,null);
     }
 
     private void setWatcher(String id,EditText editText,View errorView){
@@ -372,7 +376,7 @@ public class CreateProposalActivity extends BaseActivity {
 
     @Override
     protected boolean onBroadcastReceive(Bundle data) {
-        if (data.getString(INTENT_NOTIFICATION_TYPE).equals(ACTION_PROPOSAL_BROADCASTED)){
+        if (data.getString(INTENT_BROADCAST_DATA_TYPE).equals(INTENT_BROADCAST_DATA_TRANSACTION_SUCCED)){
             showDoneLoading();
             lockBroadcast.set(false);
             Toast.makeText(CreateProposalActivity.this,"Proposal broadcasted!, publishing in the forum..",Toast.LENGTH_SHORT).show();
@@ -479,14 +483,55 @@ public class CreateProposalActivity extends BaseActivity {
     }
 
 
-
-
     /**
      * todo: falta hacer las validaciones
      * @return
      */
     private Proposal buildProposal() throws ValidationException{
         Proposal proposal = new Proposal();
+
+        StringBuilder stringBuilder = new StringBuilder();
+
+        for (Map.Entry<String, CreateProposalWatcher> stringCreateProposalWatcherEntry : watchers.entrySet()) {
+            boolean isValid = stringCreateProposalWatcherEntry.getValue().isValid();
+            String errorText = stringCreateProposalWatcherEntry.getValue().getErrorToShow();
+            if (!isValid) {
+                switch (stringCreateProposalWatcherEntry.getKey()) {
+                    case FIELD_TITLE:
+                        stringBuilder.append("* "+errorText);
+                        break;
+                    case FIELD_SUBTITLE:
+                        stringBuilder.append("* "+errorText);
+                        break;
+                    case FIELD_BODY:
+                        stringBuilder.append("* "+errorText);
+                        break;
+                    case FIELD_CATEGORY:
+                        stringBuilder.append("* "+errorText);
+                        break;
+                    case FIELD_START_BLOCK:
+                        stringBuilder.append("* Start block is not valid");
+                        break;
+                    case FIELD_END_BLOCK:
+                        stringBuilder.append("* End block is not valid");
+                        break;
+                    case FIELD_BLOCK_REWARD:
+                        stringBuilder.append("* Block reward is not valid");
+                        break;
+                    case FIELD_ADDRESS:
+                        stringBuilder.append("* Address is not valid");
+                        break;
+                    case FIELD_VALUE:
+                        // nothing por ahora
+                        break;
+                }
+                stringBuilder.append("\n");
+            }
+        }
+
+        if (stringBuilder.length()>0){
+            throw new ValidationException(stringBuilder.toString());
+        }
 
         String title = edit_title.getText().toString();
         String subtitle = edit_subtitle.getText().toString();

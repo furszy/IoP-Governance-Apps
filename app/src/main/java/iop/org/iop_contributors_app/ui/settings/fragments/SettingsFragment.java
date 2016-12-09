@@ -68,7 +68,7 @@ public class SettingsFragment extends PreferenceFragment {
         if (preference.getKey().equals(getString(R.string.id_balance))){
             startActivity(new Intent(getActivity(), IoPBalanceActivity.class));
         }else if (preference.getKey().equals("id_report")){
-
+            handleReportIssue();
         }
 
         return super.onPreferenceTreeClick(preferenceScreen, preference);
@@ -115,6 +115,7 @@ public class SettingsFragment extends PreferenceFragment {
                 return ApplicationController.getInstance().getWalletModule().getWalletManager().getWallet().toString(false, true, true, null);
             }
         };
+
         dialog.show();
     }
 }

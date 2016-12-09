@@ -188,6 +188,14 @@ public class OnboardingWithCenterAnimationActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        if (module.isForumRegistered()) {
+            onBackPressed();
+        }
+    }
+
+    @Override
     public void onWindowFocusChanged(boolean hasFocus) {
 
         if (!hasFocus || animationStarted) {

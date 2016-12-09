@@ -10,9 +10,6 @@ import android.widget.Toast;
 import org.bitcoinj.core.Coin;
 import org.bitcoinj.core.InsufficientMoneyException;
 import org.bitcoinj.core.Transaction;
-import org.bitcoinj.core.TransactionOutput;
-import org.bitcoinj.utils.MonetaryFormat;
-import org.bitcoinj.wallet.CoinSelection;
 import org.bitcoinj.wallet.Wallet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +20,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -35,14 +31,15 @@ import iop.org.iop_contributors_app.core.iop_sdk.governance.Proposal;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.ForumClient;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.ForumClientDiscourseImp;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.InvalidUserParametersException;
-import iop.org.iop_contributors_app.core.iop_sdk.forum.flarum.FlarumClientInvalidDataException;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.ForumConfigurations;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.ForumProfile;
 import iop.org.iop_contributors_app.core.iop_sdk.governance.ProposalTransactionRequest;
+import iop.org.iop_contributors_app.intents.constants.IntentsConstants;
 import iop.org.iop_contributors_app.services.BlockchainServiceImpl;
 import iop.org.iop_contributors_app.services.ProfileServerService;
 import iop.org.iop_contributors_app.services.ServicesCodes;
 import iop.org.iop_contributors_app.configurations.WalletPreferencesConfiguration;
+import iop.org.iop_contributors_app.ui.base.BaseActivity;
 import iop.org.iop_contributors_app.ui.dialogs.DialogBuilder;
 import iop.org.iop_contributors_app.wallet.db.CantGetProposalException;
 import iop.org.iop_contributors_app.wallet.db.CantSaveProposalException;
@@ -169,22 +166,21 @@ public class WalletModule implements ContextWrapper{
 
     @Override
     public void showDialog(String id) {
-        final DialogBuilder dialog = new DialogBuilder(context);
         final StringBuilder message = new StringBuilder();
         message.append(context.getString(R.string.restore_wallet_dialog_success));
         message.append("\n\n");
         message.append(context.getString(R.string.restore_wallet_dialog_success_replay));
-        dialog.setMessage(message);
-        dialog.setNeutralButton(R.string.button_ok, new DialogInterface.OnClickListener()
-        {
-            @Override
-            public void onClick(final DialogInterface dialog, final int id)
-            {
-                walletManager.resetBlockchain();
-                dialog.dismiss();
-            }
-        });
-        dialog.show();
+
+        Intent intent = new Intent(BaseActivity.ACTION_NOTIFICATION);
+        intent.putExtra(IntentsConstants.INTENT_BROADCAST_TYPE,IntentsConstants.INTENT_DIALOG);
+        intent.putExtra(IntentsConstants.INTENTE_BROADCAST_DIALOG_TYPE,IntentsConstants.RESTORE_SUCCED_DIALOG);
+        intent.putExtra(IntentsConstants.INTENTE_EXTRA_MESSAGE,message.toString());
+        context.sendLocalBroadcast(intent);
+    }
+
+    @Override
+    public String[] fileList() {
+        return context.fileList();
     }
 
     private Class<? extends Service> switchServices(int service) {
@@ -264,9 +260,14 @@ public class WalletModule implements ContextWrapper{
 
                         proposal = proposalTransactionRequest.getUpdatedProposal();
                         // lock contract output
-                        proposalsDao.lockOutput(proposal.getForumId(), proposalTransactionRequest.getLockedOutputHashHex(), proposalTransactionRequest.getLockedOutputPosition());
+                        boolean resp = proposalsDao.lockOutput(proposal.getForumId(), proposalTransactionRequest.getLockedOutputHashHex(), proposalTransactionRequest.getLockedOutputPosition());
+                        LOG.info("proposal locked "+resp);
                         // mark proposal sent
-                        proposalsDao.markSentProposal(proposal.getForumId());
+                        resp = proposalsDao.markSentProposal(proposal.getForumId());
+                        LOG.info("proposal mark sent "+resp);
+                        // locked balance
+                        lockedBalance += proposalTransactionRequest.getLockedBalance();
+                        LOG.info("locked balance acumulated: "+lockedBalance);
 
                         LOG.info("sendProposal finished");
 
@@ -316,11 +317,23 @@ public class WalletModule implements ContextWrapper{
 
     public CharSequence getAvailableBalance() {
         long balance = walletManager.getWallet().getBalance(Wallet.BalanceType.AVAILABLE_SPENDABLE).value-lockedBalance;
-        return MonetaryFormat.BTC.format(Coin.valueOf(balance));
+        return coinToString(balance);
     }
 
-    public long getLockedBalance() {
-        return lockedBalance;
+    public String getLockedBalance() {
+        return coinToString(lockedBalance);
+    }
+
+    private String coinToString(long amount){
+        String value = Coin.valueOf(amount).toPlainString();
+        int pointIndex = value.indexOf('.');
+        if (pointIndex!=-1){
+            if (value.length()>=pointIndex+2)
+                value = value.substring(0,pointIndex+3);
+            else
+                value = value.substring(0,pointIndex+2);
+        }
+        return value;
     }
 
     public boolean isWalletEncrypted() {
@@ -406,34 +419,16 @@ public class WalletModule implements ContextWrapper{
         return resp;
     }
 
-    public Proposal getProposal(String forumTitle) throws CantGetProposalException {
-        LOG.info("### getProposal");
-        return proposalsDao.findProposal(forumTitle);
-    }
-
     public Proposal getProposal(int forumId) throws CantGetProposalException {
         LOG.info("### getProposal");
         return proposalsDao.findProposal(forumId);
     }
 
 
-    public boolean isProposalMine(String title) {
-        return proposalsDao.isProposalMine(title);
-    }
-
     public boolean isProposalMine(int forumId){
         return proposalsDao.isProposalMine(forumId);
     }
 
-
-
-
-    private class MyCoinSelector implements org.bitcoinj.wallet.CoinSelector {
-        @Override
-        public CoinSelection select(Coin coin, List<TransactionOutput> list) {
-            return new CoinSelection(coin,new ArrayList<TransactionOutput>());
-        }
-    }
 
 
     /**
@@ -457,21 +452,6 @@ public class WalletModule implements ContextWrapper{
         return forumClient.connect(username,password);
     }
 
-
-    public boolean startDiscussion(Proposal proposal) throws FlarumClientInvalidDataException {
-//        boolean response =  ForumClient.createDiscussion(proposal.getTitle(),proposal.getBody());
-        return false;
-    }
-
-    public boolean connectToForum() throws FlarumClientInvalidDataException {
-//        boolean response = ForumClient.connect(forumProfile.getUsername(),forumProfile.getPassword());
-//        return response;
-        return false;
-    }
-
-    public String getForumToken() {
-        return null;//ForumClient.getToken();
-    }
 
     public void cleanEverything(){
         forumConfigurations.remove();

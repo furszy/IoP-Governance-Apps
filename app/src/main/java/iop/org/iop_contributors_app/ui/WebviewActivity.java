@@ -58,7 +58,7 @@ public class WebviewActivity extends Activity {
         pbar = (ProgressBar)findViewById(R.id.progressBar1);
         pbar.setVisibility(View.GONE);
 
-        additionalHttpHeaders.put("Authorization","Token "+module.getForumToken());
+//        additionalHttpHeaders.put("Authorization","Token "+module.getForumToken());
 
 
         bt1.setOnClickListener(new View.OnClickListener() {

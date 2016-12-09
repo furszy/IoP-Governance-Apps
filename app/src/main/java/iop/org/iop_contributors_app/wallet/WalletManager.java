@@ -160,6 +160,8 @@ public class WalletManager {
             if (!wallet.getParams().equals(WalletConstants.NETWORK_PARAMETERS))
                 throw new Error("bad wallet network parameters: " + wallet.getParams().getId());
 
+            afterLoadWallet();
+
         }else {
             wallet = new Wallet(WalletConstants.CONTEXT);
 

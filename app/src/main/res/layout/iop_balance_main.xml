@@ -150,7 +150,7 @@
                 android:layout_gravity="bottom|end"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentBottom="true"
-                android:layout_marginBottom="32dp"
+                android:layout_marginBottom="16dp"
                 android:layout_marginRight="12dp"
                 android:background="@drawable/create_button"
                 android:textColor="@color/text_blue"/>

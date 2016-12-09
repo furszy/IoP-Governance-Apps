@@ -35,6 +35,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
+import android.graphics.Color;
 import android.net.Uri;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
@@ -90,6 +91,8 @@ public abstract class ReportIssueDialogBuilder extends DialogBuilder implements 
 		setView(view);
 		setPositiveButton(R.string.report_issue_dialog_report, this);
 		setNegativeButton(R.string.button_cancel, null);
+		setTitleColor(Color.BLACK);
+
 	}
 
 	@Override
@@ -260,13 +263,16 @@ public abstract class ReportIssueDialogBuilder extends DialogBuilder implements 
 		intent.putExtra(Intent.EXTRA_EMAIL, new String[] { WalletConstants.REPORT_EMAIL });
 		if (subject != null)
 			intent.putExtra(Intent.EXTRA_SUBJECT, subject);
-		intent.putExtra(Intent.EXTRA_TEXT, text);
+		ArrayList<CharSequence> str = new ArrayList<>();
+		str.add(text);
+		intent.putExtra(Intent.EXTRA_TEXT, str);
 
 		intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
 		try
 		{
-			context.startActivity(Intent.createChooser(intent, context.getString(R.string.report_issue_dialog_mail_intent_chooser)));
+			String maiñChooser = context.getString(R.string.report_issue_dialog_mail_intent_chooser);
+			context.startActivity(Intent.createChooser(intent, maiñChooser));
 			log.info("invoked chooser for sending issue report");
 		}
 		catch (final Exception x)

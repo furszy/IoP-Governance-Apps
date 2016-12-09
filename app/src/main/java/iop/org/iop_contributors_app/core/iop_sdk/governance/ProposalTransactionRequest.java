@@ -172,6 +172,10 @@ public class ProposalTransactionRequest {
         return proposal;
     }
 
+    public long getLockedBalance() {
+        return lockedBalance;
+    }
+
 
     private class MyCoinSelector implements org.bitcoinj.wallet.CoinSelector {
         @Override

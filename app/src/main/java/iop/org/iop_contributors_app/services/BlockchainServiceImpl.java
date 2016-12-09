@@ -16,16 +16,21 @@ import android.os.IBinder;
 import android.os.PowerManager;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 
 import org.bitcoinj.core.Block;
+import org.bitcoinj.core.Coin;
 import org.bitcoinj.core.FilteredBlock;
 import org.bitcoinj.core.Peer;
 import org.bitcoinj.core.StoredBlock;
+import org.bitcoinj.core.Transaction;
 import org.bitcoinj.core.listeners.AbstractPeerDataEventListener;
 import org.bitcoinj.core.listeners.PeerConnectedEventListener;
 import org.bitcoinj.core.listeners.PeerDataEventListener;
 import org.bitcoinj.core.listeners.PeerDisconnectedEventListener;
+import org.bitcoinj.wallet.Wallet;
+import org.bitcoinj.wallet.listeners.WalletCoinsReceivedEventListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,6 +43,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 import iop.org.iop_contributors_app.ApplicationController;
+import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.configurations.WalletPreferencesConfiguration;
 import iop.org.iop_contributors_app.core.iop_sdk.governance.Proposal;
 import iop.org.iop_contributors_app.ui.CreateProposalActivity;
@@ -50,11 +56,16 @@ import iop.org.iop_contributors_app.wallet.WalletConstants;
 import iop.org.iop_contributors_app.wallet.WalletModule;
 import iop.org.iop_contributors_app.wallet.exceptions.InsuficientBalanceException;
 
+import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_TYPE;
+import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_TRANSACTION_SUCCED;
+import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENT_BROADCAST_TYPE;
+import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENT_DATA;
+import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENT_NOTIFICATION;
 import static iop.org.iop_contributors_app.ui.CreateProposalActivity.CANT_SAVE_PROPOSAL_DIALOG;
-import static iop.org.iop_contributors_app.ui.CreateProposalActivity.COMMON_ERROR_DIALOG;
 import static iop.org.iop_contributors_app.ui.CreateProposalActivity.INSUFICIENTS_FUNDS_DIALOG;
 import static iop.org.iop_contributors_app.ui.CreateProposalActivity.INVALID_PROPOSAL_DIALOG;
 import static iop.org.iop_contributors_app.ui.CreateProposalActivity.UNKNOWN_ERROR_DIALOG;
+import static iop.org.iop_contributors_app.ui.base.BaseActivity.ACTION_NOTIFICATION;
 import static iop.org.iop_contributors_app.wallet.WalletConstants.BLOCKCHAIN_STATE_BROADCAST_THROTTLE_MS;
 
 /**
@@ -232,6 +243,22 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
         }
     };
 
+    private WalletCoinsReceivedEventListener coinReceiverListener = new WalletCoinsReceivedEventListener() {
+        @Override
+        public void onCoinsReceived(Wallet wallet, Transaction transaction, Coin coin, Coin coin1) {
+
+            Intent intent = new Intent(ACTION_NOTIFICATION);
+
+            android.support.v4.app.NotificationCompat.Builder mBuilder =
+                    new NotificationCompat.Builder(getApplicationContext())
+                            .setSmallIcon(R.drawable.ic_launcher)
+                            .setContentTitle("IoPs received!")
+                            .setContentText("Transaction received for a value of "+coin.toFriendlyString());
+
+            nm.notify(1,mBuilder.build());
+        }
+    };
+
     public class LocalBinder extends Binder {
         public BlockchainService getService()
         {
@@ -291,6 +318,9 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
         registerReceiver(connectivityReceiver, intentFilter); // implicitly start PeerGroup
 
 
+        // coins received
+        walletModule.getWalletManager().getWallet().addCoinsReceivedEventListener(coinReceiverListener);
+
 //        wallet.addCoinsReceivedEventListener(Threading.SAME_THREAD, walletEventListener);
 //        wallet.addCoinsSentEventListener(Threading.SAME_THREAD, walletEventListener);
 //        wallet.addChangeEventListener(Threading.SAME_THREAD, walletEventListener);
@@ -298,6 +328,8 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
 //        registerReceiver(tickReceiver, new IntentFilter(Intent.ACTION_TIME_TICK));
 
     }
+
+
 
 
     @Override
@@ -366,7 +398,8 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
     private void broadcastProposalSuced(String title){
         Intent intent = new Intent(BaseActivity.ACTION_NOTIFICATION);
         intent.putExtra("title",title);
-        intent.putExtra(BaseActivity.INTENT_NOTIFICATION_TYPE,CreateProposalActivity.ACTION_PROPOSAL_BROADCASTED);
+        intent.putExtra(INTENT_BROADCAST_TYPE,INTENT_DATA+INTENT_NOTIFICATION);
+        intent.putExtra(INTENT_BROADCAST_DATA_TYPE, INTENT_BROADCAST_DATA_TRANSACTION_SUCCED);
         localBroadcast.sendBroadcast(intent);
     }
 
@@ -386,6 +419,10 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
 //            application.getWallet().removeChangeEventListener(walletEventListener);
 //            application.getWallet().removeCoinsSentEventListener(walletEventListener);
 //            application.getWallet().removeCoinsReceivedEventListener(walletEventListener);
+
+
+            // coins received
+            walletModule.getWalletManager().getWallet().removeCoinsReceivedEventListener(coinReceiverListener);
 
             unregisterReceiver(connectivityReceiver);
 

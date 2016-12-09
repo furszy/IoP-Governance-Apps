@@ -1,5 +1,6 @@
 package iop.org.iop_contributors_app.ui;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -32,6 +33,8 @@ public class ProposalsActivity extends BaseActivity {
     private RecyclerView.LayoutManager layoutManager;
     private ProposalsAdapter adapter;
 
+    private View container_empty_screen;
+
     private List<Proposal> proposals;
 
 
@@ -48,6 +51,7 @@ public class ProposalsActivity extends BaseActivity {
         module = ApplicationController.getInstance().getWalletModule();
 
         recyclerView = (RecyclerView) root.findViewById(R.id.recycler_proposals);
+        container_empty_screen = root.findViewById(R.id.container_empty_screen);
 
         // use this setting to improve performance if you know that changes
         // in content do not change the layout size of the RecyclerView
@@ -60,6 +64,13 @@ public class ProposalsActivity extends BaseActivity {
         // specify an adapter (see also next example)
         adapter = new ProposalsAdapter(this);
         recyclerView.setAdapter(adapter);
+
+        container_empty_screen.findViewById(R.id.btn_go).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(v.getContext(),CreateProposalActivity.class));
+            }
+        });
 
     }
 
@@ -88,15 +99,22 @@ public class ProposalsActivity extends BaseActivity {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-//                    proposals = new ArrayList<Proposal>();
-//                    proposals.add(new Proposal());
-//                    proposals.add(new Proposal());
-//                    proposals.add(new Proposal());
-                    adapter.changeDataSet(proposals);
+                    if (!proposals.isEmpty()) {
+                        hideEmptyScreen();
+                        adapter.changeDataSet(proposals);
+                    } else
+                        showEmptyScreen();
                 }
             });
         }
     };
 
 
+    private void showEmptyScreen(){
+        container_empty_screen.setVisibility(View.VISIBLE);
+    }
+
+    private void hideEmptyScreen(){
+        container_empty_screen.setVisibility(View.INVISIBLE);
+    }
 }

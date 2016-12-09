@@ -31,16 +31,14 @@ public class CreateProposalWatcher implements TextWatcher {
     private View errorView;
     /** watcher state */
     private boolean isValid;
-
-    public CreateProposalWatcher(String idWatcher, CreateProposalActivityValidator validator) {
-        this.idWatcher = idWatcher;
-        this.validator = validator;
-    }
+    /** text to show in case of an error */
+    private String errorToShow;
 
     public CreateProposalWatcher(String idWatcher, CreateProposalActivityValidator validator, View errorView) {
         this.idWatcher = idWatcher;
         this.validator = validator;
         this.errorView = errorView;
+        this.errorToShow = idWatcher + " empty";
     }
 
     @Override
@@ -88,6 +86,7 @@ public class CreateProposalWatcher implements TextWatcher {
             }
             isValid = true;
         } catch (ValidationException e) {
+            errorToShow = e.getMessage();
             isValid = false;
         } catch (Exception e){
             isValid = false;
@@ -96,5 +95,9 @@ public class CreateProposalWatcher implements TextWatcher {
 
     public boolean isValid() {
         return isValid;
+    }
+
+    public String getErrorToShow() {
+        return errorToShow;
     }
 }

@@ -9,6 +9,7 @@ import android.content.ServiceConnection;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.IBinder;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import org.bitcoinj.crypto.LinuxSecureRandom;
@@ -33,6 +34,7 @@ import iop.org.iop_contributors_app.profile_server.ModuleProfileServer;
 import iop.org.iop_contributors_app.services.BlockchainServiceImpl;
 import iop.org.iop_contributors_app.services.ProfileServerService;
 import iop.org.iop_contributors_app.configurations.WalletPreferencesConfiguration;
+import iop.org.iop_contributors_app.utils.CrashReporter;
 import iop.org.iop_contributors_app.wallet.BlockchainManager;
 import iop.org.iop_contributors_app.wallet.WalletConstants;
 import iop.org.iop_contributors_app.wallet.WalletManager;
@@ -60,7 +62,8 @@ public class ApplicationController extends Application {
     // application
     private PackageInfo packageInfo;
     private ActivityManager activityManager;
-
+    // android services
+    private LocalBroadcastManager localBroadcastManager;
 
     @Override
     public void onCreate() {
@@ -73,6 +76,7 @@ public class ApplicationController extends Application {
 
         packageInfo = packageInfoFromContext(this);
         activityManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        localBroadcastManager = LocalBroadcastManager.getInstance(this);
 
         initLogging();
 
@@ -91,6 +95,19 @@ public class ApplicationController extends Application {
         walletConfigurations = new WalletPreferencesConfiguration(getSharedPreferences(WalletPreferencesConfiguration.PREFS_NAME,0));
         profileServerPref = new ProfileServerConfigurations(this,getSharedPreferences(ProfileServerConfigurations.PREFS_NAME,0));
         forumConfigurations = new DefaultForumConfiguration(getSharedPreferences(DefaultForumConfiguration.PREFS_NAME,0));
+
+        // Crash reporter
+        CrashReporter.init(getCacheDir());
+
+        Threading.uncaughtExceptionHandler = new Thread.UncaughtExceptionHandler()
+        {
+            @Override
+            public void uncaughtException(final Thread thread, final Throwable throwable)
+            {
+                Log.i(TAG,"bitcoinj uncaught exception", throwable);
+                CrashReporter.saveBackgroundTrace(throwable, packageInfo);
+            }
+        };
 
 
         // Module initialization
@@ -243,4 +260,7 @@ public class ApplicationController extends Application {
         return module;
     }
 
+    public void sendLocalBroadcast(Intent intent) {
+        localBroadcastManager.sendBroadcast(intent);
+    }
 }

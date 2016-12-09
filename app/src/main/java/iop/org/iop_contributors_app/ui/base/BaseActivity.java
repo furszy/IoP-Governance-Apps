@@ -19,7 +19,6 @@ import android.support.v7.app.NotificationCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.DisplayMetrics;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -30,10 +29,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.zxing.BarcodeFormat;
-import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
-import com.google.zxing.common.BitMatrix;
 
 import org.bitcoinj.core.Context;
 
@@ -44,6 +40,8 @@ import java.util.concurrent.Executors;
 
 import iop.org.iop_contributors_app.ApplicationController;
 import iop.org.iop_contributors_app.R;
+import iop.org.iop_contributors_app.intents.DialogIntentsBuilder;
+import iop.org.iop_contributors_app.intents.constants.IntentsConstants;
 import iop.org.iop_contributors_app.services.BlockchainServiceImpl;
 import iop.org.iop_contributors_app.ui.CreateProposalActivity;
 import iop.org.iop_contributors_app.ui.ForumActivity;
@@ -59,6 +57,11 @@ import iop.org.iop_contributors_app.wallet.WalletConstants;
 import iop.org.iop_contributors_app.wallet.WalletModule;
 
 import static android.graphics.Color.WHITE;
+import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENTE_BROADCAST_DIALOG_TYPE;
+import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENT_DATA;
+import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENT_DIALOG;
+import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENT_NOTIFICATION;
+import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.RESTORE_SUCCED_DIALOG;
 import static iop.org.iop_contributors_app.utils.mine.QrUtils.encodeAsBitmap;
 import static iop.org.iop_contributors_app.utils.mine.SizeUtils.convertDpToPx;
 
@@ -71,7 +74,7 @@ public abstract class BaseActivity extends AppCompatActivity {
     private static final String TAG = "BaseActivity";
 
     public static final String ACTION_NOTIFICATION = BaseActivity.class.getPackage().toString() + "_action_notification";
-    public static final String INTENT_NOTIFICATION_TYPE = BaseActivity.class.getPackage().toString() + "_intentet_notification_type";
+
 
     protected NotificationManager notificationManager;
     protected LocalBroadcastManager localBroadcastManager;
@@ -276,29 +279,26 @@ public abstract class BaseActivity extends AppCompatActivity {
                         qrBitmap = encodeAsBitmap(module.getNewAddress(),imgQr.getWidth(),imgQr.getHeight(),WHITE,Color.parseColor("#1A1A1A"));
                         Cache.setQrLittleBitmapCache(qrBitmap);
                     }
-
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-
-                            imgQr.setImageBitmap(Cache.getQrLittleBitmapCache());
-
-                        }
-                    });
-
-
                 } catch (WriterException e) {
                     e.printStackTrace();
                 }
 
-                // balance
-                try {
-                    txt_available_balance.setText(module.getAvailableBalance() + " IoPs");
-                    txt_lock_balance.setText(String.valueOf(module.getLockedBalance()) + " IoPs");
-                }catch (Exception e){
-                    e.printStackTrace();
-                }
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
 
+                        imgQr.setImageBitmap(Cache.getQrLittleBitmapCache());
+
+                        // balance
+                        try {
+                            txt_available_balance.setText(module.getAvailableBalance() + " IoPs");
+                            txt_lock_balance.setText(module.getLockedBalance() + " IoPs");
+                        }catch (Exception e){
+                            e.printStackTrace();
+                        }
+
+                    }
+                });
             }
         });
 
@@ -482,18 +482,48 @@ public abstract class BaseActivity extends AppCompatActivity {
         public void onReceive(android.content.Context context, Intent intent) {
 
             if (intent.getAction().equals(ACTION_NOTIFICATION)){
+                // tipo de broadcast
+                String type = intent.getStringExtra(IntentsConstants.INTENT_BROADCAST_TYPE);
 
-                if (!onBroadcastReceive(intent.getExtras())){
-                    android.support.v4.app.NotificationCompat.Builder mBuilder =
-                            new NotificationCompat.Builder(getApplicationContext())
-                                    .setSmallIcon(R.mipmap.ic_launcher)
-                                    .setContentTitle("Proposal broadcast succed!")
-                                    .setContentText(intent.getStringExtra("title"));
+                if (type.equals(INTENT_DIALOG)){
+                    // tipo de dialog
+                    String dialogType = intent.getStringExtra(INTENTE_BROADCAST_DIALOG_TYPE);
 
-                    notificationManager.notify(0,mBuilder.build());
+                    if (dialogType.equals(RESTORE_SUCCED_DIALOG)){
+                        DialogIntentsBuilder.buildSuccedRestoreDialog(BaseActivity.this,module.getWalletManager(),intent)
+                                .show();
+
+                    }
+                }else
+                    if (type.equals(INTENT_DATA)){
 
 
-                }
+                    }
+                else
+                    if (type.equals(INTENT_NOTIFICATION)){
+
+                        if (!onBroadcastReceive(intent.getExtras())) {
+                            android.support.v4.app.NotificationCompat.Builder mBuilder =
+                                    new NotificationCompat.Builder(getApplicationContext())
+                                            .setSmallIcon(R.mipmap.ic_launcher)
+                                            .setContentTitle("Proposal broadcast succed!")
+                                            .setContentText(intent.getStringExtra("title"));
+
+                            notificationManager.notify(0, mBuilder.build());
+
+                        }
+                    }
+                else if (type.equals(INTENT_DATA+INTENT_NOTIFICATION)){
+
+                        android.support.v4.app.NotificationCompat.Builder mBuilder =
+                                new NotificationCompat.Builder(getApplicationContext())
+                                        .setSmallIcon(R.mipmap.ic_launcher)
+                                        .setContentTitle("Proposal broadcast succed!")
+                                        .setContentText(intent.getStringExtra("title"));
+
+                        notificationManager.notify(0, mBuilder.build());
+                    }
+
 
             }
 

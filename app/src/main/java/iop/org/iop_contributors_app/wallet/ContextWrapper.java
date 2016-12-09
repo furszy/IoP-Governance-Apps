@@ -41,4 +41,6 @@ public interface ContextWrapper {
     void sendLocalBroadcast(Intent broadcast);
 
     void showDialog(String id);
+
+    String[] fileList();
 }

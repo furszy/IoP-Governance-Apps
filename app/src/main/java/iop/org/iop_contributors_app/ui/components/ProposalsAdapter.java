@@ -20,12 +20,8 @@ import static iop.org.iop_contributors_app.ui.ForumActivity.INTENT_FORUM_ID;
 
 public class ProposalsAdapter extends FermatAdapterImproved<Proposal,ProposalsHolder> {
 
-    private Intent forumIntent;
-
-
     public ProposalsAdapter(Context context) {
         super(context);
-        forumIntent = new Intent(context, ForumActivity.class);
     }
 
     @Override

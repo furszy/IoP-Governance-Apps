@@ -94,6 +94,7 @@ public class RestoreDialogFragment2 extends DialogFragment {
                         });
                         warnDialog.show();
                     } catch (Exception e){
+                        e.printStackTrace();
                         Toast.makeText(getActivity(),"Error, please check logs",Toast.LENGTH_LONG).show();
                     }
                 }

@@ -21,6 +21,7 @@ package iop.org.iop_contributors_app.ui.dialogs;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface.OnClickListener;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.view.LayoutInflater;
@@ -104,6 +105,12 @@ public class DialogBuilder extends AlertDialog.Builder
 			titleView.setText(titleResId);
 		}
 
+		return this;
+	}
+
+	protected DialogBuilder setTitleColor(int color){
+		if (titleView!=null)
+			titleView.setTextColor(color);
 		return this;
 	}
 

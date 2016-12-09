@@ -306,12 +306,12 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
     public long getSentProposalsCount() {
         String countQuery = "SELECT  * FROM " + TABLE_PROPOSALS + " WHERE "+KEY_PROPOSAL_IS_SENT+"=?";
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery(countQuery, new String[]{String.valueOf(true)
-        });
+        Cursor cursor = db.rawQuery(countQuery, new String[]{String.valueOf(1)});
         int count = cursor.getCount();
         cursor.close();
         db.close();
 
+        Log.d(TAG,"Sent proposals count: "+count);
         // return count
         return count;
     }

@@ -3,6 +3,7 @@ package iop.org.iop_contributors_app.ui.base;
 import android.app.Dialog;
 import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
+import android.content.ClipboardManager;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Resources;
@@ -376,13 +377,7 @@ public abstract class BaseActivity extends AppCompatActivity {
 
             // set the custom dialog components - text, image and button
             TextView text = (TextView) dialog.findViewById(R.id.txt_share);
-            text.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    dialog.dismiss();
-                    Toast.makeText(v.getContext(), "Share", Toast.LENGTH_SHORT).show();
-                }
-            });
+
             ImageView image = (ImageView) dialog.findViewById(R.id.img_qr);
 
             String address = Cache.getCacheAddress();
@@ -406,15 +401,17 @@ public abstract class BaseActivity extends AppCompatActivity {
             txt_qr.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
-//                    if(android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB) {
-//                        android.text.ClipboardManager clipboard = (android.text.ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-//                        clipboard.setText(stringYouExtracted);
-//                    } else {
-//                        android.content.ClipboardManager clipboard = (android.content.ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-//                        android.content.ClipData clip = android.content.ClipData.newPlainText("Copied Text", stringYouExtracted);
-//                        clipboard.setPrimaryClip(clip);
-//                    }
+                    textToClipboard(Cache.getCacheAddress());
+                    Toast.makeText(BaseActivity.this,"Copied",Toast.LENGTH_LONG).show();
                     return true;
+                }
+            });
+
+            text.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    shareText("Qr",Cache.getCacheAddress());
+                    dialog.dismiss();
                 }
             });
 
@@ -426,7 +423,6 @@ public abstract class BaseActivity extends AppCompatActivity {
             e.printStackTrace();
         }
     }
-
 
 
     /**
@@ -505,7 +501,7 @@ public abstract class BaseActivity extends AppCompatActivity {
                         if (!onBroadcastReceive(intent.getExtras())) {
                             android.support.v4.app.NotificationCompat.Builder mBuilder =
                                     new NotificationCompat.Builder(getApplicationContext())
-                                            .setSmallIcon(R.mipmap.ic_launcher)
+                                            .setSmallIcon(R.drawable.ic__launcher)
                                             .setContentTitle("Proposal broadcast succed!")
                                             .setContentText(intent.getStringExtra("title"));
 
@@ -517,7 +513,7 @@ public abstract class BaseActivity extends AppCompatActivity {
 
                         android.support.v4.app.NotificationCompat.Builder mBuilder =
                                 new NotificationCompat.Builder(getApplicationContext())
-                                        .setSmallIcon(R.mipmap.ic_launcher)
+                                        .setSmallIcon(R.drawable.ic__launcher)
                                         .setContentTitle("Proposal broadcast succed!")
                                         .setContentText(intent.getStringExtra("title"));
 
@@ -529,5 +525,25 @@ public abstract class BaseActivity extends AppCompatActivity {
 
 
         }
+    }
+
+    private void textToClipboard(String text) {
+        if(android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB) {
+            ClipboardManager clipboard = (ClipboardManager) getSystemService(android.content.Context.CLIPBOARD_SERVICE);
+            clipboard.setText(text);
+        } else {
+            ClipboardManager clipboard = (ClipboardManager) getSystemService(android.content.Context.CLIPBOARD_SERVICE);
+            android.content.ClipData clip = android.content.ClipData.newPlainText("Copied Text", text);
+            clipboard.setPrimaryClip(clip);
+        }
+    }
+
+
+    private void shareText(String title,String text){
+        Intent sendIntent = new Intent();
+        sendIntent.setAction(Intent.ACTION_SEND);
+        sendIntent.putExtra(Intent.EXTRA_TEXT, text);
+        sendIntent.setType("text/plain");
+        startActivity(Intent.createChooser(sendIntent, title));
     }
 }

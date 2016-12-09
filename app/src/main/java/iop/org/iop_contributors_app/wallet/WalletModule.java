@@ -69,6 +69,7 @@ public class WalletModule implements ContextWrapper{
 
     private ForumClient forumClient;
     private ForumConfigurations forumConfigurations;
+    private String forumUrl;
 
     private long lockedBalance;
 
@@ -290,6 +291,33 @@ public class WalletModule implements ContextWrapper{
         return false;
     }
 
+    public boolean sendProposal(Proposal proposal,byte[] transactionHashDest) throws InsuficientBalanceException, InsufficientMoneyException {
+
+        ProposalTransactionRequest proposalTransactionRequest = new ProposalTransactionRequest(blockchainManager, walletManager, proposalsDao);
+        proposalTransactionRequest.forProposal(proposal);
+        proposalTransactionRequest.broadcast();
+
+
+        byte[] tranHash = proposalTransactionRequest.getTransaction().getHash().getBytes();
+        System.arraycopy(tranHash,0,transactionHashDest,0,tranHash.length);
+
+        proposal = proposalTransactionRequest.getUpdatedProposal();
+        // lock contract output
+        boolean resp = proposalsDao.lockOutput(proposal.getForumId(), proposalTransactionRequest.getLockedOutputHashHex(), proposalTransactionRequest.getLockedOutputPosition());
+        LOG.info("proposal locked "+resp);
+        // mark proposal sent
+        resp = proposalsDao.markSentProposal(proposal.getForumId());
+        LOG.info("proposal mark sent "+resp);
+        // locked balance
+        lockedBalance += proposalTransactionRequest.getLockedBalance();
+        LOG.info("locked balance acumulated: "+lockedBalance);
+
+        LOG.info("sendProposal finished");
+
+        return true;
+
+    }
+
     public void sendTransaction(String address, long amount) throws InsufficientMoneyException {
         try {
             Transaction tx = walletManager.createAndLockTransaction(address,amount);
@@ -459,4 +487,14 @@ public class WalletModule implements ContextWrapper{
 
     }
 
+    public void setNewNode(String newNode) {
+        this.configuration.saveNode(newNode);
+    }
+
+    public String getForumUrl() {
+        if (forumUrl==null){
+            forumUrl = forumConfigurations.getUrl();
+        }
+        return forumUrl;
+    }
 }

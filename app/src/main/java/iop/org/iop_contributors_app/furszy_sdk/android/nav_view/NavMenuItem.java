@@ -1,4 +1,4 @@
-package iop.org.iop_contributors_app.ui.base;
+package iop.org.iop_contributors_app.furszy_sdk.android.nav_view;
 
 /**
  * Created by mati on 18/11/16.

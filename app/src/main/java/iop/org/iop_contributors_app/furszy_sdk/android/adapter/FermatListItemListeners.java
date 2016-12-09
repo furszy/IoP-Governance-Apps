@@ -1,4 +1,4 @@
-package iop.org.iop_contributors_app.ui.components.sdk;
+package iop.org.iop_contributors_app.furszy_sdk.android.adapter;
 
 /**
  * Created by francisco on 25/08/15.

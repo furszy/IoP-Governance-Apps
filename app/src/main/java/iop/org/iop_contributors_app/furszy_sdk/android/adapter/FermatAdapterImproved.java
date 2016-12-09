@@ -1,4 +1,4 @@
-package iop.org.iop_contributors_app.ui.components.sdk;
+package iop.org.iop_contributors_app.furszy_sdk.android.adapter;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;

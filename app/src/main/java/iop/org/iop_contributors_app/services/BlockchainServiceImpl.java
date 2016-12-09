@@ -251,7 +251,7 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
 
             android.support.v4.app.NotificationCompat.Builder mBuilder =
                     new NotificationCompat.Builder(getApplicationContext())
-                            .setSmallIcon(R.drawable.ic_launcher)
+                            .setSmallIcon(R.drawable.ic__launcher)
                             .setContentTitle("IoPs received!")
                             .setContentText("Transaction received for a value of "+coin.toFriendlyString());
 

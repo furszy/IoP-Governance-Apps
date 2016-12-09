@@ -38,7 +38,7 @@ public class CreateProposalWatcher implements TextWatcher {
         this.idWatcher = idWatcher;
         this.validator = validator;
         this.errorView = errorView;
-        this.errorToShow = idWatcher + " empty";
+        this.errorToShow = idWatcher + "empty";
     }
 
     @Override

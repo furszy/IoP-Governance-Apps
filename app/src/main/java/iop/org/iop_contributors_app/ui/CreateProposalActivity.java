@@ -580,7 +580,7 @@ public class CreateProposalActivity extends BaseActivity {
 
     private void redirectToForum(Proposal proposal) {
         Intent intent1 = new Intent(CreateProposalActivity.this,ForumActivity.class);
-        String url = ForumActivity.FORUM_URL+"/t/"+proposal.getTitle().toLowerCase().replace(" ","-")+"/"+proposal.getForumId();
+        String url = module.getForumUrl()+"/t/"+proposal.getTitle().toLowerCase().replace(" ","-")+"/"+proposal.getForumId();
         intent1.putExtra(ForumActivity.INTENT_URL,url);
         startActivity(intent1);
     }

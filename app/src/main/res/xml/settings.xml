@@ -14,6 +14,12 @@
 
     </PreferenceCategory>
 
+    <PreferenceCategory android:title="Dev">
+
+        <Preference android:key="id_dev" android:title="Blockchain" />
+
+    </PreferenceCategory>
+
     <!--<Preference android:key="id_donate" android:title="Donate"/>-->
 
     <!--<Preference android:key="id_about" android:title="About"/>-->

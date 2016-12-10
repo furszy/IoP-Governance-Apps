@@ -67,7 +67,7 @@ public class Proposal implements Serializable {
     private int endBlock = 10;
     private long blockReward = 80000000;
     /** topic id */
-    private int forumId;
+    private int forumId = 80;
     /** post id */
     private int forumPostId;
     // address -> value

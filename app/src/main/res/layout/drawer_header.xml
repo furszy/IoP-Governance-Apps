@@ -108,7 +108,7 @@
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/icon_back"
+                android:src="@drawable/triangullo_balance_drawer"
                 android:layout_weight="1"/>
 
         </LinearLayout>

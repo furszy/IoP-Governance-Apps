@@ -124,6 +124,14 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
         @Override
         public void onPeerConnected(final Peer peer, final int peerCount) {
             LOG.info("######### Peer connected!! ######");
+            android.support.v4.app.NotificationCompat.Builder mBuilder =
+                    new NotificationCompat.Builder(getApplicationContext())
+                            .setSmallIcon(R.drawable.ic__launcher)
+                            .setContentTitle("Peer connected!")
+                            .setContentText("OnPeerConnected: "+peer.getAddress().toString());
+
+            nm.notify(2,mBuilder.build());
+
             this.peerCount = peerCount;
             changed(peerCount);
         }
@@ -183,6 +191,7 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
             LOG.info("############# on Blockcs downloaded ###########");
             LOG.info("Peer: "+peer+", Block: "+block+", left: "+blocksLeft);
             LOG.info("############# on Blockcs downloaded end ###########");
+
 
             delayHandler.removeCallbacksAndMessages(null);
 

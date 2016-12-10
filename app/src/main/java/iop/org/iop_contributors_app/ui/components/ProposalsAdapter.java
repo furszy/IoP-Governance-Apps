@@ -3,16 +3,13 @@ package iop.org.iop_contributors_app.ui.components;
 import android.content.Context;
 import android.content.Intent;
 import android.view.View;
-import android.widget.Toast;
 
 import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.core.iop_sdk.governance.Proposal;
 import iop.org.iop_contributors_app.ui.CreateProposalActivity;
 import iop.org.iop_contributors_app.ui.ForumActivity;
-import iop.org.iop_contributors_app.ui.WebviewActivity;
-import iop.org.iop_contributors_app.ui.components.sdk.FermatAdapterImproved;
-
-import static iop.org.iop_contributors_app.ui.ForumActivity.INTENT_FORUM_ID;
+import iop.org.iop_contributors_app.furszy_sdk.android.adapter.FermatAdapterImproved;
+import iop.org.iop_contributors_app.wallet.WalletModule;
 
 /**
  * Created by mati on 17/11/16.
@@ -20,8 +17,11 @@ import static iop.org.iop_contributors_app.ui.ForumActivity.INTENT_FORUM_ID;
 
 public class ProposalsAdapter extends FermatAdapterImproved<Proposal,ProposalsHolder> {
 
-    public ProposalsAdapter(Context context) {
+    WalletModule module;
+
+    public ProposalsAdapter(Context context,WalletModule module) {
         super(context);
+        this.module = module;
     }
 
     @Override
@@ -38,6 +38,7 @@ public class ProposalsAdapter extends FermatAdapterImproved<Proposal,ProposalsHo
     protected void bindHolder(ProposalsHolder holder, final Proposal data, int position) {
 
         holder.txt_title.setText(data.getTitle());
+        holder.txt_forum_id.setText(data.getForumId());
         holder.txt_sub_title.setText(data.getSubTitle());
         holder.txt_categories.setText(data.getCategory());
         holder.txt_body.setText(data.getBody());
@@ -61,7 +62,7 @@ public class ProposalsAdapter extends FermatAdapterImproved<Proposal,ProposalsHo
             public void onClick(View v) {
                 // posts http://fermat.community/t/propuesta-numero-4/19
                 Intent intent1 = new Intent(context,ForumActivity.class);
-                String url = ForumActivity.FORUM_URL+"/t/"+data.getTitle().replace(" ","-")+"/"+data.getForumId();
+                String url = module.getForumUrl()+"/t/"+data.getTitle().replace(" ","-")+"/"+data.getForumId();
                 intent1.putExtra(ForumActivity.INTENT_URL,url);
                 context.startActivity(intent1);
 

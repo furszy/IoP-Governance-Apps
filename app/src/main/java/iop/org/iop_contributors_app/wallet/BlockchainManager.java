@@ -259,7 +259,7 @@ public class BlockchainManager {
 //            });
 
             if (WalletConstants.NETWORK_PARAMETERS.equals(RegTestParams.get())) {
-				for (PeerAddress peerAddress : RegtestUtil.getConnectedPeers(WalletConstants.NETWORK_PARAMETERS)) {
+				for (PeerAddress peerAddress : RegtestUtil.getConnectedPeers(WalletConstants.NETWORK_PARAMETERS,conf.getNode())) {
 					peerGroup.addAddress(peerAddress);
 				}
 			}else throw new RuntimeException("Pelotudo descomentá lo de arriba please");

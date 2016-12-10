@@ -24,6 +24,7 @@ import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.ForumProfile;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.InvalidUserParametersException;
 import iop.org.iop_contributors_app.ui.dialogs.DialogBuilder;
+import iop.org.iop_contributors_app.ui.settings.DevActivity;
 import iop.org.iop_contributors_app.wallet.WalletModule;
 
 import static iop.org.iop_contributors_app.core.iop_sdk.utils.StringUtils.cleanString;
@@ -178,6 +179,14 @@ public class StartActivity extends AppCompatActivity {
             @Override
             public void afterTextChanged(Editable s) {
                 checkUsername(s.toString());
+            }
+        });
+
+
+        findViewById(R.id.img_logo).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(v.getContext(),DevActivity.class));
             }
         });
 

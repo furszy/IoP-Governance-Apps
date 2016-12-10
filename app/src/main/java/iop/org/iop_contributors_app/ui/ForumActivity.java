@@ -39,7 +39,7 @@ public class ForumActivity extends BaseActivity {
     private String address;
     private FloatingActionButton fab_edit;
 
-    public static final String FORUM_URL = DiscouseApiConstants.FORUM_URL;//"http://test.fermat.community/";//104.199.78.250/";//"fermat.community/";
+    //public static String FORUM_URL;//"http://test.fermat.community/";//104.199.78.250/";//"fermat.community/";
 
     @Override
     protected boolean hasDrawer() {
@@ -51,6 +51,8 @@ public class ForumActivity extends BaseActivity {
 
         Intent intent = getIntent();
 
+        String forumUrl = module.getForumUrl();
+
         if(intent.hasExtra(INTENT_URL)){
             address = getIntent().getStringExtra(INTENT_URL);
         } else
@@ -58,10 +60,10 @@ public class ForumActivity extends BaseActivity {
             // posts http://fermat.community/t/propuesta-numero-4/19
             String forumId = intent.getStringExtra(INTENT_FORUM_ID);
             forumId = forumId.replace(" ","-");
-            address = FORUM_URL+"t/"+forumId;
+            address = forumUrl+"/t/"+forumId;
         }
         else {
-            address = FORUM_URL;
+            address = forumUrl;
         }
 
         Log.d(TAG,"Url a cargar: "+address);
@@ -171,6 +173,8 @@ public class ForumActivity extends BaseActivity {
                 e.printStackTrace();
             }
         }
+
+
 
         private void checkUrl(String url) {
             // todo: ver esto..

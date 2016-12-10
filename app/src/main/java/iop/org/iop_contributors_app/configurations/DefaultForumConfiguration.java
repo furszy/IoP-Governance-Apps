@@ -4,6 +4,7 @@ import android.content.SharedPreferences;
 
 import iop.org.iop_contributors_app.core.iop_sdk.forum.ForumConfigurations;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.ForumProfile;
+import iop.org.iop_contributors_app.core.iop_sdk.forum.discourge.com.wareninja.opensource.discourse.DiscouseApiConstants;
 
 /**
  * Created by mati on 22/11/16.
@@ -19,6 +20,7 @@ public class DefaultForumConfiguration extends Configurations implements ForumCo
     public static final String PREFS_PASSWORD = "forumPassword";
     public static final String PREFS_EMAIL = "forumEmail";
     public static final String PREFS_API_KEY = "apiKey";
+    public static final String PREFS_URL = "forumUrl";
 
     public DefaultForumConfiguration(SharedPreferences prefs) {
         super(prefs);
@@ -47,6 +49,11 @@ public class DefaultForumConfiguration extends Configurations implements ForumCo
     }
 
     @Override
+    public void setUrl(String url) {
+        save(PREFS_URL,url);
+    }
+
+    @Override
     public ForumProfile getForumUser() {
         String username = getString(PREFS_USERNAME,null);
         if (username==null) return null;
@@ -60,5 +67,10 @@ public class DefaultForumConfiguration extends Configurations implements ForumCo
     @Override
     public String getApiKey() {
         return getString(PREFS_API_KEY,null);
+    }
+
+    @Override
+    public String getUrl() {
+        return getString(PREFS_URL, DiscouseApiConstants.FORUM_URL);
     }
 }

@@ -55,6 +55,8 @@
         <activity android:name=".ui.settings.IoPBalanceActivity"
             />
 
+        <activity android:name=".ui.settings.DevActivity" android:theme="@style/PreferenceScreen"/>
+
         <service android:name=".services.ProfileServerService"/>
         <service android:name=".services.BlockchainServiceImpl"/>
 

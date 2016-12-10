@@ -14,10 +14,13 @@ public interface ForumConfigurations {
 
     void setApiKey(String apiKey);
 
+    void setUrl(String url);
+
     ForumProfile getForumUser();
 
     String getApiKey();
 
     void remove();
 
+    String getUrl();
 }

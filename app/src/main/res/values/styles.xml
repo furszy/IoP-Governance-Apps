@@ -28,6 +28,7 @@
     <style name="PreferenceScreen" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="android:textColor">#fff</item>
         <item name="android:subtitle">#fff</item>
+        <item name="android:textAppearance">?android:attr/textAppearanceLarge</item>
         <item name="android:listSeparatorTextViewStyle">@style/ListSeparatorText</item>
     </style>
 

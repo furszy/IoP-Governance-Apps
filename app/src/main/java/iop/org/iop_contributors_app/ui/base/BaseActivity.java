@@ -1,5 +1,6 @@
 package iop.org.iop_contributors_app.ui.base;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
@@ -41,6 +42,8 @@ import java.util.concurrent.Executors;
 
 import iop.org.iop_contributors_app.ApplicationController;
 import iop.org.iop_contributors_app.R;
+import iop.org.iop_contributors_app.furszy_sdk.android.nav_view.NavMenuItem;
+import iop.org.iop_contributors_app.furszy_sdk.android.nav_view.NavViewAdapter;
 import iop.org.iop_contributors_app.intents.DialogIntentsBuilder;
 import iop.org.iop_contributors_app.intents.constants.IntentsConstants;
 import iop.org.iop_contributors_app.services.BlockchainServiceImpl;
@@ -50,7 +53,7 @@ import iop.org.iop_contributors_app.ui.MainActivity;
 import iop.org.iop_contributors_app.ui.ProfileActivity;
 import iop.org.iop_contributors_app.ui.ProposalsActivity;
 import iop.org.iop_contributors_app.ui.SettingsActivity;
-import iop.org.iop_contributors_app.ui.components.sdk.FermatListItemListeners;
+import iop.org.iop_contributors_app.furszy_sdk.android.adapter.FermatListItemListeners;
 import iop.org.iop_contributors_app.ui.dialogs.wallet.BackupDialog;
 import iop.org.iop_contributors_app.ui.dialogs.wallet.RestoreDialogFragment2;
 import iop.org.iop_contributors_app.utils.Cache;
@@ -262,7 +265,7 @@ public abstract class BaseActivity extends AppCompatActivity {
         imgQr.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showQrDialog();
+                showQrDialog(BaseActivity.this);
             }
         });
 
@@ -367,10 +370,10 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     }
 
-    private void showQrDialog(){
+    private void showQrDialog(Activity activity){
 
         try {
-            final Dialog dialog = new Dialog(this);
+            final Dialog dialog = new Dialog(activity);
             dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
             dialog.setContentView(R.layout.qr_dialog);
 
@@ -398,22 +401,27 @@ public abstract class BaseActivity extends AppCompatActivity {
             // cache address
             TextView txt_qr = (TextView)dialog.findViewById(R.id.txt_qr);
             txt_qr.setText(address);
-            txt_qr.setOnLongClickListener(new View.OnLongClickListener() {
+//            txt_qr.setOnLongClickListener();
+
+            View.OnClickListener clickListener = new View.OnClickListener() {
                 @Override
-                public boolean onLongClick(View v) {
+                public void onClick(View v) {
                     textToClipboard(Cache.getCacheAddress());
                     Toast.makeText(BaseActivity.this,"Copied",Toast.LENGTH_LONG).show();
-                    return true;
                 }
-            });
+            };
+
+            dialog.findViewById(R.id.txt_copy).setOnClickListener(clickListener);
 
             text.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    shareText("Qr",Cache.getCacheAddress());
+                    shareText(BaseActivity.this,"Qr",Cache.getCacheAddress());
                     dialog.dismiss();
                 }
             });
+
+
 
             dialog.show();
 
@@ -519,11 +527,7 @@ public abstract class BaseActivity extends AppCompatActivity {
 
                         notificationManager.notify(0, mBuilder.build());
                     }
-
-
             }
-
-
         }
     }
 
@@ -539,11 +543,11 @@ public abstract class BaseActivity extends AppCompatActivity {
     }
 
 
-    private void shareText(String title,String text){
+    private void shareText(Activity activity,String title,String text){
         Intent sendIntent = new Intent();
         sendIntent.setAction(Intent.ACTION_SEND);
         sendIntent.putExtra(Intent.EXTRA_TEXT, text);
         sendIntent.setType("text/plain");
-        startActivity(Intent.createChooser(sendIntent, title));
+        activity.startActivity(Intent.createChooser(sendIntent, title));
     }
 }

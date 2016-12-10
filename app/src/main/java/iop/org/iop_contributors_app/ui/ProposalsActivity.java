@@ -62,7 +62,7 @@ public class ProposalsActivity extends BaseActivity {
         recyclerView.setLayoutManager(layoutManager);
 
         // specify an adapter (see also next example)
-        adapter = new ProposalsAdapter(this);
+        adapter = new ProposalsAdapter(this,module);
         recyclerView.setAdapter(adapter);
 
         container_empty_screen.findViewById(R.id.btn_go).setOnClickListener(new View.OnClickListener() {

@@ -20,6 +20,7 @@ import java.io.IOException;
 import iop.org.iop_contributors_app.ApplicationController;
 import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.ui.dialogs.ReportIssueDialogBuilder;
+import iop.org.iop_contributors_app.ui.settings.DevActivity;
 import iop.org.iop_contributors_app.ui.settings.IoPBalanceActivity;
 import iop.org.iop_contributors_app.utils.CrashReporter;
 import iop.org.iop_contributors_app.wallet.WalletConstants;
@@ -69,6 +70,8 @@ public class SettingsFragment extends PreferenceFragment {
             startActivity(new Intent(getActivity(), IoPBalanceActivity.class));
         }else if (preference.getKey().equals("id_report")){
             handleReportIssue();
+        } else if(preference.getKey().equals("id_dev")){
+            startActivity(new Intent(getActivity(), DevActivity.class));
         }
 
         return super.onPreferenceTreeClick(preferenceScreen, preference);

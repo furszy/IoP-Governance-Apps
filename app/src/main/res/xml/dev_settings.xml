@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory android:title="Wallet">
+
+        <Preference android:title="Request coins"
+            android:summary="Coins de la regtest"
+            android:key="id_request_coins"/>
+
+        <Preference android:title="Broadcast proposal"
+            android:summary="Broadcastea a la red una transaccion de propuesta pre armada"
+            android:key="id_broadcast_transaction"/>
+
+        <Preference android:title="Broadcast voting YES (para la ultima transaccion broadcasteada)"
+            android:summary="Broadcastea a la red una transaccion de voting pre armada"
+            android:key="id_broadcasting_yes"/>
+
+        <Preference android:title="Broadcast voting NO (para la ultima transaccion broadcasteada)"
+            android:summary="Broadcastea a la red una transaccion de voting pre armada"
+            android:key="id_broadcasting_no"/>
+
+        <EditTextPreference android:key="id_node_host"
+            android:title="Node"
+            android:summary="Host del nodo de IoP, debe ser algo así 192.168.0.111"
+            android:defaultValue="192.168.0.111"/>
+
+        <Preference android:key="id_restart_blockchain" android:title="Restart blockchain" android:summary="Resetea la blockchain bldo ;P" />
+
+    </PreferenceCategory>
+
+
+    <PreferenceCategory android:title="Forum">
+
+        <EditTextPreference android:key="id_forum_host"
+            android:title="Host"
+            android:summary="Forum url"
+            android:defaultValue="http://104.199.78.250"/>
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

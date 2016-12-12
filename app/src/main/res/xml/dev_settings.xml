@@ -3,6 +3,10 @@
 
     <PreferenceCategory android:title="Wallet">
 
+        <Preference android:title="Show qr"
+            android:summary="Qr from the wallet"
+            android:key="id_show_qr"/>
+
         <Preference android:title="Request coins"
             android:summary="Coins de la regtest"
             android:key="id_request_coins"/>

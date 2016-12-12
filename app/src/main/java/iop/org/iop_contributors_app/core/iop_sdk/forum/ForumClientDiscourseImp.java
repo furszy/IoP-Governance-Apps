@@ -30,6 +30,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 
+import iop.org.iop_contributors_app.ServerWrapper;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.discourge.com.wareninja.opensource.discourse.DiscourseApiClient;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.discourge.com.wareninja.opensource.discourse.DiscouseApiConstants;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.discourge.com.wareninja.opensource.discourse.utils.ResponseListener;
@@ -42,6 +43,7 @@ import iop.org.iop_contributors_app.wallet.db.CantUpdateProposalException;
 
 import static iop.org.iop_contributors_app.core.iop_sdk.forum.wrapper.ResponseMessageConstants.REGISTER_ERROR_STR;
 import static iop.org.iop_contributors_app.core.iop_sdk.forum.wrapper.ResponseMessageConstants.USER_ERROR_STR;
+import static iop.org.iop_contributors_app.core.iop_sdk.utils.StreamsUtils.convertInputStreamToString;
 import static iop.org.iop_contributors_app.utils.Preconditions.checkEquals;
 
 /**
@@ -58,14 +60,17 @@ public class ForumClientDiscourseImp implements ForumClient {
 
     private ForumProfile forumProfile;
 
+    private ServerWrapper serverWrapper;
+
     private String forunLink = DiscouseApiConstants.FORUM_URL;
 
     private String apiKey;
 
     private boolean isActive;
 
-    public ForumClientDiscourseImp(ForumConfigurations forumConfigurations) {
+    public ForumClientDiscourseImp(ForumConfigurations forumConfigurations, ServerWrapper serverWrapper) {
         this.conf = forumConfigurations;
+        this.serverWrapper = serverWrapper;
         apiKey = conf.getApiKey();
         forumProfile = forumConfigurations.getForumUser();
         init();
@@ -110,61 +115,16 @@ public class ForumClientDiscourseImp implements ForumClient {
                 parameters.put("username", username);
                 parameters.put("password", password);
 
-                String url = "http://"+DiscouseApiConstants.FORUM_WRAPPER_URL+":7070/fermat/requestkey";
+                apiKey = serverWrapper.connect(parameters);
+                if (apiKey!=null){
+                    conf.setApiKey(apiKey);
+                    this.client.setApiKey(apiKey);
+                    forumProfile = new ForumProfile(username,password,null);
+                    saveForumData(true,username,password,null);
+                    return true;
+                }else
+                    return false;
 
-                //url = url + "?api_key=" + DiscouseApiConstants.API_KEY + "&api_username=system";
-
-                try {
-                    HttpClient client = new DefaultHttpClient(new BasicHttpParams());
-                    HttpPost httpPost = new HttpPost(url);
-                    //httpPost.setHeader("Content-type", "application/vnd.api+json");
-                    httpPost.addHeader("Accept", "text/html,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5");
-                    httpPost.setHeader("Content-type", "application/json");
-
-                    //passes the results to a string builder/entity
-                    StringEntity se = new StringEntity(getJsonFromParams(parameters), "UTF-8");
-                    //sets the post request as the resulting stringc
-                    httpPost.setEntity(se);
-
-
-                    // make GET request to the given URL
-                    HttpResponse httpResponse = client.execute(httpPost);
-                    InputStream inputStream = null;
-                    // receive response as inputStream
-                    inputStream = httpResponse.getEntity().getContent();
-                    String result = null;
-                    // convert inputstream to string
-                    if (inputStream != null)
-                        result = convertInputStreamToString(inputStream);
-
-
-                    LOG.info("###########################");
-                    LOG.info(result);
-                    LOG.info("###########################");
-
-                    JSONObject jsonObject = new JSONObject(result);
-
-
-
-                    if (httpResponse.getStatusLine().getStatusCode()==200){
-                        apiKey = jsonObject.getString(ResponseMessageConstants.API_KEY);
-                        conf.setApiKey(apiKey);
-                        this.client.setApiKey(apiKey);
-                        forumProfile = new ForumProfile(username,password,null);
-                        saveForumData(true,username,password,null);
-                        return true;
-                    }else {
-                        if (jsonObject.has(USER_ERROR_STR)){
-                            throw new InvalidUserParametersException(jsonObject.getString(USER_ERROR_STR));
-                        }
-                        return false;
-                    }
-
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
             }catch (Exception e){
                 e.printStackTrace();
             }
@@ -474,16 +434,6 @@ public class ForumClientDiscourseImp implements ForumClient {
         return jsonObject.toString();
     }
 
-    private static String convertInputStreamToString(InputStream inputStream) throws IOException {
-        BufferedReader bufferedReader = new BufferedReader( new InputStreamReader(inputStream));
-        String line = "";
-        String result = "";
-        while((line = bufferedReader.readLine()) != null)
-            result += line;
-
-        inputStream.close();
-        return result;
-    }
 
     public void setForunLink(String forunLink) {
         this.forunLink = forunLink;

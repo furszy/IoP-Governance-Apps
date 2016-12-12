@@ -4,9 +4,11 @@ import org.bitcoinj.core.Address;
 import org.bitcoinj.core.Coin;
 import org.bitcoinj.core.InsufficientMoneyException;
 import org.bitcoinj.core.Transaction;
+import org.bitcoinj.core.TransactionConfidence;
 import org.bitcoinj.core.TransactionOutPoint;
 import org.bitcoinj.core.TransactionOutput;
 import org.bitcoinj.wallet.CoinSelection;
+import org.bitcoinj.wallet.DefaultCoinSelector;
 import org.bitcoinj.wallet.SendRequest;
 import org.bitcoinj.wallet.Wallet;
 import org.slf4j.Logger;
@@ -78,12 +80,14 @@ public class ProposalTransactionRequest {
             if (proposalsDao.isLockedOutput(transactionOutPoint.getHash().toString(), transactionOutPoint.getIndex())) {
                 continue;
             }
-            LOG.info("adding non locked transaction to spend as an input: postion:"+transactionOutPoint.getIndex()+", parent hash: "+transactionOutPoint.toString());
-            totalInputsValue = totalInputsValue.add(transactionOutput.getValue());
-            unspentTransactions.add(transactionOutput);
-            if (totalInputsValue.isGreaterThan(totalOuputsValue)) {
-                inputsSatisfiedContractValue = true;
-                break;
+            if (DefaultCoinSelector.isSelectable(transactionOutput.getParentTransaction())) {
+                LOG.info("adding non locked transaction to spend as an input: postion:" + transactionOutPoint.getIndex() + ", parent hash: " + transactionOutPoint.toString());
+                totalInputsValue = totalInputsValue.add(transactionOutput.getValue());
+                unspentTransactions.add(transactionOutput);
+                if (totalInputsValue.isGreaterThan(totalOuputsValue)) {
+                    inputsSatisfiedContractValue = true;
+                    break;
+                }
             }
         }
 

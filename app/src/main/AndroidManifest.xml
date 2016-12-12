@@ -29,7 +29,9 @@
         </activity>
         <activity android:name=".ui.ProfileActivity" />
         <activity android:name=".ui.SettingsActivity"
-            android:theme="@style/PreferenceScreen"/>
+            android:theme="@style/PreferenceScreen"
+
+            />
         <activity android:name=".ui.StartActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -50,15 +52,23 @@
 
             </activity>
 
-        <activity android:name=".ui.CreateProposalActivity" android:launchMode="singleInstance"/>
+        <activity android:name=".ui.CreateProposalActivity" />
         <activity android:name=".ui.ProposalsActivity" android:launchMode="singleInstance"/>
         <activity android:name=".ui.settings.IoPBalanceActivity"
             />
 
         <activity android:name=".ui.settings.DevActivity" android:theme="@style/PreferenceScreen"/>
 
-        <service android:name=".services.ProfileServerService"/>
+        <!--<service android:name=".services.ProfileServerService"/>-->
         <service android:name=".services.BlockchainServiceImpl"/>
+
+        <!--  Voting app -->
+        <activity android:name=".ui.voting.VotingStartActivity" android:theme="@style/AppTheme.VotingCenterAnimation">
+            <!--<intent-filter>-->
+                <!--<action android:name="android.intent.action.MAIN"/>-->
+                <!--<category android:name="android.intent.category.LAUNCHER"/>-->
+            <!--</intent-filter>-->
+        </activity>
 
 
     </application>

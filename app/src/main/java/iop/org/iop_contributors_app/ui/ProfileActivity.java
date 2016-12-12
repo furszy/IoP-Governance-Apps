@@ -367,7 +367,7 @@ public class ProfileActivity extends BaseActivity {
         dialogBuilder.singleDismissButton(new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                startActivity(new Intent(ProfileActivity.this,MainActivity.class));
+                startActivity(new Intent(ProfileActivity.this,OnboardingWithCenterAnimationActivity.class));
             }
         });
 
@@ -377,18 +377,18 @@ public class ProfileActivity extends BaseActivity {
     private void sendUpdateProfileRequest(final byte[] version, final String name, final byte[] img){
 
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                Log.d(TAG,"Sending work to profile service");
-                try {
-                    //sendWorkToProfileService();
-                    module.updateProfile(version,name,img);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }).start();
+//        new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                Log.d(TAG,"Sending work to profile service");
+//                try {
+//                    //sendWorkToProfileService();
+//                    module.updateProfile(version,name,img);
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        }).start();
 
 
 

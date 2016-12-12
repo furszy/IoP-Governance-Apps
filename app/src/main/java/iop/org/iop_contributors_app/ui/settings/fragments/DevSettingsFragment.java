@@ -44,16 +44,10 @@ import java.util.concurrent.Executors;
 import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.core.iop_sdk.blockchain.OpReturnOutputTransaction;
 import iop.org.iop_contributors_app.core.iop_sdk.governance.Proposal;
-import iop.org.iop_contributors_app.core.iop_sdk.governance.ProposalTransactionRequest;
-import iop.org.iop_contributors_app.ui.base.BaseActivity;
-import iop.org.iop_contributors_app.ui.dialogs.DialogBuilder;
-import iop.org.iop_contributors_app.ui.settings.IoPBalanceActivity;
 import iop.org.iop_contributors_app.utils.Cache;
-import iop.org.iop_contributors_app.wallet.InvalidProposalException;
+import iop.org.iop_contributors_app.wallet.InvalidAddressException;
 import iop.org.iop_contributors_app.wallet.WalletConstants;
 import iop.org.iop_contributors_app.wallet.WalletModule;
-import iop.org.iop_contributors_app.wallet.db.CantSaveProposalException;
-import iop.org.iop_contributors_app.wallet.exceptions.CantSendProposalException;
 import iop.org.iop_contributors_app.wallet.exceptions.InsuficientBalanceException;
 
 import static android.graphics.Color.WHITE;
@@ -184,9 +178,43 @@ public class DevSettingsFragment extends PreferenceFragment {
                 }
             });
         } else if (preference.getKey().equals("id_request_coins")){
+            executorService.submit(new Runnable() {
+                @Override
+                public void run() {
 
+                    String toastToShow = null;
+                    Context.propagate(WalletConstants.CONTEXT);
+
+                    try {
+
+                        Coin value = Coin.valueOf(1000, 0);
+                        Coin balance = Coin.valueOf(module.getAvailableBalance());
+                        String address = module.getNewAddress();
+
+                        if (value.isGreaterThan(balance)) {
+                            if (module.requestCoins(address)) {
+                                toastToShow = "Request coins succed";
+                            } else
+                                toastToShow = "Request coins fail";
+                        } else {
+                            toastToShow = "You already have coins to spend";
+                        }
+                    } catch (InvalidAddressException e) {
+                        toastToShow = e.getMessage();
+                    }
+
+                    final String finalToastToShow = toastToShow;
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(getActivity(), finalToastToShow, Toast.LENGTH_LONG).show();
+                        }
+                    });
+
+                }
+            });
+        } else if (preference.getKey().equals("id_show_qr")){
             showQrDialog(getActivity());
-
         }
 
         return super.onPreferenceTreeClick(preferenceScreen, preference);

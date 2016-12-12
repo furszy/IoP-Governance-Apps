@@ -32,6 +32,15 @@ android {
         }
     }
 
+    sourceSets{
+        main{
+            res{
+                srcDir 'src/main/res_voting'
+            }
+        }
+    }
+
+
     packagingOptions {
         exclude 'lib/x86_64/darwin/libscrypt.dylib'
         exclude 'lib/x86_64/freebsd/libscrypt.so'

@@ -32,7 +32,6 @@ import iop.org.iop_contributors_app.core.iop_sdk.forum.ForumConfigurations;
 import iop.org.iop_contributors_app.profile_server.ModuleProfileServer;
 
 import iop.org.iop_contributors_app.services.BlockchainServiceImpl;
-import iop.org.iop_contributors_app.services.ProfileServerService;
 import iop.org.iop_contributors_app.configurations.WalletPreferencesConfiguration;
 import iop.org.iop_contributors_app.utils.CrashReporter;
 import iop.org.iop_contributors_app.wallet.BlockchainManager;
@@ -52,8 +51,8 @@ public class ApplicationController extends Application {
     private static ApplicationController instance;
 
     // profile server
-    private ModuleProfileServer profileServerService;
-    private ProfileServerConfigurations profileServerPref;
+    //private ModuleProfileServer profileServerService;
+    //private ProfileServerConfigurations profileServerPref;
     // wallet
     private WalletModule module;
     private WalletPreferencesConfiguration walletConfigurations;
@@ -93,7 +92,7 @@ public class ApplicationController extends Application {
 
         // initialize preferences
         walletConfigurations = new WalletPreferencesConfiguration(getSharedPreferences(WalletPreferencesConfiguration.PREFS_NAME,0));
-        profileServerPref = new ProfileServerConfigurations(this,getSharedPreferences(ProfileServerConfigurations.PREFS_NAME,0));
+        //profileServerPref = new ProfileServerConfigurations(this,getSharedPreferences(ProfileServerConfigurations.PREFS_NAME,0));
         forumConfigurations = new DefaultForumConfiguration(getSharedPreferences(DefaultForumConfiguration.PREFS_NAME,0));
 
         // Crash reporter
@@ -137,23 +136,23 @@ public class ApplicationController extends Application {
     }
 
 
-    public ServiceConnection profServiceConnection = new ServiceConnection() {
-        public void onServiceConnected(ComponentName className, IBinder binder) {
-            Log.d(TAG,"profile service connected");
-            profileServerService = ((ProfileServerService.ProfServerBinder)binder).getService();
-        }
-        //binder comes from server to communicate with method's of
-
-        public void onServiceDisconnected(ComponentName className) {
-            Log.d("ServiceConnection","disconnected");
-            profServiceConnection = null;
-        }
-    };
-
-    private void startProfileServerService() {
-        Intent intent = new Intent(this,ProfileServerService.class);
-        bindService(intent,profServiceConnection,Context.BIND_AUTO_CREATE);
-    }
+//    public ServiceConnection profServiceConnection = new ServiceConnection() {
+//        public void onServiceConnected(ComponentName className, IBinder binder) {
+//            Log.d(TAG,"profile service connected");
+//            profileServerService = ((ProfileServerService.ProfServerBinder)binder).getService();
+//        }
+//        //binder comes from server to communicate with method's of
+//
+//        public void onServiceDisconnected(ComponentName className) {
+//            Log.d("ServiceConnection","disconnected");
+//            profServiceConnection = null;
+//        }
+//    };
+//
+//    private void startProfileServerService() {
+//        Intent intent = new Intent(this,ProfileServerService.class);
+//        bindService(intent,profServiceConnection,Context.BIND_AUTO_CREATE);
+//    }
 
     private void startBlockchainService() {
         Intent blockchainServiceIntent = new Intent(this, BlockchainServiceImpl.class);
@@ -166,10 +165,10 @@ public class ApplicationController extends Application {
     }
 
 
-    public ModuleProfileServer getProfileServerManager(){
-        if (profileServerService ==null) throw new IllegalStateException("Profile server is not connected");
-        return profileServerService;
-    }
+//    public ModuleProfileServer getProfileServerManager(){
+//        if (profileServerService ==null) throw new IllegalStateException("Profile server is not connected");
+//        return profileServerService;
+//    }
 
 
     private void initLogging() {
@@ -252,9 +251,9 @@ public class ApplicationController extends Application {
         return module.getBlockchainManager();
     }
 
-    public ProfileServerConfigurations getProfileServerPreferences() {
-        return profileServerPref;
-    }
+//    public ProfileServerConfigurations getProfileServerPreferences() {
+//        return profileServerPref;
+//    }
 
     public WalletModule getWalletModule() {
         return module;

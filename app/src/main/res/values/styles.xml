@@ -44,4 +44,11 @@
         <item name="colorAccent">#fff</item>
 
     </style>
+
+    <!--  Voting -->
+
+    <style name="AppTheme.VotingCenterAnimation">
+        <item name="android:windowBackground">@drawable/voting_init_screen</item>
+    </style>
+
 </resources>

@@ -295,7 +295,7 @@ public abstract class BaseActivity extends AppCompatActivity {
 
                         // balance
                         try {
-                            txt_available_balance.setText(module.getAvailableBalance() + " IoPs");
+                            txt_available_balance.setText(module.getAvailableBalanceStr() + " IoPs");
                             txt_lock_balance.setText(module.getLockedBalance() + " IoPs");
                         }catch (Exception e){
                             e.printStackTrace();

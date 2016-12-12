@@ -183,6 +183,13 @@ public class CreateProposalActivity extends BaseActivity {
     }
 
     @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+
+    }
+
+    @Override
     protected void onCreateView(final ViewGroup container, Bundle savedInstance) {
 
         if (getIntent().getAction()!=null) {
@@ -354,6 +361,7 @@ public class CreateProposalActivity extends BaseActivity {
         }
 
     }
+
 
     private void initWatchers(){
         setWatcher(FIELD_TITLE,edit_title,null);

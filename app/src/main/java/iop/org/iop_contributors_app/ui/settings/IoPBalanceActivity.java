@@ -16,9 +16,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import org.bitcoinj.core.Address;
 import org.bitcoinj.core.InsufficientMoneyException;
 import org.bitcoinj.wallet.Wallet;
 
@@ -27,8 +25,6 @@ import java.util.List;
 
 import iop.org.iop_contributors_app.ApplicationController;
 import iop.org.iop_contributors_app.R;
-import iop.org.iop_contributors_app.ui.base.BaseActivity;
-import iop.org.iop_contributors_app.wallet.WalletConstants;
 import iop.org.iop_contributors_app.wallet.WalletModule;
 
 /**
@@ -196,7 +192,7 @@ public class IoPBalanceActivity extends AppCompatActivity {
         txt_voting_power_locked = (TextView) findViewById(R.id.txt_voting_power_locked);
 
         txt_balance.setText(module.getWalletManager().getWallet().getBalance(Wallet.BalanceType.AVAILABLE_SPENDABLE).toFriendlyString());
-        txt_voting_power_available.setText("Available: "+module.getAvailableBalance()+" IoPs");
+        txt_voting_power_available.setText("Available: "+module.getAvailableBalanceStr()+" IoPs");
         txt_voting_power_locked.setText("Locked: "+module.getLockedBalance()+ " IoPs");
     }
 

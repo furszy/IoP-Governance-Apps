@@ -7,6 +7,7 @@ import android.content.pm.PackageInfo;
 import android.support.v4.content.LocalBroadcastManager;
 import android.widget.Toast;
 
+import org.bitcoinj.core.Address;
 import org.bitcoinj.core.Coin;
 import org.bitcoinj.core.InsufficientMoneyException;
 import org.bitcoinj.core.Transaction;
@@ -26,6 +27,7 @@ import java.util.concurrent.ExecutionException;
 import iop.org.iop_contributors_app.ApplicationController;
 import iop.org.iop_contributors_app.Profile;
 import iop.org.iop_contributors_app.R;
+import iop.org.iop_contributors_app.ServerWrapper;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.CantCreateTopicException;
 import iop.org.iop_contributors_app.core.iop_sdk.governance.Proposal;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.ForumClient;
@@ -36,7 +38,6 @@ import iop.org.iop_contributors_app.core.iop_sdk.forum.ForumProfile;
 import iop.org.iop_contributors_app.core.iop_sdk.governance.ProposalTransactionRequest;
 import iop.org.iop_contributors_app.intents.constants.IntentsConstants;
 import iop.org.iop_contributors_app.services.BlockchainServiceImpl;
-import iop.org.iop_contributors_app.services.ProfileServerService;
 import iop.org.iop_contributors_app.services.ServicesCodes;
 import iop.org.iop_contributors_app.configurations.WalletPreferencesConfiguration;
 import iop.org.iop_contributors_app.ui.base.BaseActivity;
@@ -68,6 +69,7 @@ public class WalletModule implements ContextWrapper{
     private WalletPreferencesConfiguration configuration;
 
     private ForumClient forumClient;
+    private ServerWrapper serverWrapper;
     private ForumConfigurations forumConfigurations;
     private String forumUrl;
 
@@ -87,13 +89,14 @@ public class WalletModule implements ContextWrapper{
         proposalsDao = new ProposalsDao(context);
         // locked outputs
         lockedBalance = proposalsDao.getTotalLockedBalance();
+        serverWrapper = new ServerWrapper();
     }
 
     public void start(){
         // init
         walletManager = new WalletManager(this,configuration);
         blockchainManager = new BlockchainManager(this,walletManager,configuration);
-        forumClient = new ForumClientDiscourseImp(forumConfigurations);
+        forumClient = new ForumClientDiscourseImp(forumConfigurations,serverWrapper);
 
     }
 
@@ -190,9 +193,9 @@ public class WalletModule implements ContextWrapper{
             case ServicesCodes.BLOCKCHAIN_SERVICE:
                 clazz = BlockchainServiceImpl.class;
                 break;
-            case ServicesCodes.PROFILE_SERVER_SERVICE:
-                clazz = ProfileServerService.class;
-                break;
+//            case ServicesCodes.PROFILE_SERVER_SERVICE:
+//                clazz = ProfileServerService.class;
+//                break;
             default:
                 throw new RuntimeException("Service unknown");
         }
@@ -207,22 +210,22 @@ public class WalletModule implements ContextWrapper{
         return profile;
     }
 
-    public boolean existIdentity(){
-        return context.getProfileServerManager().isIdentityCreated();
-    }
+//    public boolean existIdentity(){
+//        return context.getProfileServerManager().isIdentityCreated();
+//    }
 
-    public void updateProfile(byte[] profileVersion, String username, byte[] profImgData) throws Exception {
-        profile.setName(username);
-        profile.setVersion(profileVersion);
-        profile.setImg(profImgData);
-
-        if (context.getProfileServerManager().isIdentityCreated()) {
-            // update the profile server
-            context.getProfileServerManager().updateProfileRequest(profile, profileVersion, username, profImgData, 0, 0, null);
-        }else {
-            context.getProfileServerManager().registerReqeust(profile,username,profImgData,0,0,null);
-        }
-    }
+//    public void updateProfile(byte[] profileVersion, String username, byte[] profImgData) throws Exception {
+//        profile.setName(username);
+//        profile.setVersion(profileVersion);
+//        profile.setImg(profImgData);
+//
+//        if (context.getProfileServerManager().isIdentityCreated()) {
+//            // update the profile server
+//            context.getProfileServerManager().updateProfileRequest(profile, profileVersion, username, profImgData, 0, 0, null);
+//        }else {
+//            context.getProfileServerManager().registerReqeust(profile,username,profImgData,0,0,null);
+//        }
+//    }
 
 
     public BlockchainManager getBlockchainManager() {
@@ -343,10 +346,15 @@ public class WalletModule implements ContextWrapper{
         return address;
     }
 
-    public CharSequence getAvailableBalance() {
+    public CharSequence getAvailableBalanceStr() {
         long balance = walletManager.getWallet().getBalance(Wallet.BalanceType.AVAILABLE_SPENDABLE).value-lockedBalance;
         return coinToString(balance);
     }
+    public long getAvailableBalance() {
+        return walletManager.getWallet().getBalance(Wallet.BalanceType.AVAILABLE_SPENDABLE).value-lockedBalance;
+    }
+
+
 
     public String getLockedBalance() {
         return coinToString(lockedBalance);
@@ -496,5 +504,14 @@ public class WalletModule implements ContextWrapper{
             forumUrl = forumConfigurations.getUrl();
         }
         return forumUrl;
+    }
+
+    public boolean requestCoins(String address) throws InvalidAddressException {
+        try {
+            Address.fromBase58(WalletConstants.NETWORK_PARAMETERS, address);
+        }catch (Exception e){
+            throw new InvalidAddressException("Invalid address");
+        }
+        return serverWrapper.requestCoins(address);
     }
 }

@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import iop.org.iop_contributors_app.core.iop_sdk.blockchain.OpReturnOutputTransaction;
+import iop.org.iop_contributors_app.core.iop_sdk.crypto.CryptoBytes;
 
 import static iop.org.iop_contributors_app.core.iop_sdk.utils.ArraysUtils.numericTypeToByteArray;
 
@@ -46,7 +47,7 @@ public  class ProposalTransactionBuilder {
     /** tag */
     private static short tag = 0x4343;
     /**  */
-    private static short version = 0x0100;
+    private static short version = 1;
 
     private NetworkParameters networkParameters;
 
@@ -185,6 +186,7 @@ public  class ProposalTransactionBuilder {
                     .build2();
 
             LOG.info("OP_RETURN TRANSACTION created, data: "+opReturnOutputTransaction.toString());
+            LOG.info("OP_RETURN HEX: "+ CryptoBytes.toHexString(opReturnOutputTransaction.getData()));
             contractTransaction = opReturnOutputTransaction;
 
         } catch (Exception e) {

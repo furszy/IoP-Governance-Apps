@@ -38,7 +38,7 @@ public class ProposalsAdapter extends FermatAdapterImproved<Proposal,ProposalsHo
     protected void bindHolder(ProposalsHolder holder, final Proposal data, int position) {
 
         holder.txt_title.setText(data.getTitle());
-        holder.txt_forum_id.setText(data.getForumId());
+        holder.txt_forum_id.setText(String.valueOf(data.getForumId()));
         holder.txt_sub_title.setText(data.getSubTitle());
         holder.txt_categories.setText(data.getCategory());
         holder.txt_body.setText(data.getBody());

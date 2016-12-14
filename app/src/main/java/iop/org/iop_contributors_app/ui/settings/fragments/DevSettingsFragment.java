@@ -126,6 +126,7 @@ public class DevSettingsFragment extends PreferenceFragment {
 
         if (preference.getKey().equals("id_restart_blockchain")){
             module.getWalletManager().resetBlockchain();
+            module.cleanProposalDb();
             Toast.makeText(getActivity(),"Reseting blockchain, please close (swipe open apps manager) and restart the app",Toast.LENGTH_LONG).show();
         }else if(preference.getKey().equals("id_broadcast_transaction")){
             executorService.submit(new Runnable() {

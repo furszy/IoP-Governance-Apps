@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -404,7 +405,8 @@ public class CreateProposalActivity extends BaseActivity {
                     ChromeHelpPopup chromeHelpPopup = loadPopup(v,getString(R.string.create_proposal_help_beneficiaries));
                     chromeHelpPopup.setyMove(-10);
                     chromeHelpPopup.setAnimation(false);
-                    chromeHelpPopup.setTextBackgroundColor(Color.parseColor("#aae6e6e6"));
+                    chromeHelpPopup.setTextColor(ContextCompat.getColor(v.getContext(),R.color.create_proposal_help_text_color));
+                    chromeHelpPopup.setTextBackgroundColor(ContextCompat.getColor(v.getContext(),R.color.create_proposal_help_text_background));
                     chromeHelpPopup.show(v);
                 }
             }

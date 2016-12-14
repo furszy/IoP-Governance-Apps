@@ -288,6 +288,12 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
         db.close();
     }
 
+    public void deleteDb() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete(TABLE_PROPOSALS, null,null);
+        db.close();
+    }
+
 
     // Getting contacts Count
     public int getProposalsCount() {

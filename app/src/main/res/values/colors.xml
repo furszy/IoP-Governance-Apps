@@ -12,5 +12,7 @@
     <color name="fg_password_strength_fair">#c06000</color>
     <color name="fg_password_strength_strong">#00a000</color>
     <color name="fg_less_significant">#ff666666</color>
+    <color name="create_proposal_help_text_background">#C9CBCC</color>
+    <color name="create_proposal_help_text_color">#202020</color>
 
 </resources>

@@ -251,15 +251,9 @@ public class ForumClientDiscourseImp implements ForumClient {
     }
 
     @Override
-    public boolean getAndCheckValid(Proposal proposal) {
+    public void getAndCheckValid(Proposal proposal) throws NotValidParametersException{
         Proposal forumProposal = getProposal(proposal.getForumId());
-        boolean result = false;
-        try {
-            result = proposal.equals(forumProposal);
-        } catch (NotValidParametersException e) {
-            result = false;
-        }
-        return result;
+        proposal.equals(forumProposal);
     }
 
 

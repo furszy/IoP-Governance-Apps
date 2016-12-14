@@ -37,6 +37,7 @@ public class ChromeHelpPopup {
     private int yMove;
     private boolean animation;
     private int textBackgroundColor;
+    private int textColor;
 
     public ChromeHelpPopup(Context context, String text, int viewResource) {
         mContext = context;
@@ -144,6 +145,10 @@ public class ChromeHelpPopup {
         if (textBackgroundColor!=0)
             mHelpTextView.setBackgroundColor(textBackgroundColor);
 
+        if (textColor!=0){
+            mHelpTextView.setTextColor(textColor);
+        }
+
 
         mWindow.showAtLocation(anchor, Gravity.NO_GRAVITY, xPos, yPos);
 
@@ -219,6 +224,10 @@ public class ChromeHelpPopup {
 
     public void setTextBackgroundColor(int textBackgroundColor) {
         this.textBackgroundColor = textBackgroundColor;
+    }
+
+    public void setTextColor(int textColor) {
+        this.textColor = textColor;
     }
 
     public static interface ShowListener {

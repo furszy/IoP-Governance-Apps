@@ -1,6 +1,7 @@
 package iop.org.iop_contributors_app.core.iop_sdk.forum;
 
 import iop.org.iop_contributors_app.core.iop_sdk.governance.Proposal;
+import iop.org.iop_contributors_app.utils.exceptions.NotValidParametersException;
 import iop.org.iop_contributors_app.wallet.db.CantUpdateProposalException;
 
 /**
@@ -24,5 +25,5 @@ public interface ForumClient {
 
     Proposal getProposal(int forumId);
 
-    boolean getAndCheckValid(Proposal proposal);
+    void getAndCheckValid(Proposal proposal) throws NotValidParametersException;
 }

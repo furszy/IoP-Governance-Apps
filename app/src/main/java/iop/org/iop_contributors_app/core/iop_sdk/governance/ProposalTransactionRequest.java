@@ -116,7 +116,8 @@ public class ProposalTransactionRequest {
                 proposal.getStartBlock(),
                 proposal.getEndBlock(),
                 proposal.getBlockReward(),
-                proposal.hash()
+                proposal.hash(),
+                proposal.getForumId()
         );
 
         // beneficiaries outputs

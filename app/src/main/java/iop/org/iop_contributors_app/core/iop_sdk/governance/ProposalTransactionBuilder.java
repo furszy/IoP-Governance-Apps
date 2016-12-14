@@ -16,8 +16,10 @@ import java.util.List;
 
 import iop.org.iop_contributors_app.core.iop_sdk.blockchain.OpReturnOutputTransaction;
 import iop.org.iop_contributors_app.core.iop_sdk.crypto.CryptoBytes;
+import iop.org.iop_contributors_app.utils.Preconditions;
 
 import static iop.org.iop_contributors_app.core.iop_sdk.utils.ArraysUtils.numericTypeToByteArray;
+import static iop.org.iop_contributors_app.utils.Preconditions.compareLessThan;
 
 /**
  * Created by mati on 11/11/16.
@@ -35,14 +37,16 @@ public  class ProposalTransactionBuilder {
     private static final int CONTRACT_END_HEIGHT_POSITION = 7;
     private static final int CONTRACT_REWARD_POSITION = 9;
     private static final int CONTRACT_HASH_POSITION = 12;
+    private static final int CONTRACT_FORUM_ID_POSITION = 44;
     // size
-    private static final int CONTRACT_SIZE = 44;
+    private static final int CONTRACT_SIZE = 46;
     private static final int CONTRACT_TAG_SIZE = 2;
     private static final int CONTRACT_VERSION_SIZE = 2;
     private static final int CONTRACT_START_HEIGHT_SIZE = 3;
     private static final int CONTRACT_END_HEIGHT_SIZE = 2;
     private static final int CONTRACT_REWARD_SIZE = 3;
     private static final int CONTRACT_HASH_SIZE = 32;
+    private static final int CONTRACT_FORUM_ID_SIZE = 2;
 
     /** tag */
     private static short tag = 0x4343;
@@ -60,6 +64,8 @@ public  class ProposalTransactionBuilder {
     private long blockReward;
 
     private byte[] proposalHash;
+    /** Forum identifier */
+    private int forumId;
 
     private int bestChainHeight;
 
@@ -82,7 +88,6 @@ public  class ProposalTransactionBuilder {
 
     // inputs total amount
     private Coin totalCoins;
-
 
 
     public ProposalTransactionBuilder(NetworkParameters networkParameters, int bestChainHeight) {
@@ -152,14 +157,20 @@ public  class ProposalTransactionBuilder {
         return this;
     }
 
-    public ProposalTransactionBuilder addContract(int blockStartHeight, int endHeight, long blockReward, byte[] proposalHash){
+    public ProposalTransactionBuilder addContract(int blockStartHeight, int endHeight, long blockReward, byte[] proposalHash,int forumId){
 
+        // validate parameters
         if (proposalHash.length!=32) throw new IllegalArgumentException("hash is not from SHA256");
+        compareLessThan(forumId,1,"invalid forum id");
+        compareLessThan(endHeight,0,"invalid endHeight");
+        compareLessThan(blockStartHeight,0,"invalid startHeight");
+        compareLessThan(blockStartHeight,0,"invalid blockReward");
 
         this.blockStartHeight = blockStartHeight;
         this.endHeight = endHeight;
         this.blockReward = blockReward;
         this.proposalHash = proposalHash;
+        this.forumId = forumId;
 
 
         // data
@@ -179,6 +190,7 @@ public  class ProposalTransactionBuilder {
             numericTypeToByteArray(prevData,endHeight,CONTRACT_END_HEIGHT_POSITION,CONTRACT_END_HEIGHT_SIZE);
             numericTypeToByteArray(prevData,blockReward,CONTRACT_REWARD_POSITION,CONTRACT_REWARD_SIZE);
             System.arraycopy(proposalHash,0,prevData,CONTRACT_HASH_POSITION,CONTRACT_HASH_SIZE);
+            numericTypeToByteArray(prevData,forumId,CONTRACT_FORUM_ID_POSITION,CONTRACT_FORUM_ID_SIZE);
 
             OpReturnOutputTransaction opReturnOutputTransaction = new OpReturnOutputTransaction.Builder(networkParameters)
                     .setParentTransaction(proposalTransaction)
@@ -258,6 +270,7 @@ public  class ProposalTransactionBuilder {
         proposal.setStartBlock(getIntData(data,CONTRACT_START_HEIGHT_POSITION,CONTRACT_START_HEIGHT_SIZE));
         proposal.setEndBlock(getIntData(data,CONTRACT_END_HEIGHT_POSITION,CONTRACT_END_HEIGHT_SIZE));
         proposal.setBlockReward(getLongData(data,CONTRACT_REWARD_POSITION,CONTRACT_REWARD_SIZE));
+        proposal.setForumId(getIntData(data,CONTRACT_FORUM_ID_POSITION,CONTRACT_FORUM_ID_SIZE));
 
         if (proposal.checkHash(getByteArray(data,CONTRACT_HASH_POSITION,CONTRACT_HASH_SIZE))) throw new IllegalArgumentException("Hash don't match");
 

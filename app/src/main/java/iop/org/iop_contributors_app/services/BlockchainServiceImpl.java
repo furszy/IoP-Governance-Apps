@@ -56,6 +56,7 @@ import iop.org.iop_contributors_app.wallet.WalletConstants;
 import iop.org.iop_contributors_app.wallet.WalletModule;
 import iop.org.iop_contributors_app.wallet.exceptions.InsuficientBalanceException;
 
+import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_ON_COIN_RECEIVED;
 import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_TYPE;
 import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_TRANSACTION_SUCCED;
 import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENT_BROADCAST_TYPE;
@@ -257,12 +258,14 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
         public void onCoinsReceived(Wallet wallet, Transaction transaction, Coin coin, Coin coin1) {
 
             Intent intent = new Intent(ACTION_NOTIFICATION);
+            intent.putExtra(INTENT_BROADCAST_TYPE,INTENT_DATA+INTENT_NOTIFICATION);
+            intent.putExtra(INTENT_BROADCAST_DATA_TYPE, INTENT_BROADCAST_DATA_ON_COIN_RECEIVED);
 
             android.support.v4.app.NotificationCompat.Builder mBuilder =
                     new NotificationCompat.Builder(getApplicationContext())
                             .setSmallIcon(R.drawable.ic__launcher)
                             .setContentTitle("IoPs received!")
-                            .setContentText("Transaction received for a value of "+coin.toFriendlyString());
+                            .setContentText("Transaction received for a value of "+coin1.toFriendlyString());
 
             nm.notify(1,mBuilder.build());
         }
@@ -400,7 +403,6 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
         Intent intent = new Intent(CreateProposalActivity.ACTION_RECEIVE_EXCEPTION);
         intent.putExtra(CreateProposalActivity.INTENT_DIALOG,dialogType);
         intent.putExtra(CreateProposalActivity.INTENT_EXTRA_MESSAGE_DIALOG,message);
-        Log.e(TAG,"insuficient funds exception");
         localBroadcast.sendBroadcast(intent);
     }
 

@@ -42,6 +42,7 @@ import iop.org.iop_contributors_app.services.ServicesCodes;
 import iop.org.iop_contributors_app.configurations.WalletPreferencesConfiguration;
 import iop.org.iop_contributors_app.ui.base.BaseActivity;
 import iop.org.iop_contributors_app.ui.dialogs.DialogBuilder;
+import iop.org.iop_contributors_app.utils.exceptions.NotValidParametersException;
 import iop.org.iop_contributors_app.wallet.db.CantGetProposalException;
 import iop.org.iop_contributors_app.wallet.db.CantSaveProposalException;
 import iop.org.iop_contributors_app.wallet.db.CantSaveProposalExistException;
@@ -244,51 +245,51 @@ public class WalletModule implements ContextWrapper{
         synchronized (lock) {
             try {
                 // check if the proposal is the same
-                if(forumClient.getAndCheckValid(proposal)) {
+                forumClient.getAndCheckValid(proposal);
 
-                    // save proposal to send
-                    try {
-                        proposalsDao.saveIfChange(proposal);
-                    } catch (CantGetProposalException e) {
-                        throw new CantSendProposalException("Proposal title changes or not exist", e);
-                    } catch (CantUpdateProposalException e) {
-                        throw new CantSendProposalException("Cant update proposal", e);
-                    } catch (Exception e) {
-                        throw new CantSendProposalException("Cant save proposal, db problem", e);
-                    }
-
-                    try {
-                        ProposalTransactionRequest proposalTransactionRequest = new ProposalTransactionRequest(blockchainManager, walletManager, proposalsDao);
-                        proposalTransactionRequest.forProposal(proposal);
-                        proposalTransactionRequest.broadcast();
-
-                        proposal = proposalTransactionRequest.getUpdatedProposal();
-                        // lock contract output
-                        boolean resp = proposalsDao.lockOutput(proposal.getForumId(), proposalTransactionRequest.getLockedOutputHashHex(), proposalTransactionRequest.getLockedOutputPosition());
-                        LOG.info("proposal locked "+resp);
-                        // mark proposal sent
-                        resp = proposalsDao.markSentProposal(proposal.getForumId());
-                        LOG.info("proposal mark sent "+resp);
-                        // locked balance
-                        lockedBalance += proposalTransactionRequest.getLockedBalance();
-                        LOG.info("locked balance acumulated: "+lockedBalance);
-
-                        LOG.info("sendProposal finished");
-
-                        return true;
-
-                    } catch (InsufficientMoneyException e) {
-                        e.printStackTrace();
-                        LOG.info("fondos disponibles: " + walletManager.getWallet().getBalance());
-                    }
-                }else {
-                    throw new InvalidProposalException("Proposal is not the same as in the forum");
+                // save proposal to send
+                try {
+                    proposalsDao.saveIfChange(proposal);
+                } catch (CantGetProposalException e) {
+                    throw new CantSendProposalException("Proposal title changes or not exist", e);
+                } catch (CantUpdateProposalException e) {
+                    throw new CantSendProposalException("Cant update proposal", e);
+                } catch (Exception e) {
+                    throw new CantSendProposalException("Cant save proposal, db problem", e);
                 }
+
+                try {
+                    ProposalTransactionRequest proposalTransactionRequest = new ProposalTransactionRequest(blockchainManager, walletManager, proposalsDao);
+                    proposalTransactionRequest.forProposal(proposal);
+                    proposalTransactionRequest.broadcast();
+
+                    proposal = proposalTransactionRequest.getUpdatedProposal();
+                    // lock contract output
+                    boolean resp = proposalsDao.lockOutput(proposal.getForumId(), proposalTransactionRequest.getLockedOutputHashHex(), proposalTransactionRequest.getLockedOutputPosition());
+                    LOG.info("proposal locked "+resp);
+                    // mark proposal sent
+                    resp = proposalsDao.markSentProposal(proposal.getForumId());
+                    LOG.info("proposal mark sent "+resp);
+                    // locked balance
+                    lockedBalance += proposalTransactionRequest.getLockedBalance();
+                    LOG.info("locked balance acumulated: "+lockedBalance);
+
+                    LOG.info("sendProposal finished");
+
+                    return true;
+
+                } catch (InsufficientMoneyException e) {
+                    e.printStackTrace();
+                    LOG.info("fondos disponibles: " + walletManager.getWallet().getBalance());
+                }
+
 
             } catch (InsuficientBalanceException e) {
                 throw e;
             }catch (CantSendProposalException e){
                 throw e;
+            } catch (NotValidParametersException e) {
+                throw new InvalidProposalException("Proposal is not the same as in the forum, "+e.getMessage());
             }
         }
         return false;
@@ -513,5 +514,9 @@ public class WalletModule implements ContextWrapper{
             throw new InvalidAddressException("Invalid address");
         }
         return serverWrapper.requestCoins(address);
+    }
+
+    public void cleanProposalDb() {
+        proposalsDao.clean();
     }
 }

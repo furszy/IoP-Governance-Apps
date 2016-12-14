@@ -123,4 +123,8 @@ public class ProposalsDao implements ProposalsContractDao {
     public boolean markSentProposal(int forumId){
         return proposalsDatabaseHandler.markSentProposal(forumId)==1;
     }
+
+    public void clean() {
+        proposalsDatabaseHandler.deleteDb();
+    }
 }

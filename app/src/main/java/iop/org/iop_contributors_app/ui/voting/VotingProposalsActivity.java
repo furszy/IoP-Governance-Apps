@@ -70,7 +70,6 @@ public class VotingProposalsActivity extends BaseActivity {
     }
 
     /**
-     * todo: esto no va así, va con el show del dialog...
      * @param data
      */
     public void showVoteDialog(Proposal data) {

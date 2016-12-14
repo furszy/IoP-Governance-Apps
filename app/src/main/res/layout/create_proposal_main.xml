@@ -52,6 +52,7 @@
                 android:textSize="15sp"
                 />
 
+
         </RelativeLayout>
 
         <RelativeLayout
@@ -124,19 +125,37 @@
             </LinearLayout>
 
 
-
-
-            <EditText
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/edit_category"
+                android:orientation="horizontal"
                 android:layout_below="@+id/category"
-                android:background="#4E4E4E"
-                android:padding="12dp"
-                android:textColor="#fff"
-                android:textSize="15sp"
 
-                />
+                >
+
+
+                <EditText
+                    android:layout_width="225dp"
+                    android:layout_height="match_parent"
+                    android:id="@+id/edit_category"
+                    android:padding="12dp"
+                    android:background="#4E4E4E"
+                    android:textColor="#fff"
+                    android:textSize="15sp"
+                    />
+
+                <Spinner
+                    android:layout_width="75dp"
+                    android:layout_height="match_parent"
+                    android:id="@+id/spinner_categories"
+                    android:layout_weight="0.1"
+                    android:background="#4E4E4E"/>
+
+            </LinearLayout>
+
+
+
+
 
         </RelativeLayout>
 
@@ -245,7 +264,6 @@
                     android:padding="12dp"
                     android:textSize="15sp"
                     android:textColor="#fff"
-
                     />
 
             </RelativeLayout>
@@ -454,7 +472,7 @@
 
             <Button
                 android:layout_width="@dimen/little_btn_widht"
-                android:layout_height="wrap_content"
+                android:layout_height="42dp"
                 android:text="PUBLISH"
                 android:textColor="#1A1A1A"
                 android:background="@drawable/create_proposal_btn"
@@ -467,7 +485,7 @@
 
             <Button
                 android:layout_width="@dimen/little_btn_widht"
-                android:layout_height="wrap_content"
+                android:layout_height="42dp"
                 android:text="POST"
                 android:layout_marginLeft="5dp"
                 android:textColor="#1A1A1A"

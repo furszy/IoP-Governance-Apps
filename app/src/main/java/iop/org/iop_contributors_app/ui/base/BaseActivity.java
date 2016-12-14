@@ -381,6 +381,13 @@ public abstract class BaseActivity extends AppCompatActivity {
             // set the custom dialog components - text, image and button
             TextView text = (TextView) dialog.findViewById(R.id.txt_share);
 
+            dialog.findViewById(R.id.txt_exit).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    dialog.dismiss();
+                }
+            });
+
             ImageView image = (ImageView) dialog.findViewById(R.id.img_qr);
 
             String address = Cache.getCacheAddress();

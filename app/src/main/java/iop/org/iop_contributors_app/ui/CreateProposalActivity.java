@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -13,10 +14,13 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -24,10 +28,14 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import iop.org.furszy_lib.ChromeHelpPopup;
+import iop.org.iop_contributors_app.ApplicationController;
 import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.CantCreateTopicException;
 import iop.org.iop_contributors_app.core.iop_sdk.governance.Proposal;
@@ -37,6 +45,7 @@ import iop.org.iop_contributors_app.ui.dialogs.wallet.InsuficientFundsDialog;
 import iop.org.iop_contributors_app.ui.validators.CreateProposalActivityValidator;
 import iop.org.iop_contributors_app.ui.validators.CreateProposalWatcher;
 import iop.org.iop_contributors_app.ui.validators.ValidationException;
+import iop.org.iop_contributors_app.utils.CrashReporter;
 import iop.org.iop_contributors_app.wallet.db.CantGetProposalException;
 import iop.org.iop_contributors_app.wallet.db.CantSaveProposalExistException;
 
@@ -89,6 +98,8 @@ public class CreateProposalActivity extends BaseActivity {
     private AtomicBoolean lock = new AtomicBoolean(false);
 
     private CreateProposalActivityValidator validator = new CreateProposalActivityValidator();
+
+    private Map<Integer,ChromeHelpPopup> popups;
 
 
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
@@ -221,6 +232,8 @@ public class CreateProposalActivity extends BaseActivity {
         btn_create_proposal = (Button) root.findViewById(R.id.btn_create_proposal);
         btn_publish_proposal = (Button) root.findViewById(R.id.btn_publish_proposal);
 
+        initHelpViews();
+
         initWatchers();
 
         root.findViewById(R.id.img_help_my_address).setOnClickListener(new View.OnClickListener() {
@@ -294,7 +307,7 @@ public class CreateProposalActivity extends BaseActivity {
                             } catch (final CantCreateTopicException e) {
                                 e.printStackTrace();
                                 errorTitle = "Error";
-                                messageBody = getErrorsFromJson(e.getMessage());
+                                messageBody = (e.getMessage()!=null && !e.getMessage().equals(""))?getErrorsFromJson(e.getMessage()):"CantCreateTopicException";
                             } catch (CantSaveProposalExistException e) {
                                 errorTitle = "Error";
                                 messageBody = "Proposal title already exist";
@@ -303,6 +316,10 @@ public class CreateProposalActivity extends BaseActivity {
                                 messageBody = e.getMessage();
                             } catch(Exception e) {
                                 e.printStackTrace();
+                                // save error in report
+                                CrashReporter.saveBackgroundTrace(e, ApplicationController.packageInfoFromContext(CreateProposalActivity.this));
+                                errorTitle = "Error";
+                                messageBody = (e.getMessage()!=null && !e.getMessage().equals(""))?getErrorsFromJson(e.getMessage()):"Exception, please send report";
                             }
 
                             final boolean finalResult = result;
@@ -362,6 +379,77 @@ public class CreateProposalActivity extends BaseActivity {
 
     }
 
+    private void initHelpViews() {
+        View.OnClickListener onClickListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int id = v.getId();
+
+                if (id == R.id.help_start_block){
+                    ChromeHelpPopup chromeHelpPopup = loadPopup(v,getString(R.string.create_proposal_help_start_block));
+                    chromeHelpPopup.setyMove(-10);
+                    chromeHelpPopup.setAnimation(false);
+                    chromeHelpPopup.show(v);
+                } else if (id == R.id.help_end_block){
+                    ChromeHelpPopup chromeHelpPopup = loadPopup(v,getString(R.string.create_proposal_help_end_block));
+                    chromeHelpPopup.setyMove(-10);
+                    chromeHelpPopup.setAnimation(false);
+                    chromeHelpPopup.show(v);
+                } else if (id == R.id.help_block_reward){
+                    ChromeHelpPopup chromeHelpPopup = loadPopup(v,getString(R.string.create_proposal_help_block_reward));
+                    chromeHelpPopup.setyMove(-10);
+                    chromeHelpPopup.setAnimation(false);
+                    chromeHelpPopup.show(v);
+                } else if (id == R.id.help_beneficiaries ){
+                    ChromeHelpPopup chromeHelpPopup = loadPopup(v,getString(R.string.create_proposal_help_beneficiaries));
+                    chromeHelpPopup.setyMove(-10);
+                    chromeHelpPopup.setAnimation(false);
+                    chromeHelpPopup.setTextBackgroundColor(Color.parseColor("#aae6e6e6"));
+                    chromeHelpPopup.show(v);
+                }
+            }
+        };
+
+        findViewById(R.id.help_start_block).setOnClickListener(onClickListener);
+        findViewById(R.id.help_end_block).setOnClickListener(onClickListener);
+        findViewById(R.id.help_block_reward).setOnClickListener(onClickListener);
+        findViewById(R.id.help_beneficiaries).setOnClickListener(onClickListener);
+
+
+        Spinner spinner = (Spinner) findViewById(R.id.spinner_categories);
+        // Spinner click listener
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                String item = parent.getItemAtPosition(position).toString();
+                edit_category.setText(item);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+        // Spinner Drop down elements
+        List<String> categories = new ArrayList <String>();
+        categories.add("Develop");
+        categories.add("Graphic design");
+        categories.add("Community");
+        categories.add("Public relationship");
+
+
+        // Creating adapter for spinner
+        ArrayAdapter<String> dataAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, categories);
+
+        // Drop down layout style - list view with radio button
+        dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+        // attaching data adapter to spinner
+        spinner.setAdapter(dataAdapter);
+
+    }
+
 
     private void initWatchers(){
         setWatcher(FIELD_TITLE,edit_title,null);
@@ -381,6 +469,16 @@ public class CreateProposalActivity extends BaseActivity {
         watchers.put(id,createProposalWatcher);
     }
 
+    private ChromeHelpPopup loadPopup(View view,String text) {
+        if (popups==null)popups = new HashMap<>();
+        ChromeHelpPopup chromeHelpPopup = null;
+        if (popups.containsKey(view.getId())) {
+            chromeHelpPopup = popups.get(view.getId());
+        }else {
+            chromeHelpPopup = new ChromeHelpPopup(this,text);
+        }
+        return chromeHelpPopup;
+    }
 
     @Override
     protected boolean onBroadcastReceive(Bundle data) {
@@ -583,6 +681,10 @@ public class CreateProposalActivity extends BaseActivity {
             localBroadcastManager.unregisterReceiver(receiver);
         } catch (Exception e) {
             // nothing
+        }
+
+        if (popups!=null){
+            popups.clear();
         }
     }
 

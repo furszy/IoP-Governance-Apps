@@ -129,5 +129,8 @@ dependencies {
     //qr
     compile group: 'com.google.zxing', name: 'core', version: '3.3.0'
 
+    // projects
+    compile project(':furszy_lib')
+
     testCompile 'junit:junit:4.12'
 }

@@ -11,6 +11,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
+import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -52,14 +53,14 @@ import iop.org.iop_contributors_app.wallet.exceptions.InsuficientBalanceExceptio
 
 import static android.graphics.Color.WHITE;
 import static iop.org.iop_contributors_app.core.iop_sdk.utils.ArraysUtils.numericTypeToByteArray;
-import static iop.org.iop_contributors_app.utils.mine.QrUtils.encodeAsBitmap;
-import static iop.org.iop_contributors_app.utils.mine.SizeUtils.convertDpToPx;
+import static iop.org.iop_contributors_app.furszy_sdk.android.mine.QrUtils.encodeAsBitmap;
+import static iop.org.iop_contributors_app.furszy_sdk.android.mine.SizeUtils.convertDpToPx;
 
 /**
  * Created by mati on 09/12/16.
  */
 
-public class DevSettingsFragment extends PreferenceFragment {
+public class DevSettingsFragment extends PreferenceFragment implements Preference.OnPreferenceChangeListener {
 
     private View root;
     private WalletModule module;
@@ -96,8 +97,10 @@ public class DevSettingsFragment extends PreferenceFragment {
 
         setHasOptionsMenu(false);
 
-        final Preference pref = getPreferenceManager().findPreference("id_node_host");
-        pref.setSummary("192.168.0.111");
+        PreferenceManager preferenceManager = getPreferenceManager();
+
+        final Preference pref = preferenceManager.findPreference("id_node_host");
+        pref.setOnPreferenceChangeListener(this);
 
         pref.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
 
@@ -108,6 +111,9 @@ public class DevSettingsFragment extends PreferenceFragment {
                 return true;
             }
         });
+
+        final Preference forumHostPref = preferenceManager.findPreference("id_forum_host");
+        forumHostPref.setOnPreferenceChangeListener(this);
 
         executorService = Executors.newSingleThreadExecutor();
 
@@ -285,6 +291,25 @@ public class DevSettingsFragment extends PreferenceFragment {
         } catch (Exception e){
             Toast.makeText(getActivity(),e.getMessage(),Toast.LENGTH_LONG).show();
         }
+    }
+
+    @Override
+    public boolean onPreferenceChange(Preference preference, Object newValue) {
+
+        if (preference.getKey().equals("id_node_host")){
+            module.setNewNode(newValue.toString());
+            Toast.makeText(getActivity(),"Node changed to: "+newValue.toString()+", now touch reset and close the process please",Toast.LENGTH_LONG).show();
+            return true;
+        }
+        else if (preference.getKey().equals("id_forum_host")){
+            Toast.makeText(getActivity(),"Metodo no implementado",Toast.LENGTH_LONG).show();
+        }
+        else if (preference.getKey().equals("id_forum_wrapper_host")){
+            module.setWrapperHost(newValue.toString());
+        }
+
+
+        return false;
     }
 
     private class MyCoinSelector implements org.bitcoinj.wallet.CoinSelector {

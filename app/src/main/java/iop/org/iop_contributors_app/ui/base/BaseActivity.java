@@ -69,8 +69,8 @@ import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.IN
 import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENT_DIALOG;
 import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENT_NOTIFICATION;
 import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.RESTORE_SUCCED_DIALOG;
-import static iop.org.iop_contributors_app.utils.mine.QrUtils.encodeAsBitmap;
-import static iop.org.iop_contributors_app.utils.mine.SizeUtils.convertDpToPx;
+import static iop.org.iop_contributors_app.furszy_sdk.android.mine.QrUtils.encodeAsBitmap;
+import static iop.org.iop_contributors_app.furszy_sdk.android.mine.SizeUtils.convertDpToPx;
 
 /**
  * Created by mati on 07/11/16.
@@ -227,9 +227,9 @@ public abstract class BaseActivity extends AppCompatActivity {
                 Intent intent = null;
 
                 switch (id){
-                    case MENU_DRAWER_HOME:
-                        intent = new Intent(BaseActivity.this, MainActivity.class);
-                        break;
+//                    case MENU_DRAWER_HOME:
+//                        intent = new Intent(BaseActivity.this, MainActivity.class);
+//                        break;
                     case MENU_DRAWER_FORUM:
                         intent = new Intent(BaseActivity.this, ForumActivity.class);
                         break;
@@ -322,10 +322,10 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     private List<NavMenuItem> loadNavMenuItems() {
         List<NavMenuItem> items = new ArrayList<>();
-        items.add(new NavMenuItem(MENU_DRAWER_HOME,true,"Home",R.drawable.icon_home_on));
+//        items.add(new NavMenuItem(MENU_DRAWER_HOME,true,"Home",R.drawable.icon_home_on));
+        items.add(new NavMenuItem(MENU_DRAWER_PROPOSALS,true,"Proposals",R.drawable.icon_mycontracts_off_drawer));
         items.add(new NavMenuItem(MENU_DRAWER_FORUM,false,"Forum",R.drawable.icon_forum_off));
         items.add(new NavMenuItem(MENU_DRAWER_CREATE_PROPOSAL,false,"Create Proposal",R.drawable.icon_createcontributioncontract_off_drawer));
-        items.add(new NavMenuItem(MENU_DRAWER_PROPOSALS,false,"Proposals",R.drawable.icon_mycontracts_off_drawer));
         items.add(new NavMenuItem(MENU_DRAWER_SETTINGS,false,"Settings",R.drawable.icon_settings_off));
         return items;
     }

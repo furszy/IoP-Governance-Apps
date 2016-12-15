@@ -418,37 +418,38 @@ public class CreateProposalActivity extends BaseActivity {
         findViewById(R.id.help_beneficiaries).setOnClickListener(onClickListener);
 
 
-        Spinner spinner = (Spinner) findViewById(R.id.spinner_categories);
-        // Spinner click listener
-        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String item = parent.getItemAtPosition(position).toString();
-                edit_category.setText(item);
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        });
-
-        // Spinner Drop down elements
-        List<String> categories = new ArrayList <String>();
-        categories.add("Develop");
-        categories.add("Graphic design");
-        categories.add("Community");
-        categories.add("Public relationship");
-
-
-        // Creating adapter for spinner
-        ArrayAdapter<String> dataAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, categories);
-
-        // Drop down layout style - list view with radio button
-        dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-
-        // attaching data adapter to spinner
-        spinner.setAdapter(dataAdapter);
+//        Spinner spinner = (Spinner) findViewById(R.id.spinner_categories);
+//        // Spinner click listener
+//        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+//            @Override
+//            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+//                String item = parent.getItemAtPosition(position).toString();
+////                edit_category.setText(item);
+//            }
+//
+//            @Override
+//            public void onNothingSelected(AdapterView<?> parent) {
+//
+//            }
+//        });
+//
+//
+//        // Spinner Drop down elements
+//        List<String> categories = new ArrayList <String>();
+//        categories.add("Develop");
+//        categories.add("Graphic design");
+//        categories.add("Community");
+//        categories.add("Public relationship");
+//
+//
+//        // Creating adapter for spinner
+//        ArrayAdapter<String> dataAdapter = new ArrayAdapter<>(this, R.layout.create_proposal_spinner_item, categories);
+//
+//        // Drop down layout style - list view with radio button
+//        dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+//
+//        // attaching data adapter to spinner
+//        spinner.setAdapter(dataAdapter);
 
     }
 
@@ -656,7 +657,7 @@ public class CreateProposalActivity extends BaseActivity {
         //todo: faltan los beneficiarios y las validaciones..
         proposal.setTitle(validator.validateTitle(title));
         proposal.setSubTitle(validator.validateSubTitle(subtitle));
-        proposal.setCategory(validator.validatCategory(category));
+//        proposal.setCategory(validator.validatCategory(category));
         proposal.setBody(validator.validateBody(body));
         proposal.setStartBlock(validator.validateStartBlock(startBlock));
         proposal.setEndBlock(validator.validateEndBlock(endBlock));

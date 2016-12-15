@@ -1,4 +1,4 @@
-package iop.org.iop_contributors_app.utils.mine;
+package iop.org.iop_contributors_app.furszy_sdk.android.mine;
 
 import android.content.res.Resources;
 import android.util.DisplayMetrics;

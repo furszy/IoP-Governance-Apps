@@ -1,14 +1,19 @@
 package iop.org.iop_contributors_app.ui;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewPropertyAnimatorCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -31,6 +36,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import iop.org.iop_contributors_app.ApplicationController;
+import iop.org.iop_contributors_app.ConnectionRefusedException;
 import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.ForumProfile;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.InvalidUserParametersException;
@@ -41,6 +47,8 @@ import iop.org.iop_contributors_app.wallet.WalletModule;
 import static iop.org.iop_contributors_app.core.iop_sdk.utils.StringUtils.cleanString;
 
 public class OnboardingWithCenterAnimationActivity extends AppCompatActivity {
+
+    private static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 1000;
 
     public static final int STARTUP_DELAY = 300;
     public static final int ANIM_ITEM_DURATION = 1000;
@@ -74,11 +82,13 @@ public class OnboardingWithCenterAnimationActivity extends AppCompatActivity {
                 View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
         super.onCreate(savedInstanceState);
 
+        checkPermissions();
+
         application = ApplicationController.getInstance();
         module = application.getWalletModule();
 
         if (module.isForumRegistered()) {
-            startActivity(new Intent(this, MainActivity.class));
+            startActivity(new Intent(this, ProposalsActivity.class));
         }
         setContentView(R.layout.activity_onboarding_center);
 
@@ -142,8 +152,6 @@ public class OnboardingWithCenterAnimationActivity extends AppCompatActivity {
                         } else {
                             Toast.makeText(OnboardingWithCenterAnimationActivity.this, "Username invalid, please add your nickname", Toast.LENGTH_LONG).show();
                         }
-                        // invisible progress bar
-                        progressBar.setVisibility(View.INVISIBLE);
                     }else
                         Toast.makeText(v.getContext(),"No internet connection available\nplease retry again later",Toast.LENGTH_LONG).show();
                 } catch (Exception e) {
@@ -283,7 +291,7 @@ public class OnboardingWithCenterAnimationActivity extends AppCompatActivity {
             execute(new Runnable() {
                 @Override
                 public void run() {
-                    Log.d(TAG,"loginUser");
+                    Log.d(TAG, "loginUser");
                     try {
                         if (module.connectToForum(username, password)) {
 
@@ -298,7 +306,7 @@ public class OnboardingWithCenterAnimationActivity extends AppCompatActivity {
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    Toast.makeText(OnboardingWithCenterAnimationActivity.this, "Error connection to the forum", Toast.LENGTH_LONG).show();
+                                    Toast.makeText(OnboardingWithCenterAnimationActivity.this, "Fail connection to the forum", Toast.LENGTH_LONG).show();
                                     progressBar.setVisibility(View.GONE);
                                 }
                             });
@@ -311,7 +319,16 @@ public class OnboardingWithCenterAnimationActivity extends AppCompatActivity {
                                 progressBar.setVisibility(View.GONE);
                             }
                         });
-                    } catch (final Exception e){
+                    }catch (final ConnectionRefusedException e) {
+                        e.printStackTrace();
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                buildFailDialog("Cant connect\n"+e.getMessage());
+                                progressBar.setVisibility(View.GONE);
+                            }
+                        });
+                    }catch (final Exception e){
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
@@ -328,7 +345,7 @@ public class OnboardingWithCenterAnimationActivity extends AppCompatActivity {
     }
 
     private void goHome(){
-        Intent intent = new Intent(this,MainActivity.class);
+        Intent intent = new Intent(this,ProposalsActivity.class);
         startActivity(intent);
     }
 
@@ -359,13 +376,69 @@ public class OnboardingWithCenterAnimationActivity extends AppCompatActivity {
         DialogBuilder dialogBuilder = new DialogBuilder(this);
         dialogBuilder.setTitle("Error");
         dialogBuilder.setMessage(message);
-        dialogBuilder.singleDismissButton(new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                startActivity(new Intent(OnboardingWithCenterAnimationActivity.this,MainActivity.class));
-            }
-        });
-
         dialogBuilder.show();
+    }
+
+
+    private void checkPermissions() {
+        // Assume thisActivity is the current activity
+        if (Build.VERSION.SDK_INT > 22) {
+
+            int permissionCheck = ContextCompat.checkSelfPermission(this,
+                    Manifest.permission.READ_EXTERNAL_STORAGE);
+
+            // Here, thisActivity is the current activity
+            if (ContextCompat.checkSelfPermission(this,
+                    Manifest.permission.READ_EXTERNAL_STORAGE)
+                    != PackageManager.PERMISSION_GRANTED) {
+
+                // Should we show an explanation?
+                if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                        Manifest.permission.READ_CONTACTS)) {
+
+                    // Show an expanation to the user *asynchronously* -- don't block
+                    // this thread waiting for the user's response! After the user
+                    // sees the explanation, try again to request the permission.
+
+                } else {
+
+                    // No explanation needed, we can request the permission.
+
+                    ActivityCompat.requestPermissions(this,
+                            new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                            MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE);
+
+                    // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
+                    // app-defined int constant. The callback method gets the
+                    // result of the request.
+                }
+            }
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case 1: {
+
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    // permission was granted, yay! Do the
+                    // contacts-related task you need to do.
+                } else {
+
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                    Toast.makeText(this, "Permission denied to read your External storage", Toast.LENGTH_SHORT).show();
+                }
+                return;
+            }
+
+            // other 'case' lines to check for other
+            // permissions this app might request
+        }
     }
 }

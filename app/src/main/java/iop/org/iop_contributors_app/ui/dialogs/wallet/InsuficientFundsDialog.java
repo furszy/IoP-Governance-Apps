@@ -12,7 +12,6 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.zxing.WriterException;
 
@@ -22,8 +21,8 @@ import iop.org.iop_contributors_app.wallet.WalletModule;
 
 import static android.graphics.Color.WHITE;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
-import static iop.org.iop_contributors_app.utils.mine.QrUtils.encodeAsBitmap;
-import static iop.org.iop_contributors_app.utils.mine.SizeUtils.convertDpToPx;
+import static iop.org.iop_contributors_app.furszy_sdk.android.mine.QrUtils.encodeAsBitmap;
+import static iop.org.iop_contributors_app.furszy_sdk.android.mine.SizeUtils.convertDpToPx;
 
 /**
  * Created by mati on 08/12/16.

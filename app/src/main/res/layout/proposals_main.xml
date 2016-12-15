@@ -13,34 +13,75 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_gravity="center"
-        android:gravity="center"
+        android:id="@+id/container_empty_screen"
         android:orientation="vertical"
-        android:id="@+id/container_empty_screen">
+        android:gravity="center"
+        android:visibility="invisible"
+        android:layout_gravity="center"
+       >
 
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/icon_alert_block_iop"
-            android:layout_marginBottom="36dp"/>
 
-        <TextView
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Don't have proposals"
+            android:orientation="horizontal"
             android:gravity="center"
-            android:textColor="#fff"
-            android:textSize="15sp"
-            android:layout_marginBottom="12dp"/>
+            android:layout_gravity="center"
+            android:layout_marginBottom="30dp">
 
-        <Button
-            android:layout_width="@dimen/standard_btn_widht"
-            android:layout_height="48dp"
-            android:id="@+id/btn_go"
-            android:textColor="#fff"
-            android:background="@drawable/create_proposal_btn"
-            android:text="Go!"
-            />
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginRight="9dp"
+                android:id="@+id/show_contract">
+
+                <ImageView
+                    android:layout_width="90dp"
+                    android:layout_height="56dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/icon_see_contracts_home_vacio"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="See Contracts"
+                    android:layout_marginTop="12dp"
+                    android:textSize="18sp"
+                    android:textColor="#fff"/>
+
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginLeft="9dp"
+                android:id="@+id/create_contract">
+
+                <ImageView
+                    android:layout_width="90dp"
+                    android:layout_height="56dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/icono_createcontratct__home2doactionbar"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Create Contracts"
+                    android:layout_marginTop="12dp"
+                    android:textSize="18sp"
+                    android:textColor="#fff"/>
+
+
+            </LinearLayout>
+
+
+
+        </LinearLayout>
+
 
 
     </LinearLayout>

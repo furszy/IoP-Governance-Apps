@@ -25,10 +25,12 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import iop.org.iop_contributors_app.ApplicationController;
+import iop.org.iop_contributors_app.ConnectionRefusedException;
 import iop.org.iop_contributors_app.Profile;
 import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.ServerWrapper;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.CantCreateTopicException;
+import iop.org.iop_contributors_app.core.iop_sdk.forum.discourge.com.wareninja.opensource.discourse.DiscouseApiConstants;
 import iop.org.iop_contributors_app.core.iop_sdk.governance.Proposal;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.ForumClient;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.ForumClientDiscourseImp;
@@ -90,7 +92,8 @@ public class WalletModule implements ContextWrapper{
         proposalsDao = new ProposalsDao(context);
         // locked outputs
         lockedBalance = proposalsDao.getTotalLockedBalance();
-        serverWrapper = new ServerWrapper();
+        forumConfigurations.getWrapperUrl();
+        serverWrapper = new ServerWrapper("http://"+ DiscouseApiConstants.FORUM_WRAPPER_URL);
     }
 
     public void start(){
@@ -485,7 +488,7 @@ public class WalletModule implements ContextWrapper{
         return forumClient.registerUser(username,password,email);
     }
 
-    public boolean connectToForum(String username,String password) throws InvalidUserParametersException {
+    public boolean connectToForum(String username,String password) throws InvalidUserParametersException, ConnectionRefusedException {
         return forumClient.connect(username,password);
     }
 
@@ -518,5 +521,10 @@ public class WalletModule implements ContextWrapper{
 
     public void cleanProposalDb() {
         proposalsDao.clean();
+    }
+
+    public void setWrapperHost(String wrapperHost) {
+        forumConfigurations.setWrapperUrl(wrapperHost);
+        serverWrapper.setWrapperUrl(wrapperHost);
     }
 }

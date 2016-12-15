@@ -12,6 +12,12 @@
 
     </style>
 
+    <style name="AppThemeGray" parent="Theme.AppCompat.Light.NoActionBar">
+
+        <item name="colorControlNormal">#C9CBCC</item>
+
+    </style>
+
     <style name="AppTheme1" parent="Theme.AppCompat.Light.NoActionBar">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>

@@ -30,6 +30,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import iop.org.iop_contributors_app.ApplicationController;
+import iop.org.iop_contributors_app.ConnectionRefusedException;
 import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.ForumProfile;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.InvalidUserParametersException;
@@ -313,6 +314,14 @@ public class VotingStartActivity extends AppCompatActivity {
                             }
                         });
                     } catch (final Exception e){
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                buildFailDialog("Cant connect\n"+e.getMessage());
+                                progressBar.setVisibility(View.GONE);
+                            }
+                        });
+                    } catch (final ConnectionRefusedException e) {
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {

@@ -30,6 +30,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 
+import iop.org.iop_contributors_app.ConnectionRefusedException;
 import iop.org.iop_contributors_app.ServerWrapper;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.discourge.com.wareninja.opensource.discourse.DiscourseApiClient;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.discourge.com.wareninja.opensource.discourse.DiscouseApiConstants;
@@ -38,6 +39,7 @@ import iop.org.iop_contributors_app.core.iop_sdk.forum.discourge.com.wareninja.o
 import iop.org.iop_contributors_app.core.iop_sdk.forum.discourge.com.wareninja.opensource.discourse.utils.ResponseModel;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.wrapper.ResponseMessageConstants;
 import iop.org.iop_contributors_app.core.iop_sdk.governance.Proposal;
+import iop.org.iop_contributors_app.utils.CrashReporter;
 import iop.org.iop_contributors_app.utils.exceptions.NotValidParametersException;
 import iop.org.iop_contributors_app.wallet.db.CantUpdateProposalException;
 
@@ -103,7 +105,7 @@ public class ForumClientDiscourseImp implements ForumClient {
      * @return
      */
     @Override
-    public boolean connect(String username, String password) throws InvalidUserParametersException {
+    public boolean connect(String username, String password) throws InvalidUserParametersException, ConnectionRefusedException {
         if (isActive) throw new IllegalStateException("Forum is already connected");
         //init();
         LOG.info("connect");
@@ -116,15 +118,17 @@ public class ForumClientDiscourseImp implements ForumClient {
                 parameters.put("password", password);
 
                 apiKey = serverWrapper.connect(parameters);
-                if (apiKey!=null){
+                if (apiKey != null) {
                     conf.setApiKey(apiKey);
                     this.client.setApiKey(apiKey);
-                    forumProfile = new ForumProfile(username,password,null);
-                    saveForumData(true,username,password,null);
+                    forumProfile = new ForumProfile(username, password, null);
+                    saveForumData(true, username, password, null);
                     return true;
-                }else
+                } else
                     return false;
 
+            }catch (ConnectionRefusedException e){
+                throw e;
             }catch (Exception e){
                 e.printStackTrace();
             }
@@ -156,11 +160,13 @@ public class ForumClientDiscourseImp implements ForumClient {
             if (responseModel.meta.code > 201) {
                 LOG.error("topic fail. data: " + responseModel.data);
                 int index = responseModel.data.toString().lastIndexOf("|");
-                String errorDetail = responseModel.data.toString().substring(index+1);
+                String errorDetail = responseModel.data.toString().substring(index+1);;
                 if (errorDetail.contains("<!DOCTYPE html>")){
                     throw new CantCreateTopicException("Cant create topic, something bad happen with the forum");
-                }else
-                    throw new CantCreateTopicException(errorDetail);
+                }else {
+                    LOG.error("forum fail with proposal: title="+title+", category="+category+", raw="+raw);
+                    throw new CantCreateTopicException("Forum fail, code: " + responseModel.meta.code + ",  " + errorDetail);
+                }
             } else {
                 LOG.info("topic created.");
                 LOG.info("### data: "+responseModel.data.toString());

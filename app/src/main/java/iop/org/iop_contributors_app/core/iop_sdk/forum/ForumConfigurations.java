@@ -16,6 +16,8 @@ public interface ForumConfigurations {
 
     void setUrl(String url);
 
+    void setWrapperUrl(String url);
+
     ForumProfile getForumUser();
 
     String getApiKey();
@@ -23,4 +25,6 @@ public interface ForumConfigurations {
     void remove();
 
     String getUrl();
+
+    String getWrapperUrl();
 }

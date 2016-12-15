@@ -1,5 +1,6 @@
 package iop.org.iop_contributors_app.core.iop_sdk.forum;
 
+import iop.org.iop_contributors_app.ConnectionRefusedException;
 import iop.org.iop_contributors_app.core.iop_sdk.governance.Proposal;
 import iop.org.iop_contributors_app.utils.exceptions.NotValidParametersException;
 import iop.org.iop_contributors_app.wallet.db.CantUpdateProposalException;
@@ -17,7 +18,7 @@ public interface ForumClient {
 
     boolean registerUser(String username, String password, String email) throws InvalidUserParametersException;
 
-    boolean connect(String username, String password) throws InvalidUserParametersException;
+    boolean connect(String username, String password) throws InvalidUserParametersException, ConnectionRefusedException;
 
     int createTopic(String title,String category,String raw) throws CantCreateTopicException;
 

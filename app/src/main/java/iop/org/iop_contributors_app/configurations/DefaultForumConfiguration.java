@@ -21,6 +21,7 @@ public class DefaultForumConfiguration extends Configurations implements ForumCo
     public static final String PREFS_EMAIL = "forumEmail";
     public static final String PREFS_API_KEY = "apiKey";
     public static final String PREFS_URL = "forumUrl";
+    private static final String PREFS_WRAPPER_URL = "wrapperUrl";
 
     public DefaultForumConfiguration(SharedPreferences prefs) {
         super(prefs);
@@ -54,6 +55,11 @@ public class DefaultForumConfiguration extends Configurations implements ForumCo
     }
 
     @Override
+    public void setWrapperUrl(String url) {
+        save(PREFS_WRAPPER_URL,url);
+    }
+
+    @Override
     public ForumProfile getForumUser() {
         String username = getString(PREFS_USERNAME,null);
         if (username==null) return null;
@@ -72,5 +78,10 @@ public class DefaultForumConfiguration extends Configurations implements ForumCo
     @Override
     public String getUrl() {
         return getString(PREFS_URL, DiscouseApiConstants.FORUM_URL);
+    }
+
+    @Override
+    public String getWrapperUrl() {
+        return getString(PREFS_WRAPPER_URL,"http://"+ DiscouseApiConstants.FORUM_WRAPPER_URL);
     }
 }

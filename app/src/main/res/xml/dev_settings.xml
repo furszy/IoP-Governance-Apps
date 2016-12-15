@@ -38,7 +38,12 @@
         <EditTextPreference android:key="id_forum_host"
             android:title="Host"
             android:summary="Forum url"
-            android:defaultValue="http://104.199.78.250"/>
+            android:defaultValue="test.fermat.community"/>
+
+        <EditTextPreference android:key="id_forum_wrapper_host"
+            android:title="Server wrapper host"
+            android:summary="Forum wrapper url"
+            android:defaultValue="test.fermat.community"/>
 
     </PreferenceCategory>
 

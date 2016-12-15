@@ -1,5 +1,7 @@
 package iop.org.iop_contributors_app.ui;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -15,6 +17,7 @@ import java.util.concurrent.Executors;
 import iop.org.iop_contributors_app.ApplicationController;
 import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.core.iop_sdk.governance.Proposal;
+import iop.org.iop_contributors_app.furszy_sdk.android.mine.AnimationUtils;
 import iop.org.iop_contributors_app.ui.base.BaseActivity;
 import iop.org.iop_contributors_app.ui.components.ProposalsAdapter;
 import iop.org.iop_contributors_app.wallet.WalletModule;
@@ -65,12 +68,21 @@ public class ProposalsActivity extends BaseActivity {
         adapter = new ProposalsAdapter(this,module);
         recyclerView.setAdapter(adapter);
 
-        container_empty_screen.findViewById(R.id.btn_go).setOnClickListener(new View.OnClickListener() {
+
+        container_empty_screen.findViewById(R.id.show_contract).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(v.getContext(),ForumActivity.class));
+            }
+        });
+
+        container_empty_screen.findViewById(R.id.create_contract).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(v.getContext(),CreateProposalActivity.class));
             }
         });
+
 
     }
 
@@ -111,10 +123,10 @@ public class ProposalsActivity extends BaseActivity {
 
 
     private void showEmptyScreen(){
-        container_empty_screen.setVisibility(View.VISIBLE);
+        AnimationUtils.fadeInView(container_empty_screen,300);
     }
 
     private void hideEmptyScreen(){
-        container_empty_screen.setVisibility(View.INVISIBLE);
+        AnimationUtils.fadeOutView(container_empty_screen,300);
     }
 }

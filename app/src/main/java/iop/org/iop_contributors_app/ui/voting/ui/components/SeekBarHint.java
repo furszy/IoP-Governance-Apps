@@ -5,18 +5,14 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
-import android.graphics.drawable.ClipDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
-import android.graphics.drawable.ShapeDrawable;
-import android.graphics.drawable.shapes.Shape;
 import android.util.AttributeSet;
 import android.widget.SeekBar;
 
 import iop.org.iop_contributors_app.R;
-import iop.org.iop_contributors_app.utils.mine.SizeUtils;
 
-import static iop.org.iop_contributors_app.utils.mine.SizeUtils.convertDpToPx;
+import static iop.org.iop_contributors_app.furszy_sdk.android.mine.SizeUtils.convertDpToPx;
 
 /**
  * Created by mati on 12/12/16.

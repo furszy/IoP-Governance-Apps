@@ -121,6 +121,14 @@
 
         </LinearLayout>
 
+        <ProgressBar
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:id="@+id/progressBar"
+            android:layout_marginRight="5dp"
+            android:layout_gravity="center"
+            android:visibility="gone" />
+
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -218,12 +226,5 @@
         android:layout_marginBottom="32dp"
         />
 
-    <ProgressBar
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:id="@+id/progressBar"
-        android:layout_gravity="center"
-        android:visibility="invisible"
-        android:layout_marginTop="125dp"
-        />
+
 </FrameLayout>

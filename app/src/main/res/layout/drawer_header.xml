@@ -17,10 +17,12 @@
         android:layout_marginLeft="@dimen/spacing_large"
         android:layout_marginTop="15dp"
         android:elevation="4dp"
-        android:src="@drawable/icon_profile_picture"
+
+        android:src="@drawable/profile"
         app:civ_border_color="#fff"
-        app:civ_border_width="2dp"
+        app:civ_border_width="1dp"
         />
+
 
     <LinearLayout
         android:layout_width="match_parent"

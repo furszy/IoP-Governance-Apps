@@ -12,6 +12,6 @@ public class DiscouseApiConstants {
     public static final String API_USER_BEHALF_OF = "system";
     public static final String FORUM_URL =  "http://test.fermat.community";
 
-    public static final String FORUM_WRAPPER_URL = HardCodedConstans.HOST;
+    public static final String FORUM_WRAPPER_URL = "test.fermat.community";//HardCodedConstans.HOST;
 
 }

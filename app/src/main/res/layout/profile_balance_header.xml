@@ -14,7 +14,7 @@
         android:layout_height="60dp"
         android:elevation="4dp"
         android:layout_gravity="center"
-        android:src="@drawable/img_test"
+        android:src="@drawable/profile"
         app:civ_border_color="@color/text_blue"
         app:civ_border_width="2dp"
         />

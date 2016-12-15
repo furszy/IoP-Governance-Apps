@@ -6,9 +6,11 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.HttpHostConnectException;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpConnectionParams;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -17,10 +19,12 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import iop.org.iop_contributors_app.core.iop_sdk.forum.ForumClientDiscourseImp;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.ForumProfile;
@@ -41,15 +45,27 @@ public class ServerWrapper {
 
     private static final Logger LOG = LoggerFactory.getLogger(ServerWrapper.class);
 
-    private static final String url = "http://"+ DiscouseApiConstants.FORUM_WRAPPER_URL+":7070/fermat";
+    private String wrapperUrl;
 
+    private String url;
+
+    public ServerWrapper(String forumWrapper) {
+        this.wrapperUrl = forumWrapper;
+        changeUrl();
+    }
+
+    private void changeUrl(){
+        url = wrapperUrl+":7070/fermat";
+    }
 
     /**
      *
      * @param parameters
      * @return api_key
      */
-    public String connect(Map<String, String> parameters) throws InvalidUserParametersException {
+    public String connect(Map<String, String> parameters) throws InvalidUserParametersException, ConnectionRefusedException {
+
+        LOG.info("forum wrapper, connect to: "+url);
 
         String url = this.url+"/requestkey";
 
@@ -58,7 +74,10 @@ public class ServerWrapper {
         String apiKey = null;
 
         try {
-            HttpClient client = new DefaultHttpClient(new BasicHttpParams());
+
+            BasicHttpParams basicHttpParams = new BasicHttpParams();
+            HttpConnectionParams.setSoTimeout(basicHttpParams, (int) TimeUnit.MINUTES.toMillis(1));
+            HttpClient client = new DefaultHttpClient(basicHttpParams);
             HttpPost httpPost = new HttpPost(url);
             //httpPost.setHeader("Content-type", "application/vnd.api+json");
             httpPost.addHeader("Accept", "text/html,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5");
@@ -100,6 +119,12 @@ public class ServerWrapper {
 
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
+        }catch (HttpHostConnectException e) {
+            e.printStackTrace();
+            throw new ConnectionRefusedException("server is not available", e);
+        }catch (SocketTimeoutException e){
+            e.printStackTrace();
+            throw new ConnectionRefusedException("server is not available", e);
         } catch (IOException e) {
             e.printStackTrace();
         } catch (JSONException e) {
@@ -186,5 +211,10 @@ public class ServerWrapper {
             }
         }
         return jsonObject.toString();
+    }
+
+    public void setWrapperUrl(String wrapperUrl) {
+        this.wrapperUrl = wrapperUrl;
+        changeUrl();
     }
 }

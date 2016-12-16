@@ -43,6 +43,7 @@ import java.util.concurrent.Executors;
 
 import iop.org.iop_contributors_app.ApplicationController;
 import iop.org.iop_contributors_app.R;
+import iop.org.iop_contributors_app.furszy_sdk.android.nav_view.NavData;
 import iop.org.iop_contributors_app.furszy_sdk.android.nav_view.NavMenuItem;
 import iop.org.iop_contributors_app.furszy_sdk.android.nav_view.NavViewAdapter;
 import iop.org.iop_contributors_app.intents.DialogIntentsBuilder;
@@ -225,6 +226,8 @@ public abstract class BaseActivity extends AppCompatActivity {
                 int id = data.getId();
 
                 Intent intent = null;
+                // position selected
+                saveNavSelection(position);
 
                 switch (id){
 //                    case MENU_DRAWER_HOME:
@@ -246,7 +249,6 @@ public abstract class BaseActivity extends AppCompatActivity {
 
                 startActivity(intent);
 
-                data.setClicked(true);
                 drawerLayout.closeDrawers();
             }
 
@@ -303,6 +305,10 @@ public abstract class BaseActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    private void saveNavSelection(int position) {
+        NavData.navSelection = position;
     }
 
     private void updateBalances(){

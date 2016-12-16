@@ -1,6 +1,7 @@
 package iop.org.iop_contributors_app.furszy_sdk.android.nav_view;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.view.View;
 
 import com.squareup.picasso.Picasso;
@@ -34,9 +35,9 @@ public class NavViewAdapter extends FermatAdapterImproved<NavMenuItem,NavMenuHol
     protected void bindHolder(NavMenuHolder holder, NavMenuItem data, int position) {
 
         holder.txt_title.setText(data.getText());
-//        if (data.isClicked()){
-//
-//        }
+        if (position==NavData.navSelection){
+            holder.itemView.setBackgroundColor(Color.parseColor("#66000000"));
+        }
 
         Picasso.with(context).load(data.getIcRes()).into(holder.icon);
 

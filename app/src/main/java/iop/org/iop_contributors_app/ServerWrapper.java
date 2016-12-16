@@ -1,6 +1,7 @@
 package iop.org.iop_contributors_app;
 
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -35,6 +36,7 @@ import iop.org.iop_contributors_app.core.iop_sdk.forum.discourge.com.wareninja.o
 import iop.org.iop_contributors_app.core.iop_sdk.forum.discourge.com.wareninja.opensource.discourse.utils.StringRequestParameter;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.wrapper.ResponseMessageConstants;
 
+import static iop.org.iop_contributors_app.core.iop_sdk.forum.wrapper.ResponseMessageConstants.REGISTER_ERROR_STR;
 import static iop.org.iop_contributors_app.core.iop_sdk.forum.wrapper.ResponseMessageConstants.USER_ERROR_STR;
 import static iop.org.iop_contributors_app.core.iop_sdk.utils.StreamsUtils.convertInputStreamToString;
 
@@ -293,4 +295,27 @@ public class ServerWrapper {
         changeUrl();
     }
 
+    public HttpResponse registerUser(Map<String, String> parameters) throws IOException {
+
+        String url = this.url+"/register";
+
+        LOG.info("registerUser URL: "+url);
+
+        HttpClient client = new DefaultHttpClient(new BasicHttpParams());
+        HttpPost httpPost = new HttpPost(url);
+        //httpPost.setHeader("Content-type", "application/vnd.api+json");
+        httpPost.addHeader("Accept", "text/html,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5");
+        httpPost.setHeader("Content-type", "application/json");
+
+        //passes the results to a string builder/entity
+        StringEntity se = new StringEntity(getJsonFromParams(parameters), "UTF-8");
+        //sets the post request as the resulting string
+        httpPost.setEntity(se);
+
+
+        // make GET request to the given URL
+        HttpResponse httpResponse = client.execute(httpPost);
+
+        return httpResponse;
+    }
 }

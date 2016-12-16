@@ -130,7 +130,7 @@ public class ProfileActivity extends BaseActivity {
             btn_create.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    startActivity(new Intent(v.getContext(),MainActivity.class));
+                    onBackPressed();
                 }
             });
 
@@ -212,7 +212,7 @@ public class ProfileActivity extends BaseActivity {
 
             @Override
             public void afterTextChanged(Editable s) {
-                if (s.toString().length()>=8){
+                if (s.toString().length()>=10){
                     isPasswordCorrect = true;
                     check_password.setVisibility(View.VISIBLE);
                     check_password.setImageResource(R.drawable.ic_check_profile);

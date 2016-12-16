@@ -27,4 +27,6 @@ public interface ForumClient {
     Proposal getProposal(int forumId);
 
     void getAndCheckValid(Proposal proposal) throws NotValidParametersException;
+
+    void clean();
 }

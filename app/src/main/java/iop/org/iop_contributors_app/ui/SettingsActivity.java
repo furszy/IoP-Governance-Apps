@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.ViewGroup;
 
+import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.ui.base.BaseActivity;
 import iop.org.iop_contributors_app.ui.settings.fragments.SettingsFragment;
 
@@ -26,7 +27,9 @@ public class SettingsActivity  extends BaseActivity {
     @Override
     protected void onCreateView(ViewGroup container, Bundle savedInstance) {
 
-        settingsFragment = new SettingsFragment();
+        setTheme(R.style.PreferenceScreen1);
+
+        settingsFragment = SettingsFragment.newInstance(module);
         FragmentManager fragmentManager = getFragmentManager();
         fragmentManager.beginTransaction()
                 .add(container.getId(),settingsFragment)

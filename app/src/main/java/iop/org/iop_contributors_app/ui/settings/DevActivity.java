@@ -8,6 +8,7 @@ import android.view.Menu;
 import android.view.ViewGroup;
 
 import iop.org.iop_contributors_app.ApplicationController;
+import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.ui.base.BaseActivity;
 import iop.org.iop_contributors_app.ui.settings.fragments.DevSettingsFragment;
 import iop.org.iop_contributors_app.ui.settings.fragments.SettingsFragment;
@@ -33,6 +34,8 @@ public class DevActivity extends BaseActivity {
     protected void onCreateView(ViewGroup container, Bundle savedInstance) {
 
         module = ApplicationController.getInstance().getWalletModule();
+
+        setTheme(R.style.PreferenceScreen1);
 
         devSettingsFragment = DevSettingsFragment.newInstance(module);
         FragmentManager fragmentManager = getFragmentManager();

@@ -496,6 +496,9 @@ public class WalletModule implements ContextWrapper{
     public void cleanEverything(){
         forumConfigurations.remove();
         configuration.remove();
+        forumClient.clean();
+        cleanProposalDb();
+        profile = null;
 
     }
 

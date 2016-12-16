@@ -13,6 +13,8 @@ import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
+import android.util.Log;
+import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -20,6 +22,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -90,10 +93,15 @@ public class DevSettingsFragment extends PreferenceFragment implements Preferenc
         root.setPadding(0,16,0,0);
         root.setBackgroundColor(Color.parseColor("#1A1A1A"));
 
+        if (root instanceof LinearLayout){
+            Log.d("DEV", String.valueOf(((LinearLayout) root).getChildCount()));
+
+        }
+
         ListView list = (ListView) root.findViewById(android.R.id.list);
 //        list.setDivider(getResources().getDrawable(R.drawable.settings_divider,null)); // or some other color int
         list.setDivider(new ColorDrawable(Color.WHITE));
-        list.setDividerHeight((int) 2);
+        list.setDividerHeight(2);
 
         setHasOptionsMenu(false);
 
@@ -309,17 +317,12 @@ public class DevSettingsFragment extends PreferenceFragment implements Preferenc
         }
         else if (preference.getKey().equals("id_forum_wrapper_host")){
             module.setWrapperHost(newValue.toString());
+            preference.setDefaultValue(newValue.toString());
+            Toast.makeText(getActivity(),"Wrapper changed",Toast.LENGTH_LONG).show();
         }
 
 
         return false;
-    }
-
-    private class MyCoinSelector implements org.bitcoinj.wallet.CoinSelector {
-        @Override
-        public CoinSelection select(Coin coin, List<TransactionOutput> list) {
-            return new CoinSelection(coin,new ArrayList<TransactionOutput>());
-        }
     }
 
     private void showQrDialog(Activity activity){

@@ -146,11 +146,14 @@ public class OnboardingWithCenterAnimationActivity extends AppCompatActivity {
                                     loginUser(username, password);
                                 } else
                                     Log.e(TAG, "IsRegistered true, error!!");
-                            } else
+                            } else {
                                 Toast.makeText(OnboardingWithCenterAnimationActivity.this, "Error password is invalid", Toast.LENGTH_LONG).show();
+                                progressBar.setVisibility(View.INVISIBLE);
+                            }
 
                         } else {
                             Toast.makeText(OnboardingWithCenterAnimationActivity.this, "Username invalid, please add your nickname", Toast.LENGTH_LONG).show();
+                            progressBar.setVisibility(View.INVISIBLE);
                         }
                     }else
                         Toast.makeText(v.getContext(),"No internet connection available\nplease retry again later",Toast.LENGTH_LONG).show();
@@ -255,7 +258,7 @@ public class OnboardingWithCenterAnimationActivity extends AppCompatActivity {
 
     private boolean checkPassword(String password) {
         boolean ret = false;
-        if (password.length()>=8){
+        if (password.length()>=10){
             isPasswordCorrect = true;
             check_password.setVisibility(View.VISIBLE);
             check_password.setImageResource(R.drawable.ic_check_profile);

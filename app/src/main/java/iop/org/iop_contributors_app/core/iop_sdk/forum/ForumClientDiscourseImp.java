@@ -68,8 +68,6 @@ public class ForumClientDiscourseImp implements ForumClient {
 
     private String apiKey;
 
-    private boolean isActive;
-
     public ForumClientDiscourseImp(ForumConfigurations forumConfigurations, ServerWrapper serverWrapper) {
         this.conf = forumConfigurations;
         this.serverWrapper = serverWrapper;
@@ -106,7 +104,6 @@ public class ForumClientDiscourseImp implements ForumClient {
      */
     @Override
     public boolean connect(String username, String password) throws InvalidUserParametersException, ConnectionRefusedException {
-        if (isActive) throw new IllegalStateException("Forum is already connected");
         //init();
         LOG.info("connect");
         if (apiKey == null) {
@@ -262,6 +259,13 @@ public class ForumClientDiscourseImp implements ForumClient {
         proposal.equals(forumProposal);
     }
 
+    @Override
+    public void clean() {
+        forumProfile = null;
+        apiKey = null;
+        conf.remove();
+    }
+
 
     public ForumProfile getUser(String username){
         LOG.debug("getUser");
@@ -332,25 +336,12 @@ public class ForumClientDiscourseImp implements ForumClient {
         parameters.put("username", username);
         parameters.put("password", password);
 
-        String url = "http://"+DiscouseApiConstants.FORUM_WRAPPER_URL+":7070/fermat/register";
-
         //url = url + "?api_key=" + DiscouseApiConstants.API_KEY + "&api_username=system";
 
         try {
-            HttpClient client = new DefaultHttpClient(new BasicHttpParams());
-            HttpPost httpPost = new HttpPost(url);
-            //httpPost.setHeader("Content-type", "application/vnd.api+json");
-            httpPost.addHeader("Accept", "text/html,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5");
-            httpPost.setHeader("Content-type", "application/json");
 
-            //passes the results to a string builder/entity
-            StringEntity se = new StringEntity(getJsonFromParams(parameters), "UTF-8");
-            //sets the post request as the resulting string
-            httpPost.setEntity(se);
+            HttpResponse httpResponse = serverWrapper.registerUser(parameters);
 
-
-            // make GET request to the given URL
-            HttpResponse httpResponse = client.execute(httpPost);
             InputStream inputStream = null;
             // receive response as inputStream
             inputStream = httpResponse.getEntity().getContent();
@@ -384,17 +375,6 @@ public class ForumClientDiscourseImp implements ForumClient {
         } catch (Exception e){
             e.getMessage();
         }
-
-
-        //JSONObject jsonObject = new JSONObject(result);
-
-        //parameters.put("active","true"); // por ahora lo dejo activo hasta que vea como hacer la auth..
-//        ResponseModel responseModel = client.createUser(parameters);
-//        LOG.info("createUser responseModel -> " + responseModel.toString());
-//        if (checkIfResponseFail(responseModel)){
-//            throwException(responseModel);
-//        }
-
         return false;
     }
 

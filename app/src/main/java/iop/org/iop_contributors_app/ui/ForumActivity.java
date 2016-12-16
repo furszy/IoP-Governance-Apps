@@ -177,15 +177,19 @@ public class ForumActivity extends BaseActivity {
 
 
         private void checkUrl(String url) {
-            // todo: ver esto..
-            //http://fermat.community/t/propuesta-a-enviar-numero-10/31
-            String[] urlStr = url.split("/");
-            if (urlStr.length<4) return;
-            String forumId =  urlStr[5];
-            if (module.isProposalMine(Integer.parseInt(forumId))){
-                fab_edit.setVisibility(View.VISIBLE);
-            }else
-                fab_edit.setVisibility(View.GONE);
+            try {
+                // todo: ver esto..
+                //http://fermat.community/t/propuesta-a-enviar-numero-10/31
+                String[] urlStr = url.split("/");
+                if (urlStr.length < 4) return;
+                String forumId = urlStr[5];
+                if (module.isProposalMine(Integer.parseInt(forumId))) {
+                    fab_edit.setVisibility(View.VISIBLE);
+                } else
+                    fab_edit.setVisibility(View.GONE);
+            }catch (Exception e){
+                e.printStackTrace();
+            }
         }
     }
 

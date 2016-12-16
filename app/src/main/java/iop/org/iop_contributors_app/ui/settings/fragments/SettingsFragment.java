@@ -1,5 +1,7 @@
 package iop.org.iop_contributors_app.ui.settings.fragments;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -19,11 +21,14 @@ import java.io.IOException;
 
 import iop.org.iop_contributors_app.ApplicationController;
 import iop.org.iop_contributors_app.R;
+import iop.org.iop_contributors_app.ui.OnboardingWithCenterAnimationActivity;
+import iop.org.iop_contributors_app.ui.dialogs.DialogBuilder;
 import iop.org.iop_contributors_app.ui.dialogs.ReportIssueDialogBuilder;
 import iop.org.iop_contributors_app.ui.settings.DevActivity;
 import iop.org.iop_contributors_app.ui.settings.IoPBalanceActivity;
 import iop.org.iop_contributors_app.utils.CrashReporter;
 import iop.org.iop_contributors_app.wallet.WalletConstants;
+import iop.org.iop_contributors_app.wallet.WalletModule;
 
 import static android.widget.Toast.*;
 
@@ -33,7 +38,14 @@ import static android.widget.Toast.*;
 
 public class SettingsFragment extends PreferenceFragment {
 
+    private WalletModule module;
     private View root;
+
+    public static SettingsFragment newInstance(WalletModule module) {
+        SettingsFragment fragment = new SettingsFragment();
+        fragment.setModule(module);
+        return fragment;
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -72,6 +84,25 @@ public class SettingsFragment extends PreferenceFragment {
             handleReportIssue();
         } else if(preference.getKey().equals("id_dev")){
             startActivity(new Intent(getActivity(), DevActivity.class));
+        } else if (preference.getKey().equals("id_profile")){
+            final DialogBuilder dialogBuilder = new DialogBuilder(getActivity());
+            dialogBuilder.setMessage("You are going to remove everything in the app\nAre you sure?");
+            dialogBuilder.setTitle("Remove User");
+            dialogBuilder.setPositiveButton("YES", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    module.cleanEverything();
+                    startActivity(new Intent(getActivity(), OnboardingWithCenterAnimationActivity.class));
+                }
+            });
+            dialogBuilder.setNegativeButton("NO", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                }
+            });
+            dialogBuilder.show();
+
         }
 
         return super.onPreferenceTreeClick(preferenceScreen, preference);
@@ -120,5 +151,9 @@ public class SettingsFragment extends PreferenceFragment {
         };
 
         dialog.show();
+    }
+
+    public void setModule(WalletModule module) {
+        this.module = module;
     }
 }

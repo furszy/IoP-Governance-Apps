@@ -390,16 +390,22 @@ public class CreateProposalActivity extends BaseActivity {
                     ChromeHelpPopup chromeHelpPopup = loadPopup(v,getString(R.string.create_proposal_help_start_block));
                     chromeHelpPopup.setyMove(-10);
                     chromeHelpPopup.setAnimation(false);
+                    chromeHelpPopup.setTextColor(ContextCompat.getColor(v.getContext(),R.color.create_proposal_help_text_color));
+                    chromeHelpPopup.setTextBackgroundColor(ContextCompat.getColor(v.getContext(),R.color.create_proposal_help_text_background));
                     chromeHelpPopup.show(v);
                 } else if (id == R.id.help_end_block){
                     ChromeHelpPopup chromeHelpPopup = loadPopup(v,getString(R.string.create_proposal_help_end_block));
                     chromeHelpPopup.setyMove(-10);
                     chromeHelpPopup.setAnimation(false);
+                    chromeHelpPopup.setTextColor(ContextCompat.getColor(v.getContext(),R.color.create_proposal_help_text_color));
+                    chromeHelpPopup.setTextBackgroundColor(ContextCompat.getColor(v.getContext(),R.color.create_proposal_help_text_background));
                     chromeHelpPopup.show(v);
                 } else if (id == R.id.help_block_reward){
                     ChromeHelpPopup chromeHelpPopup = loadPopup(v,getString(R.string.create_proposal_help_block_reward));
                     chromeHelpPopup.setyMove(-10);
                     chromeHelpPopup.setAnimation(false);
+                    chromeHelpPopup.setTextColor(ContextCompat.getColor(v.getContext(),R.color.create_proposal_help_text_color));
+                    chromeHelpPopup.setTextBackgroundColor(ContextCompat.getColor(v.getContext(),R.color.create_proposal_help_text_background));
                     chromeHelpPopup.show(v);
                 } else if (id == R.id.help_beneficiaries ){
                     ChromeHelpPopup chromeHelpPopup = loadPopup(v,getString(R.string.create_proposal_help_beneficiaries));

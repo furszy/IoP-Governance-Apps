@@ -6,13 +6,18 @@ import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.text.method.ScrollingMovementMethod;
+import android.transition.Fade;
+import android.transition.Transition;
+import android.transition.TransitionInflater;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
+import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.PopupWindow;
@@ -149,6 +154,15 @@ public class ChromeHelpPopup {
             mHelpTextView.setTextColor(textColor);
         }
 
+
+//        Animation mLoadAnimation = AnimationUtils.loadAnimation(mContext, android.R.anim.fade_in);
+//        mLoadAnimation.setDuration(700);
+
+        Fade fade = new Fade();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            mWindow.setEnterTransition(fade);
+            mWindow.setExitTransition(fade);
+        }
 
         mWindow.showAtLocation(anchor, Gravity.NO_GRAVITY, xPos, yPos);
 

@@ -115,6 +115,9 @@ public class DevSettingsFragment extends PreferenceFragment implements Preferenc
         final Preference forumHostPref = preferenceManager.findPreference("id_forum_host");
         forumHostPref.setOnPreferenceChangeListener(this);
 
+        preferenceManager.findPreference("id_forum_wrapper_host")
+                .setOnPreferenceChangeListener(this);
+
         executorService = Executors.newSingleThreadExecutor();
 
         return root;

@@ -109,6 +109,7 @@ public class ApplicationController extends Application {
         };
 
 
+
         // Module initialization
         Log.d(TAG,"initializing module");
         org.bitcoinj.core.Context.enableStrictMode();

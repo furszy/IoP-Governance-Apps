@@ -6,6 +6,7 @@ import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -64,11 +65,15 @@ public class VoteDialog extends DialogFragment implements SeekBar.OnSeekBarChang
 //        }else if (mProgress==2){
 //            seekBar.setProgress(2);
 //        }
-        if(mProgress > 0 & mProgress < 26) {
-
-        } else if(mProgress > 25 & mProgress < 76) {
+        if(mProgress >= 0 & mProgress < 31) {
+            seekBar.setProgress(15);
+            seekBar.setBackgroundResource(R.drawable.verde);
+        } else if(mProgress > 25 & mProgress < 70) {
             seekBar.setProgress(50);
-        } else seekBar.setProgress(100);
+        } else {
+            seekBar.setProgress(85);
+            seekBar.setBackgroundResource(R.drawable.rojo);
+        }
     }
 
 

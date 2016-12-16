@@ -48,23 +48,23 @@ public class SeekBarHint extends SeekBar {
         LayerDrawable ld = (LayerDrawable) getProgressDrawable();
 
         int mProgress = getProgress();
-        if (mProgress > 0 & mProgress < 26){
-            c.drawText("YES",getWidth()-convertDpToPx(getResources(),48),middle+12,paint);
-            Drawable drawable = ld.findDrawableByLayerId(R.id.progress_red_background);
-            drawable.setColorFilter(Color.RED, PorterDuff.Mode.SRC_IN);
-
-        } else if(mProgress > 25 & mProgress < 76){
-            // nothing
-            Drawable drawable = ld.findDrawableByLayerId(R.id.progress_red_background);
-            drawable.setColorFilter(Color.GRAY, PorterDuff.Mode.SRC_IN);
-            Drawable d2 =  ld.findDrawableByLayerId(R.id.progress_green_background);
-            d2.setColorFilter(Color.GRAY, PorterDuff.Mode.SRC_IN);
-
-        }else {
-            c.drawText("NO",0+convertDpToPx(getResources(),48),middle+12,paint);
-            Drawable d2 = (Drawable) ld.findDrawableByLayerId(R.id.progress_green_background);
-            d2.setColorFilter(Color.GREEN, PorterDuff.Mode.SRC_IN);
-        }
+//        if (mProgress > 0 & mProgress < 26){
+//            c.drawText("YES",getWidth()-convertDpToPx(getResources(),48),middle+12,paint);
+//            Drawable drawable = ld.findDrawableByLayerId(R.id.progress_red_background);
+//            drawable.setColorFilter(Color.RED, PorterDuff.Mode.SRC_IN);
+//
+//        } else if(mProgress > 25 & mProgress < 76){
+//            // nothing
+//            Drawable drawable = ld.findDrawableByLayerId(R.id.progress_red_background);
+//            drawable.setColorFilter(Color.GRAY, PorterDuff.Mode.SRC_IN);
+//            Drawable d2 =  ld.findDrawableByLayerId(R.id.progress_green_background);
+//            d2.setColorFilter(Color.GRAY, PorterDuff.Mode.SRC_IN);
+//
+//        }else {
+//            c.drawText("NO",0+convertDpToPx(getResources(),48),middle+12,paint);
+//            Drawable d2 = (Drawable) ld.findDrawableByLayerId(R.id.progress_green_background);
+//            d2.setColorFilter(Color.GREEN, PorterDuff.Mode.SRC_IN);
+//        }
 
     }
 

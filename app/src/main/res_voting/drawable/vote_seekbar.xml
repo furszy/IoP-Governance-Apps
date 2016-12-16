@@ -10,6 +10,6 @@
             <solid android:color="@android:color/transparent" />
         </shape>
     </item>
-    <item android:drawable="@drawable/circle_red"/>
+    <item android:drawable="@drawable/circulo"/>
 
 </layer-list>

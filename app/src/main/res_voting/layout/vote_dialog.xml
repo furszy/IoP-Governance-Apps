@@ -18,19 +18,23 @@
         android:gravity="center">
 
 
-    <iop.org.iop_contributors_app.ui.voting.ui.components.SeekBarHint
-        android:id="@+id/seek_bar"
-        android:layout_width="350px"
-        android:layout_height="50dp"
-        android:thumb="@drawable/vote_seekbar"
-        android:layout_gravity="center"
-        android:progressDrawable="@drawable/progress_drawable"
-        android:minHeight="75px"
-        android:maxHeight="75px"
-        android:splitTrack="false"
-        android:progress="0"
-        android:max="100"
-        />
+        <iop.org.iop_contributors_app.ui.voting.ui.components.SeekBarHint
+            android:id="@+id/seek_bar"
+            android:layout_width="250dp"
+            android:layout_height="75dp"
+            android:thumb="@drawable/vote_seekbar"
+            android:progressDrawable="@null"
+            android:background="@drawable/rojo"
+            android:layout_gravity="center"
+            android:minHeight="75px"
+            android:maxHeight="75px"
+            android:splitTrack="false"
+            android:progress="50"
+            android:max="100"
+            />
+
+
+
 
 
     </LinearLayout>

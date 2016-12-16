@@ -98,17 +98,21 @@ public class VotingProposalsActivity extends BaseActivity {
     Runnable loadProposals = new Runnable() {
         @Override
         public void run() {
-            proposals = module.getProposals();
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    if (!proposals.isEmpty()) {
-                        hideEmptyScreen();
-                        adapter.changeDataSet(proposals);
-                    } else
-                        showEmptyScreen();
-                }
-            });
+            try {
+                proposals = module.getVotingProposals();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (proposals!=null && !proposals.isEmpty()) {
+                            hideEmptyScreen();
+                            adapter.changeDataSet(proposals);
+                        } else
+                            showEmptyScreen();
+                    }
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     };
 

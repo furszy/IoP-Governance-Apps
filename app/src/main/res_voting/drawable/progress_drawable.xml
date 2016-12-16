@@ -4,12 +4,13 @@
     <item android:id="@+id/progress_red_background">
         <shape android:shape="rectangle">
             <corners android:radius="20dp"/>
-            <solid android:color="#f00" />
+            <!--<solid android:color="#f00" />-->
 
         </shape>
     </item>
 
-    <item android:id="@+id/progress_green_background">
+    <item android:id="@+id/progress_green_background"
+        android:drawable="@drawable/rojo">
 
         <clip>
             <shape android:shape="rectangle">

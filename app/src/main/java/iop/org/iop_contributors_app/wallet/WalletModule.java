@@ -93,7 +93,7 @@ public class WalletModule implements ContextWrapper{
         // locked outputs
         lockedBalance = proposalsDao.getTotalLockedBalance();
         forumConfigurations.getWrapperUrl();
-        serverWrapper = new ServerWrapper("http://"+ DiscouseApiConstants.FORUM_WRAPPER_URL);
+        serverWrapper = new ServerWrapper(forumConfigurations.getWrapperUrl());
     }
 
     public void start(){
@@ -526,5 +526,12 @@ public class WalletModule implements ContextWrapper{
     public void setWrapperHost(String wrapperHost) {
         forumConfigurations.setWrapperUrl(wrapperHost);
         serverWrapper.setWrapperUrl(wrapperHost);
+    }
+
+    public List<Proposal> getVotingProposals() throws Exception {
+        List<String> proposalsHashes = serverWrapper.getVotingProposals(0);
+        
+
+        return null;
     }
 }

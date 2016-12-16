@@ -11,6 +11,7 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -56,6 +57,9 @@ public class ServerWrapper {
 
     private void changeUrl(){
         url = wrapperUrl+":7070/fermat";
+        if (!url.contains("http://")){
+            url = "http://"+url;
+        }
     }
 
     /**
@@ -194,8 +198,79 @@ public class ServerWrapper {
         }
 
         return false;
+    }
 
 
+    /**
+     *
+     *
+     * @param blockHeight
+     * @return list of proposal transactions hashes
+     */
+    public List<String> getVotingProposals(int blockHeight) throws Exception {
+        String url = this.url+"/requestproposals";
+
+        //url = url + "?api_key=" + DiscouseApiConstants.API_KEY + "&api_username=system";
+        List<String> ret = new ArrayList<>();
+
+        List<RequestParameter> requestParams = new ArrayList<>();
+
+
+        try {
+
+
+            int i = 0;
+            for (RequestParameter requestParam: requestParams) {
+                url += (i==0 && !url.contains("?"))?"?":"&";
+                url += requestParam.format();
+                i++;
+            }
+
+            LOG.info("getVotingProposals URL: "+url);
+
+
+            HttpClient client = new DefaultHttpClient(new BasicHttpParams());
+            HttpGet httpGet = new HttpGet(url);
+            //httpPost.setHeader("Content-type", "application/vnd.api+json");
+            httpGet.addHeader("Accept", "text/html,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5");
+            httpGet.setHeader("Content-type", "application/json");
+
+            // make GET request to the given URL
+            HttpResponse httpResponse = client.execute(httpGet);
+            InputStream inputStream = null;
+            // receive response as inputStream
+            inputStream = httpResponse.getEntity().getContent();
+            String result = null;
+            // convert inputstream to string
+            if (inputStream != null)
+                result = convertInputStreamToString(inputStream);
+
+
+            LOG.info("###########################");
+            LOG.info(result);
+            LOG.info("###########################");
+
+//
+
+
+            if (httpResponse.getStatusLine().getStatusCode()==200){
+                JSONObject jsonObject = new JSONObject(result);
+                JSONArray transactions = jsonObject.getJSONArray("transactions");
+                for (i=0;i<transactions.length();i++){
+                    ret.add(transactions.getString(i));
+                }
+            }else {
+                throw new Exception("Something fail, server code: "+httpResponse.getStatusLine().getStatusCode());
+            }
+
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return ret;
     }
 
     public String getJsonFromParams(Map<String,String> requestParams) {
@@ -217,4 +292,5 @@ public class ServerWrapper {
         this.wrapperUrl = wrapperUrl;
         changeUrl();
     }
+
 }

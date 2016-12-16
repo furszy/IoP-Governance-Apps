@@ -49,14 +49,20 @@ public class Proposal implements Serializable {
      * EXECUTED: YES > NO. Current height  > BlockEnd
      */
     public enum ProposalState{
-        ACTIVE,VOTING,ACCEPTED,REFUSED,FINISHED
+        DRAFT,          // Proposal in a edit state
+        FORUM,          // Proposal created and posted in the forum
+        VOTING,         // Proposal in blockchain being voted
+        APPOVED,        // Proposal YES > NO && current height > (blockStart + 1000 blocks)
+        NOT_APPROVED,   // Proposal NO > YES && current height > (blockStart + 1000 blocks)
+        // todo: faltan estados..
+        EXECUTED        // Proposal YES > NO && Current height > blockEnd
     }
 
     private boolean isMine = true;
     private boolean isSent = false;
     private String lockedOutputHashHex;
     private long lockedOutputIndex;
-    private ProposalState state = ProposalState.ACTIVE;
+    private ProposalState state = ProposalState.DRAFT;
     // IoPIP -> IoP improvement proposal
     private short version = 0x0100;
     private String title = "Propuesta a enviar numero 1011";
@@ -147,7 +153,7 @@ public class Proposal implements Serializable {
         beneficiaries = new HashMap<>();
     }
 
-    public Proposal(boolean isMine, String title, String subTitle, String category,String body, int startBlock, int endBlock, long blockReward, int forumId, Map<String, Long> beneficiaries,long extraFeeValue,boolean isSent,String lockedOutputHashhex,long lockedOutputIndex,short version,byte[] ownerPk) {
+    public Proposal(boolean isMine, String title, String subTitle, String category,String body, int startBlock, int endBlock, long blockReward, int forumId, Map<String, Long> beneficiaries,long extraFeeValue,boolean isSent,String lockedOutputHashhex,long lockedOutputIndex,short version,byte[] ownerPk,ProposalState proposalState) {
         this.isMine = isMine;
         this.title = title;
         this.subTitle = subTitle;
@@ -164,6 +170,7 @@ public class Proposal implements Serializable {
         this.lockedOutputIndex = lockedOutputIndex;
         this.version = version;
         this.ownerPubKey = ownerPk;
+        this.state = proposalState;
     }
 
     public byte[] hash(){

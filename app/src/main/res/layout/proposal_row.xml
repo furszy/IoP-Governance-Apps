@@ -191,7 +191,7 @@
             android:text="Accepted"
             android:layout_gravity="center"
             android:gravity="center"
-            android:textSize="11sp"
+            android:textSize="13sp"
             android:paddingTop="2dp"
             android:paddingBottom="2dp"
             android:textColor="#fff"

@@ -30,7 +30,6 @@ import iop.org.iop_contributors_app.Profile;
 import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.ServerWrapper;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.CantCreateTopicException;
-import iop.org.iop_contributors_app.core.iop_sdk.forum.discourge.com.wareninja.opensource.discourse.DiscouseApiConstants;
 import iop.org.iop_contributors_app.core.iop_sdk.governance.Proposal;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.ForumClient;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.ForumClientDiscourseImp;
@@ -270,8 +269,8 @@ public class WalletModule implements ContextWrapper{
                     // lock contract output
                     boolean resp = proposalsDao.lockOutput(proposal.getForumId(), proposalTransactionRequest.getLockedOutputHashHex(), proposalTransactionRequest.getLockedOutputPosition());
                     LOG.info("proposal locked "+resp);
-                    // mark proposal sent
-                    resp = proposalsDao.markSentProposal(proposal.getForumId());
+                    // mark proposal sent and put state in "voting"
+                    resp = proposalsDao.markSentBroadcastedProposal(proposal.getForumId());
                     LOG.info("proposal mark sent "+resp);
                     // locked balance
                     lockedBalance += proposalTransactionRequest.getLockedBalance();
@@ -313,7 +312,7 @@ public class WalletModule implements ContextWrapper{
         boolean resp = proposalsDao.lockOutput(proposal.getForumId(), proposalTransactionRequest.getLockedOutputHashHex(), proposalTransactionRequest.getLockedOutputPosition());
         LOG.info("proposal locked "+resp);
         // mark proposal sent
-        resp = proposalsDao.markSentProposal(proposal.getForumId());
+        resp = proposalsDao.markSentBroadcastedProposal(proposal.getForumId());
         LOG.info("proposal mark sent "+resp);
         // locked balance
         lockedBalance += proposalTransactionRequest.getLockedBalance();
@@ -446,6 +445,7 @@ public class WalletModule implements ContextWrapper{
         int forumId = forumClient.createTopic(proposal.getTitle(),proposal.getCategory(),proposal.toForumBody());
         if (forumId>0) {
             proposal.setForumId(forumId);
+            proposal.setState(Proposal.ProposalState.FORUM);
             proposalsDao.saveProposal(proposal);
         }
         return forumId;

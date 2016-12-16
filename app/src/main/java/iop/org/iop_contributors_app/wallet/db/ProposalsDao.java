@@ -120,7 +120,7 @@ public class ProposalsDao implements ProposalsContractDao {
         return proposalsDatabaseHandler.isProposalMine(forumId);
     }
 
-    public boolean markSentProposal(int forumId){
+    public boolean markSentBroadcastedProposal(int forumId){
         return proposalsDatabaseHandler.markSentProposal(forumId)==1;
     }
 

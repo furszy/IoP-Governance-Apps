@@ -26,7 +26,7 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
 
     // All Static variables
     // Database Version
-    private static final int DATABASE_VERSION = 11;
+    private static final int DATABASE_VERSION = 13;
 
     // Database Name
     private static final String DATABASE_NAME = "walletManager";
@@ -53,7 +53,7 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
 
     private static final String KEY_PROPOSAL_VERSION = "version";
     private static final String KEY_PROPOSAL_OWNER_PUBKEY = "owner_pubkey";
-
+    private static final String KEY_PROPOSAL_STATE = "prop_state";
 
     private static final int KEY_PROPOSAL_POS_TITLE =                   0;
     private static final int KEY_PROPOSAL_POS_SUBTITLE =                1;
@@ -73,6 +73,7 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
 
     private static final int KEY_PROPOSAL_POS_VERSION =                 14;
     private static final int KEY_PROPOSAL_POS_OWNER_PUBKEY =            15;
+    private static final int KEY_PROPOSAL_POS_PROPOSAL_STATE =          16;
 
 
     public ProposalsDatabaseHandler(Context context) {
@@ -101,7 +102,8 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
                 + KEY_PROPOSAL_LOCKED_OUTPUT_HASH + " TEXT,"
                 + KEY_PROPOSAL_LOCKED_OUTPUT_POSITION + " LONG,"
                 + KEY_PROPOSAL_VERSION + " SHORT,"
-                + KEY_PROPOSAL_OWNER_PUBKEY + " BLOB"
+                + KEY_PROPOSAL_OWNER_PUBKEY + " BLOB,"
+                + KEY_PROPOSAL_STATE + " TEXT"
                 + ")";
         db.execSQL(CREATE_CONTACTS_TABLE);
     }
@@ -162,7 +164,8 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
                             KEY_PROPOSAL_LOCKED_OUTPUT_HASH,
                             KEY_PROPOSAL_LOCKED_OUTPUT_POSITION,
                             KEY_PROPOSAL_VERSION,
-                            KEY_PROPOSAL_OWNER_PUBKEY}, KEY_PROPOSAL_TITLE + "=?",
+                            KEY_PROPOSAL_OWNER_PUBKEY,
+                            KEY_PROPOSAL_STATE}, KEY_PROPOSAL_TITLE + "=?",
                     new String[]{title}, null, null, null, null);
             if (cursor != null)
                 cursor.moveToFirst();
@@ -202,7 +205,8 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
                             KEY_PROPOSAL_LOCKED_OUTPUT_HASH,
                             KEY_PROPOSAL_LOCKED_OUTPUT_POSITION,
                             KEY_PROPOSAL_VERSION,
-                            KEY_PROPOSAL_OWNER_PUBKEY}, KEY_PROPOSAL_FORUM_ID + "=?",
+                            KEY_PROPOSAL_OWNER_PUBKEY,
+                            KEY_PROPOSAL_STATE}, KEY_PROPOSAL_FORUM_ID + "=?",
                     new String[]{String.valueOf(forumId)}, null, null, null, null);
             if (cursor != null)
                 cursor.moveToFirst();
@@ -271,6 +275,21 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
 
         ContentValues values = new ContentValues();
         values.put(KEY_PROPOSAL_IS_SENT,true);
+//        // updating row
+        try {
+            return db.update(TABLE_PROPOSALS, values, KEY_PROPOSAL_FORUM_ID + " = ?",
+                    new String[]{String.valueOf(forumId)});
+        }finally {
+            db.close();
+        }
+    }
+
+    public int markSentProposalAndChangeState(int forumId, Proposal.ProposalState proposalState) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(KEY_PROPOSAL_IS_SENT,true);
+        values.put(KEY_PROPOSAL_STATE,proposalState.ordinal());
 //        // updating row
         try {
             return db.update(TABLE_PROPOSALS, values, KEY_PROPOSAL_FORUM_ID + " = ?",
@@ -457,6 +476,7 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
         long lockedOutputPos = cursor.getLong(KEY_PROPOSAL_POS_LOCKED_OUTPUT_POSITION);
         short version = cursor.getShort(KEY_PROPOSAL_POS_VERSION);
         byte[] ownerPk = cursor.getBlob(KEY_PROPOSAL_POS_OWNER_PUBKEY);
+        Proposal.ProposalState proposalState = Proposal.ProposalState.valueOf(cursor.getString(KEY_PROPOSAL_POS_PROPOSAL_STATE));
 
 
         return new Proposal(
@@ -475,7 +495,8 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
                 lockedOutputHashHex,
                 lockedOutputPos,
                 version,
-                ownerPk
+                ownerPk,
+                proposalState
         );
     }
 
@@ -502,6 +523,7 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
         if (proposal.getLockedOutputIndex()!=-1) values.put(KEY_PROPOSAL_LOCKED_OUTPUT_POSITION,proposal.getLockedOutputIndex());
         values.put(KEY_PROPOSAL_VERSION,proposal.getVersion());
         values.put(KEY_PROPOSAL_OWNER_PUBKEY,proposal.getOwnerPubKey());
+        values.put(KEY_PROPOSAL_STATE,proposal.getState().toString());
         return values;
     }
 

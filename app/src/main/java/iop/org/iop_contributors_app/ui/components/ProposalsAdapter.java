@@ -68,6 +68,7 @@ public class ProposalsAdapter extends FermatAdapterImproved<Proposal,ProposalsHo
 
             }
         });
+
         holder.txt_state.setText(data.getState().toString().toLowerCase());
     }
 

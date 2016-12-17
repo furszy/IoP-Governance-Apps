@@ -2,6 +2,11 @@ package iop.org.iop_contributors_app.configurations;
 
 import android.content.SharedPreferences;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
 import iop.org.iop_contributors_app.core.iop_sdk.forum.ForumConfigurations;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.ForumProfile;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.discourge.com.wareninja.opensource.discourse.DiscouseApiConstants;
@@ -23,8 +28,11 @@ public class DefaultForumConfiguration extends Configurations implements ForumCo
     public static final String PREFS_URL = "forumUrl";
     private static final String PREFS_WRAPPER_URL = "wrapperUrl";
 
-    public DefaultForumConfiguration(SharedPreferences prefs) {
+    private String privateDirUrl;
+
+    public DefaultForumConfiguration(SharedPreferences prefs,String privateDirUrl) {
         super(prefs);
+        this.privateDirUrl = privateDirUrl;
     }
 
     @Override
@@ -83,5 +91,31 @@ public class DefaultForumConfiguration extends Configurations implements ForumCo
     @Override
     public String getWrapperUrl() {
         return getString(PREFS_WRAPPER_URL,"http://"+ DiscouseApiConstants.FORUM_WRAPPER_URL);
+    }
+
+    @Override
+    public void setUserImg(byte[] profImgData) {
+        File file = new File(privateDirUrl+"img.png");
+        if (file.exists()){
+            file.delete();
+        }
+        try {
+            file.createNewFile();
+
+            FileOutputStream fileOutputStream = new FileOutputStream(file);
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(profImgData.length);
+            byteArrayOutputStream.write(profImgData);
+            byteArrayOutputStream.writeTo(fileOutputStream);
+
+            fileOutputStream.close();
+            byteArrayOutputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public File getUserImgFile() {
+        return new File(privateDirUrl+"img.png");
     }
 }

@@ -33,9 +33,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.zxing.WriterException;
+import com.squareup.picasso.Picasso;
 
 import org.bitcoinj.core.Context;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -100,6 +102,7 @@ public abstract class BaseActivity extends AppCompatActivity {
     private TextView txt_lock_balance;
     private TextView txt_drawer_name;
     private ImageView imgQr;
+    private ImageView img_photo;
 
     private NotificationReceiver notificationReceiver = new NotificationReceiver();
 
@@ -264,6 +267,7 @@ public abstract class BaseActivity extends AppCompatActivity {
         txt_available_balance = (TextView) headerView.findViewById(R.id.txt_available_balance);
         txt_lock_balance = (TextView) headerView.findViewById(R.id.txt_lock_balance);
         txt_drawer_name = (TextView) headerView.findViewById(R.id.txt_drawer_name);
+        img_photo = (ImageView) headerView.findViewById(R.id.img_photo);
 
         txt_drawer_name.setText(module.getForumProfile().getUsername());
 
@@ -274,6 +278,13 @@ public abstract class BaseActivity extends AppCompatActivity {
             }
         });
 
+        try {
+            File imgFile = module.getUserImageFile();
+            if (imgFile.exists())
+                Picasso.with(this).load(imgFile).into(img_photo);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
         executor.submit(new Runnable() {
             @Override
             public void run() {

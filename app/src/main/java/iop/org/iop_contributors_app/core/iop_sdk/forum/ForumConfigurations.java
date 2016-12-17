@@ -1,5 +1,7 @@
 package iop.org.iop_contributors_app.core.iop_sdk.forum;
 
+import java.io.File;
+
 /**
  * Created by mati on 22/11/16.
  */
@@ -27,4 +29,8 @@ public interface ForumConfigurations {
     String getUrl();
 
     String getWrapperUrl();
+
+    void setUserImg(byte[] profImgData);
+
+    File getUserImgFile();
 }

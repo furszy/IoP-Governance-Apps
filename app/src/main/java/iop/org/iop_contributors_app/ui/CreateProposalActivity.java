@@ -19,6 +19,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
@@ -158,10 +159,12 @@ public class CreateProposalActivity extends BaseActivity {
     private EditText edit_beneficiary_value_1;
     private Button btn_create_proposal;
     private Button btn_publish_proposal;
+    private ImageButton btn_edit;
 
     private Map<String,CreateProposalWatcher> watchers = new HashMap<>();
     /** broadcast flag */
     private AtomicBoolean lockBroadcast = new AtomicBoolean(false);
+
 
     @Override
     protected boolean hasDrawer() {
@@ -232,6 +235,7 @@ public class CreateProposalActivity extends BaseActivity {
         edit_beneficiary_value_1 = (EditText) root.findViewById(R.id.edit_beneficiary_1_value);
         btn_create_proposal = (Button) root.findViewById(R.id.btn_create_proposal);
         btn_publish_proposal = (Button) root.findViewById(R.id.btn_publish_proposal);
+        btn_edit = (ImageButton) root.findViewById(R.id.btn_edit);
 
         initHelpViews();
 
@@ -250,109 +254,20 @@ public class CreateProposalActivity extends BaseActivity {
             public void onClick(View v) {
                 container_send.setVisibility(View.GONE);
                 isEditing = true;
-                btn_create_proposal.setText("EDIT");
-            }
-        });
+                btn_create_proposal.setVisibility(View.GONE);
+                initBtnEdit();
+                initBroadcastBtn();
 
-        btn_create_proposal.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                if (!lock.getAndSet(true)) {
-
-                    if (!isEditing)
-                        preparateLoading("Proposal posted!",R.drawable.icon_done);
-
-                    executor.execute(new Runnable() {
-                        @Override
-                        public void run() {
-                            String errorTitle = null;
-                            String messageBody = null;
-
-                            boolean result = false;
-                            try {
-                                if (!isEditing) {
-                                    proposal = buildProposal();
-                                } else {
-                                    proposal = buildProposal();
-                                    if (proposal != null)
-                                        proposal.setForumId(forumId);
-                                }
-
-                                if (proposal != null) {
-                                    if (!isEditing) {
-                                        int forumId = 0;
-                                        if ((forumId = module.createForumProposal(proposal))>0) {
-                                            messageBody = "Proposal created!";
-                                            proposal.setForumId(forumId);
-                                            result = true;
-                                        } else {
-                                            errorTitle = "Error";
-                                            messageBody = "Uknown, proposal fail!\nplease send a report";
-                                        }
-                                    } else {
-//                                        if (module.editForumProposal(proposal)) {
-//                                            toastToShow = "Edit succed";
-//                                        } else {
-//                                            toastToShow = "Edit fail";
-//                                        }
-                                        lock.set(false);
-                                        redirectToForum(proposal);
-                                        return;
-                                    }
-                                } else {
-                                    Log.e(TAG, "proposal null, see logs");
-                                    errorTitle = "Uknown error";
-                                    messageBody =  "please send a report";
-                                }
-                            } catch (final CantCreateTopicException e) {
-                                e.printStackTrace();
-                                errorTitle = "Error";
-                                messageBody = (e.getMessage()!=null && !e.getMessage().equals(""))?getErrorsFromJson(e.getMessage()):"CantCreateTopicException";
-                            } catch (CantSaveProposalExistException e) {
-                                errorTitle = "Error";
-                                messageBody = "Proposal title already exist";
-                            } catch (ValidationException e){
-                                errorTitle = "Validation error";
-                                messageBody = e.getMessage();
-                            } catch(Exception e) {
-                                e.printStackTrace();
-                                // save error in report
-                                CrashReporter.saveBackgroundTrace(e, ApplicationController.packageInfoFromContext(CreateProposalActivity.this));
-                                errorTitle = "Error";
-                                messageBody = (e.getMessage()!=null && !e.getMessage().equals(""))?getErrorsFromJson(e.getMessage()):"Exception, please send report";
-                            }
-
-                            final boolean finalResult = result;
-                            final String finalMessageBody = messageBody;
-                            final String finalErrorTitle = errorTitle;
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    if (finalResult){
-                                        showDoneLoading();
-                                        //disableEditTexts();
-                                        Toast.makeText(CreateProposalActivity.this, finalMessageBody, Toast.LENGTH_SHORT).show();
-                                    }else {
-                                        container_send.setVisibility(View.INVISIBLE);
-                                        showErrorDialog(finalErrorTitle, finalMessageBody);
-                                    }
-                                }
-                            });
-
-                            // unlock
-                            lock.set(false);
-                        }
-                    });
-
-                }else Log.e(TAG,"Tocó el boton dos veces seguidas..");
             }
         });
 
         if (isEditing) {
 
             //disableEditTexts();
-            btn_create_proposal.setText("EDIT");
+//            btn_create_proposal.setText("EDIT");
+            btn_create_proposal.setVisibility(View.GONE);
+
+            initBtnEdit();
 
             executor.submit(new Runnable() {
                 @Override
@@ -376,8 +291,106 @@ public class CreateProposalActivity extends BaseActivity {
                     }
                 }
             });
+        }else {
+
+            btn_create_proposal.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                    if (!lock.getAndSet(true)) {
+
+                        if (!isEditing)
+                            preparateLoading("Proposal posted!",R.drawable.icon_done);
+
+                        executor.execute(new Runnable() {
+                            @Override
+                            public void run() {
+                                String errorTitle = null;
+                                String messageBody = null;
+
+                                boolean result = false;
+                                try {
+                                    proposal = buildProposal();
+                                    if (proposal != null) {
+
+                                        int forumId = 0;
+                                        if ((forumId = module.createForumProposal(proposal))>0) {
+                                            messageBody = "Proposal created!";
+                                            proposal.setForumId(forumId);
+                                            result = true;
+                                        } else {
+                                            errorTitle = "Error";
+                                            messageBody = "Uknown, proposal fail!\nplease send a report";
+                                        }
+                                    } else {
+                                        Log.e(TAG, "proposal null, see logs");
+                                        errorTitle = "Uknown error";
+                                        messageBody =  "please send a report";
+                                    }
+                                } catch (final CantCreateTopicException e) {
+                                    e.printStackTrace();
+                                    errorTitle = "Error";
+                                    messageBody = (e.getMessage()!=null && !e.getMessage().equals(""))?getErrorsFromJson(e.getMessage()):"CantCreateTopicException";
+                                } catch (CantSaveProposalExistException e) {
+                                    errorTitle = "Error";
+                                    messageBody = "Proposal title already exist";
+                                } catch (ValidationException e){
+                                    errorTitle = "Validation error";
+                                    messageBody = e.getMessage();
+                                } catch(Exception e) {
+                                    e.printStackTrace();
+                                    // save error in report
+                                    CrashReporter.saveBackgroundTrace(e, ApplicationController.packageInfoFromContext(CreateProposalActivity.this));
+                                    errorTitle = "Error";
+                                    messageBody = (e.getMessage()!=null && !e.getMessage().equals(""))?getErrorsFromJson(e.getMessage()):"Exception, please send report";
+                                }
+
+                                final boolean finalResult = result;
+                                final String finalMessageBody = messageBody;
+                                final String finalErrorTitle = errorTitle;
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        if (finalResult){
+                                            showDoneLoading();
+                                            //disableEditTexts();
+                                            Toast.makeText(CreateProposalActivity.this, finalMessageBody, Toast.LENGTH_SHORT).show();
+                                        }else {
+                                            container_send.setVisibility(View.INVISIBLE);
+                                            showErrorDialog(finalErrorTitle, finalMessageBody);
+                                        }
+                                    }
+                                });
+
+                                // unlock
+                                lock.set(false);
+                            }
+                        });
+
+                    }else Log.e(TAG,"Tocó el boton dos veces seguidas..");
+                }
+            });
+
+
         }
 
+    }
+
+    private void initBtnEdit() {
+        btn_edit.setVisibility(View.VISIBLE);
+        btn_edit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+                    proposal = buildProposal();
+                    if (proposal != null)
+                        proposal.setForumId(forumId);
+                    redirectToForum(proposal);
+                } catch (ValidationException e) {
+                    showErrorDialog("Validation error", e.getMessage());
+                }
+            }
+        });
     }
 
     private void initHelpViews() {
@@ -513,13 +526,12 @@ public class CreateProposalActivity extends BaseActivity {
             edit_beneficiary_value_1.setText(String.valueOf(beneficiary.getValue()));
         }
 
-        btn_publish_proposal.setVisibility(View.VISIBLE);
 
-
-        View.OnClickListener onClickListener;
+        View.OnClickListener onClickListener = null;
         if (proposal.isSent()){
             btn_create_proposal.setVisibility(View.GONE);
-            btn_publish_proposal.setText("CANCEL");
+            btn_publish_proposal.setVisibility(View.VISIBLE);
+            btn_publish_proposal.setText("UNPUBLISH");
             onClickListener = new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -527,35 +539,40 @@ public class CreateProposalActivity extends BaseActivity {
                     module.cancelProposalOnBLockchain(proposal);
                 }
             };
-        }else {
-            btn_publish_proposal.setText("BRODCAST");
-            onClickListener = new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (isEditing) {
-                        try{
-                            if(lockBroadcast.compareAndSet(false,true)) {
-                                // loading
-                                preparateLoading("Proposal broadcasted!",R.drawable.icon_done);
-
-                                Bundle bundle = new Bundle();
-                                Proposal proposalNew = buildProposal();
-                                proposalNew.setForumId(proposal.getForumId());
-                                bundle.putSerializable(BlockchainService.INTENT_EXTRA_PROPOSAL, proposalNew);
-                                sendWorkToBlockchainService(BlockchainService.ACTION_BROADCAST_PROPOSAL_TRANSACTION, bundle);
-                            }else
-                                Log.e(TAG,"Toco dos veces el broadcast..");
-                        } catch (ValidationException e) {
-                            showErrorDialog("Validation error",e.getMessage());
-                            lockBroadcast.set(false);
-                        }
-                    }else
-                        Toast.makeText(v.getContext(),"You have to post before publish on blockchain",Toast.LENGTH_LONG).show();
-                }
-            };
-
+            btn_publish_proposal.setOnClickListener(onClickListener);
+        }else if (isEditing){
+            initBroadcastBtn();
         }
 
+    }
+
+    private void initBroadcastBtn(){
+        btn_publish_proposal.setVisibility(View.VISIBLE);
+        btn_publish_proposal.setText("BRODCAST");
+        View.OnClickListener onClickListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (isEditing) {
+                    try{
+                        if(lockBroadcast.compareAndSet(false,true)) {
+                            // loading
+                            preparateLoading("Proposal broadcasted!",R.drawable.icon_done);
+
+                            Bundle bundle = new Bundle();
+                            Proposal proposalNew = buildProposal();
+                            proposalNew.setForumId(proposal.getForumId());
+                            bundle.putSerializable(BlockchainService.INTENT_EXTRA_PROPOSAL, proposalNew);
+                            sendWorkToBlockchainService(BlockchainService.ACTION_BROADCAST_PROPOSAL_TRANSACTION, bundle);
+                        }else
+                            Log.e(TAG,"Toco dos veces el broadcast..");
+                    } catch (ValidationException e) {
+                        showErrorDialog("Validation error",e.getMessage());
+                        lockBroadcast.set(false);
+                    }
+                }else
+                    Toast.makeText(v.getContext(),"You have to post before publish on blockchain",Toast.LENGTH_LONG).show();
+            }
+        };
         btn_publish_proposal.setOnClickListener(onClickListener);
     }
 

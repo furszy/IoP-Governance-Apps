@@ -537,4 +537,13 @@ public class WalletModule implements ContextWrapper{
 
         return null;
     }
+
+    public void updateUser(String name, String password, String email, byte[] profImgData) {
+        LOG.info("Saving image");
+        forumConfigurations.setUserImg(profImgData);
+    }
+
+    public File getUserImageFile() {
+        return forumConfigurations.getUserImgFile();
+    }
 }

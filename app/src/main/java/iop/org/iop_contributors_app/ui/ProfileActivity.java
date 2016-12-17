@@ -26,7 +26,10 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.squareup.picasso.Picasso;
+
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
@@ -48,7 +51,7 @@ import static iop.org.iop_contributors_app.core.iop_sdk.utils.StringUtils.cleanS
  * Created by mati on 07/11/16.
  */
 
-public class ProfileActivity extends BaseActivity {
+public class ProfileActivity extends BaseActivity implements View.OnClickListener{
 
 
     private static final String TAG = "ProfileActivity";
@@ -171,6 +174,14 @@ public class ProfileActivity extends BaseActivity {
             });
 
         }
+        try {
+            File imgFile = module.getUserImageFile();
+            if (imgFile.exists())
+                Picasso.with(this).load(imgFile).into(imgProfile);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
         init();
     }
 
@@ -455,9 +466,21 @@ public class ProfileActivity extends BaseActivity {
                     // nothing
                 }
             }
+
+            if (isRegistered){
+                btn_create.setText("Save");
+                btn_create.setOnClickListener(this);
+            }
         }
     }
 
 
-
+    @Override
+    public void onClick(View v) {
+        int id = v.getId();
+        if (id == R.id.btn_create){
+            module.updateUser(null,null,null,profImgData);
+            Toast.makeText(this,"Saved",Toast.LENGTH_LONG).show();
+        }
+    }
 }

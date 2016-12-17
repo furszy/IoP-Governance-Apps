@@ -93,7 +93,7 @@ public class ApplicationController extends Application {
         // initialize preferences
         walletConfigurations = new WalletPreferencesConfiguration(getSharedPreferences(WalletPreferencesConfiguration.PREFS_NAME,0));
         //profileServerPref = new ProfileServerConfigurations(this,getSharedPreferences(ProfileServerConfigurations.PREFS_NAME,0));
-        forumConfigurations = new DefaultForumConfiguration(getSharedPreferences(DefaultForumConfiguration.PREFS_NAME,0));
+        forumConfigurations = new DefaultForumConfiguration(getSharedPreferences(DefaultForumConfiguration.PREFS_NAME,0),getFilesDir().getAbsolutePath());
 
         // Crash reporter
         CrashReporter.init(getCacheDir());

@@ -52,6 +52,7 @@ public class Proposal implements Serializable {
         DRAFT,          // Proposal in a edit state
         FORUM,          // Proposal created and posted in the forum
         VOTING,         // Proposal in blockchain being voted
+        CANCELED_BY_OWNER,  // Proposal canceled by the owner, moving the locked funds to another address.
         APPOVED,        // Proposal YES > NO && current height > (blockStart + 1000 blocks)
         NOT_APPROVED,   // Proposal NO > YES && current height > (blockStart + 1000 blocks)
         // todo: faltan estados..

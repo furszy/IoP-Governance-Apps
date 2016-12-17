@@ -471,22 +471,34 @@
             android:gravity="end"
             >
 
+
+            <ImageButton
+                android:layout_width="34dp"
+                android:layout_height="34dp"
+                android:padding="5dp"
+                android:id="@+id/btn_edit"
+                android:background="@drawable/create_proposal_btn"
+                android:visibility="gone"
+                android:layout_marginRight="5dp"
+                android:src="@drawable/ic_edit"/>
+
+
             <Button
-                android:layout_width="@dimen/little_btn_widht"
-                android:layout_height="42dp"
+                android:layout_width="@dimen/standard_btn_widht"
+                android:layout_height="34dp"
                 android:text="PUBLISH"
                 android:textColor="#1A1A1A"
                 android:background="@drawable/create_proposal_btn"
                 android:id="@+id/btn_publish_proposal"
                 android:layout_gravity="bottom|end"
-                android:visibility="invisible"
-                android:layout_marginRight="5dp"
+                android:visibility="gone"
+
                 />
 
 
             <Button
-                android:layout_width="@dimen/little_btn_widht"
-                android:layout_height="42dp"
+                android:layout_width="@dimen/standard_btn_widht"
+                android:layout_height="34dp"
                 android:text="POST"
                 android:layout_marginLeft="5dp"
                 android:textColor="#1A1A1A"

@@ -1,31 +1,19 @@
 package iop.org.iop_contributors_app.core.iop_sdk.forum;
 
-import android.content.Intent;
-
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-import junit.framework.Assert;
-
 import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.params.BasicHttpParams;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
@@ -34,19 +22,13 @@ import iop.org.iop_contributors_app.ConnectionRefusedException;
 import iop.org.iop_contributors_app.ServerWrapper;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.discourge.com.wareninja.opensource.discourse.DiscourseApiClient;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.discourge.com.wareninja.opensource.discourse.DiscouseApiConstants;
-import iop.org.iop_contributors_app.core.iop_sdk.forum.discourge.com.wareninja.opensource.discourse.utils.ResponseListener;
-import iop.org.iop_contributors_app.core.iop_sdk.forum.discourge.com.wareninja.opensource.discourse.utils.ResponseMeta;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.discourge.com.wareninja.opensource.discourse.utils.ResponseModel;
-import iop.org.iop_contributors_app.core.iop_sdk.forum.wrapper.ResponseMessageConstants;
 import iop.org.iop_contributors_app.core.iop_sdk.governance.Proposal;
-import iop.org.iop_contributors_app.utils.CrashReporter;
 import iop.org.iop_contributors_app.utils.exceptions.NotValidParametersException;
 import iop.org.iop_contributors_app.wallet.db.CantUpdateProposalException;
 
 import static iop.org.iop_contributors_app.core.iop_sdk.forum.wrapper.ResponseMessageConstants.REGISTER_ERROR_STR;
-import static iop.org.iop_contributors_app.core.iop_sdk.forum.wrapper.ResponseMessageConstants.USER_ERROR_STR;
 import static iop.org.iop_contributors_app.core.iop_sdk.utils.StreamsUtils.convertInputStreamToString;
-import static iop.org.iop_contributors_app.utils.Preconditions.checkEquals;
 
 /**
  * Created by mati on 28/11/16.
@@ -156,13 +138,16 @@ public class ForumClientDiscourseImp implements ForumClient {
             ResponseModel responseModel = client.createTopic(parameters);
             if (responseModel.meta.code > 201) {
                 LOG.error("topic fail. data: " + responseModel.data);
-                int index = responseModel.data.toString().lastIndexOf("|");
-                String errorDetail = responseModel.data.toString().substring(index+1);;
-                if (errorDetail.contains("<!DOCTYPE html>")){
-                    throw new CantCreateTopicException("Cant create topic, something bad happen with the forum");
-                }else {
-                    LOG.error("forum fail with proposal: title="+title+", category="+category+", raw="+raw);
-                    throw new CantCreateTopicException("Forum fail, code: " + responseModel.meta.code + ",  " + errorDetail);
+                if (!captureFail(responseModel)) {
+                    int index = responseModel.data.toString().lastIndexOf("|");
+                    String errorDetail = responseModel.data.toString().substring(index + 1);
+                    ;
+                    if (errorDetail.contains("<!DOCTYPE html>")) {
+                        throw new CantCreateTopicException("Cant create topic, something bad happen with the forum");
+                    } else {
+                        LOG.error("forum fail with proposal: title=" + title + ", category=" + category + ", raw=" + raw);
+                        throw new CantCreateTopicException("Forum fail, code: " + responseModel.meta.code + ",  " + errorDetail);
+                    }
                 }
             } else {
                 LOG.info("topic created.");
@@ -176,7 +161,9 @@ public class ForumClientDiscourseImp implements ForumClient {
                 return topic_id;
             }
         } catch (CantCreateTopicException e){
-          throw e;
+            throw e;
+        } catch (ResponseFailException e) {
+            throw new CantCreateTopicException(e.getMessage());
         } catch (Exception e){
             e.printStackTrace();
         }
@@ -383,13 +370,21 @@ public class ForumClientDiscourseImp implements ForumClient {
         return responseModel.meta.code>201 || responseModel.data==null;
     }
 
-    private void throwException(ResponseModel responseModel){
-        LOG.error("throwException");
+    /**
+     *
+     * @param responseModel
+     * @return true if this method capture the error
+     */
+    private boolean captureFail(ResponseModel responseModel) throws ResponseFailException {
+        LOG.error("captureFail");
         switch (responseModel.meta.code){
+            case 405:
+                throw new ResponseFailException("Connection is block by your router or ISP, please try later.");
             default:
 
                 break;
         }
+        return false;
 
     }
 

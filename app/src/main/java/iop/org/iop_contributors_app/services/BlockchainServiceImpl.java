@@ -45,6 +45,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import iop.org.iop_contributors_app.ApplicationController;
 import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.configurations.WalletPreferencesConfiguration;
+import iop.org.iop_contributors_app.core.iop_sdk.governance.NotConnectedPeersException;
 import iop.org.iop_contributors_app.core.iop_sdk.governance.Proposal;
 import iop.org.iop_contributors_app.ui.CreateProposalActivity;
 import iop.org.iop_contributors_app.ui.base.BaseActivity;
@@ -61,9 +62,12 @@ import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.IN
 import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_TRANSACTION_SUCCED;
 import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENT_BROADCAST_TYPE;
 import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENT_DATA;
+import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENT_DIALOG;
 import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENT_NOTIFICATION;
 import static iop.org.iop_contributors_app.ui.CreateProposalActivity.CANT_SAVE_PROPOSAL_DIALOG;
+import static iop.org.iop_contributors_app.ui.CreateProposalActivity.COMMON_ERROR_DIALOG;
 import static iop.org.iop_contributors_app.ui.CreateProposalActivity.INSUFICIENTS_FUNDS_DIALOG;
+import static iop.org.iop_contributors_app.ui.CreateProposalActivity.INTENT_EXTRA_MESSAGE_DIALOG;
 import static iop.org.iop_contributors_app.ui.CreateProposalActivity.INVALID_PROPOSAL_DIALOG;
 import static iop.org.iop_contributors_app.ui.CreateProposalActivity.UNKNOWN_ERROR_DIALOG;
 import static iop.org.iop_contributors_app.ui.base.BaseActivity.ACTION_NOTIFICATION;
@@ -370,6 +374,8 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
                             showDialogException(CANT_SAVE_PROPOSAL_DIALOG,e.getMessage());
                         } catch (InvalidProposalException e) {
                             showDialogException(INVALID_PROPOSAL_DIALOG, e.getMessage()+".\n\nEdit in the forum first if you want any change.");
+                        } catch (NotConnectedPeersException e) {
+                            showDialogException(COMMON_ERROR_DIALOG,"Not connected peers, please try again later");
                         } catch (Exception e){
                             e.printStackTrace();
                         }
@@ -401,8 +407,8 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
 
     private void showDialogException(int dialogType, String message){
         Intent intent = new Intent(CreateProposalActivity.ACTION_RECEIVE_EXCEPTION);
-        intent.putExtra(CreateProposalActivity.INTENT_DIALOG,dialogType);
-        intent.putExtra(CreateProposalActivity.INTENT_EXTRA_MESSAGE_DIALOG,message);
+        intent.putExtra(INTENT_DIALOG,dialogType);
+        intent.putExtra(INTENT_EXTRA_MESSAGE_DIALOG,message);
         localBroadcast.sendBroadcast(intent);
     }
 

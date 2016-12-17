@@ -9,6 +9,7 @@ import iop.org.iop_contributors_app.core.iop_sdk.governance.Proposal;
 import iop.org.iop_contributors_app.ui.CreateProposalActivity;
 import iop.org.iop_contributors_app.ui.ForumActivity;
 import iop.org.iop_contributors_app.furszy_sdk.android.adapter.FermatAdapterImproved;
+import iop.org.iop_contributors_app.ui.ProposalSummaryActivity;
 import iop.org.iop_contributors_app.wallet.WalletModule;
 
 /**
@@ -45,12 +46,9 @@ public class ProposalsAdapter extends FermatAdapterImproved<Proposal,ProposalsHo
         holder.btn_read_more.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String forumTitle = data.getTitle();
-                int forumId = data.getForumId();
-                Intent intent1 = new Intent(context,CreateProposalActivity.class);
+                Intent intent1 = new Intent(context,ProposalSummaryActivity.class);
                 intent1.setAction(CreateProposalActivity.ACTION_EDIT_PROPOSAL);
-                intent1.putExtra(CreateProposalActivity.INTENT_DATA_FORUM_ID,Integer.valueOf(forumId));
-                intent1.putExtra(CreateProposalActivity.INTENT_DATA_FORUM_TITLE,forumTitle);
+                intent1.putExtra(ProposalSummaryActivity.INTENT_DATA_PROPOSAL,data);
                 context.startActivity(intent1);
             }
         });

@@ -30,6 +30,7 @@ import iop.org.iop_contributors_app.Profile;
 import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.ServerWrapper;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.CantCreateTopicException;
+import iop.org.iop_contributors_app.core.iop_sdk.governance.NotConnectedPeersException;
 import iop.org.iop_contributors_app.core.iop_sdk.governance.Proposal;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.ForumClient;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.ForumClientDiscourseImp;
@@ -240,7 +241,7 @@ public class WalletModule implements ContextWrapper{
     }
 
 
-    public boolean sendProposal(Proposal proposal) throws CantSendProposalException, InsuficientBalanceException, CantSaveProposalException, InvalidProposalException {
+    public boolean sendProposal(Proposal proposal) throws CantSendProposalException, InsuficientBalanceException, CantSaveProposalException, InvalidProposalException, NotConnectedPeersException {
 
         LOG.info("SendProposal, title: "+proposal.getTitle());
         // lock to not to spend the same UTXO twice for error.
@@ -280,24 +281,22 @@ public class WalletModule implements ContextWrapper{
 
                     return true;
 
-                } catch (InsufficientMoneyException e) {
-                    e.printStackTrace();
-                    LOG.info("fondos disponibles: " + walletManager.getWallet().getBalance());
+                } catch (InsuficientBalanceException e) {
+                    LOG.error("Insuficient funds",e);
+                    throw e;
+                }catch (NotConnectedPeersException e) {
+                    LOG.error("Not connected peers",e);
+                    throw e;
                 }
-
-
-            } catch (InsuficientBalanceException e) {
-                throw e;
             }catch (CantSendProposalException e){
                 throw e;
             } catch (NotValidParametersException e) {
                 throw new InvalidProposalException("Proposal is not the same as in the forum, "+e.getMessage());
             }
         }
-        return false;
     }
 
-    public boolean sendProposal(Proposal proposal,byte[] transactionHashDest) throws InsuficientBalanceException, InsufficientMoneyException {
+    public boolean sendProposal(Proposal proposal,byte[] transactionHashDest) throws InsuficientBalanceException, InsufficientMoneyException, NotConnectedPeersException {
 
         ProposalTransactionRequest proposalTransactionRequest = new ProposalTransactionRequest(blockchainManager, walletManager, proposalsDao);
         proposalTransactionRequest.forProposal(proposal);
@@ -365,9 +364,10 @@ public class WalletModule implements ContextWrapper{
 
     private String coinToString(long amount){
         String value = Coin.valueOf(amount).toPlainString();
+        if (value.length()==4 || value.length()==3) return value;
         int pointIndex = value.indexOf('.');
         if (pointIndex!=-1){
-            if (value.length()>=pointIndex+2)
+            if (value.length()>pointIndex+2)
                 value = value.substring(0,pointIndex+3);
             else
                 value = value.substring(0,pointIndex+2);

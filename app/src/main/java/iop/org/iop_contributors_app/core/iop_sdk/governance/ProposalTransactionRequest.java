@@ -50,7 +50,7 @@ public class ProposalTransactionRequest {
         this.proposalsDao = proposalsDao;
     }
 
-    public void forProposal(Proposal proposal) throws InsuficientBalanceException, InsufficientMoneyException {
+    public void forProposal(Proposal proposal) throws InsuficientBalanceException {
 
         this.proposal = proposal;
 
@@ -141,16 +141,25 @@ public class ProposalTransactionRequest {
         sendRequest.coinSelector = new MyCoinSelector();
 
         // complete transaction
-        wallet.completeTx(sendRequest);
+        try {
+            wallet.completeTx(sendRequest);
+        } catch (InsufficientMoneyException e) {
+            LOG.error("Insuficient money exception",e);
+            throw new InsuficientBalanceException("Insuficient money exception",e);
+        }
 
         LOG.info("inputs value: " + tran.getInputSum().toFriendlyString() + ", outputs value: " + tran.getOutputSum().toFriendlyString() + ", fee: " + tran.getFee().toFriendlyString());
         LOG.info("total en el aire: " + tran.getInputSum().minus(tran.getOutputSum().minus(tran.getFee())).toFriendlyString());
 
     }
 
-    public void broadcast() throws InsufficientMoneyException {
+    public void broadcast() throws NotConnectedPeersException {
         Wallet wallet = walletManager.getWallet();
         try {
+
+            // check if we have at least one peer connected
+            if(blockchainManager.getConnectedPeers().isEmpty()) throw new NotConnectedPeersException();
+
             wallet.commitTx(sendRequest.tx);
 
             blockchainManager.broadcastTransaction(sendRequest.tx.getHash().getBytes()).get();

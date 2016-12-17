@@ -480,7 +480,7 @@
                 android:background="@drawable/create_proposal_btn"
                 android:visibility="gone"
                 android:layout_marginRight="5dp"
-                android:src="@drawable/ic_edit"/>
+                android:src="@drawable/ic_edit_black"/>
 
 
             <Button

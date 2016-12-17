@@ -62,6 +62,9 @@ import static iop.org.iop_contributors_app.core.iop_sdk.governance.ProposalForum
 import static iop.org.iop_contributors_app.core.iop_sdk.governance.ProposalForum.FIELD_VALUE;
 import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_TYPE;
 import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_TRANSACTION_SUCCED;
+import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENT_DIALOG;
+import static iop.org.iop_contributors_app.ui.ProposalSummaryActivity.ACTION_PROPOSAL;
+import static iop.org.iop_contributors_app.ui.ProposalSummaryActivity.INTENT_DATA_PROPOSAL;
 
 /**
  * Created by mati on 17/11/16.
@@ -73,8 +76,6 @@ public class CreateProposalActivity extends BaseActivity {
     private static final String TAG = "CreateProposalActivity";
 
     public static final String ACTION_PROPOSAL_BROADCASTED = "propBroadcasted";
-
-    public static final String INTENT_DIALOG = "intent_dialog";
 
     // dialogs
     public static final String INTENT_EXTRA_MESSAGE_DIALOG = "extraDialogMessage";
@@ -132,7 +133,6 @@ public class CreateProposalActivity extends BaseActivity {
                             break;
                     }
                     hideDoneLoading();
-                    lockBroadcast.set(false);
                 }
             });
 
@@ -158,12 +158,8 @@ public class CreateProposalActivity extends BaseActivity {
     private EditText edit_beneficiary_address_1;
     private EditText edit_beneficiary_value_1;
     private Button btn_create_proposal;
-    private Button btn_publish_proposal;
-    private ImageButton btn_edit;
 
     private Map<String,CreateProposalWatcher> watchers = new HashMap<>();
-    /** broadcast flag */
-    private AtomicBoolean lockBroadcast = new AtomicBoolean(false);
 
 
     @Override
@@ -234,8 +230,6 @@ public class CreateProposalActivity extends BaseActivity {
         edit_beneficiary_address_1 = (EditText) root.findViewById(R.id.edit_beneficiary_1_address);
         edit_beneficiary_value_1 = (EditText) root.findViewById(R.id.edit_beneficiary_1_value);
         btn_create_proposal = (Button) root.findViewById(R.id.btn_create_proposal);
-        btn_publish_proposal = (Button) root.findViewById(R.id.btn_publish_proposal);
-        btn_edit = (ImageButton) root.findViewById(R.id.btn_edit);
 
         initHelpViews();
 
@@ -255,9 +249,7 @@ public class CreateProposalActivity extends BaseActivity {
                 container_send.setVisibility(View.GONE);
                 isEditing = true;
                 btn_create_proposal.setVisibility(View.GONE);
-                initBtnEdit();
-                initBroadcastBtn();
-
+//                initBtnEdit();
             }
         });
 
@@ -267,7 +259,7 @@ public class CreateProposalActivity extends BaseActivity {
 //            btn_create_proposal.setText("EDIT");
             btn_create_proposal.setVisibility(View.GONE);
 
-            initBtnEdit();
+//            initBtnEdit();
 
             executor.submit(new Runnable() {
                 @Override
@@ -296,7 +288,6 @@ public class CreateProposalActivity extends BaseActivity {
             btn_create_proposal.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-
                     if (!lock.getAndSet(true)) {
 
                         if (!isEditing)
@@ -355,13 +346,16 @@ public class CreateProposalActivity extends BaseActivity {
                                             showDoneLoading();
                                             //disableEditTexts();
                                             Toast.makeText(CreateProposalActivity.this, finalMessageBody, Toast.LENGTH_SHORT).show();
+                                            Intent intent = new Intent(CreateProposalActivity.this,ProposalSummaryActivity.class);
+                                            intent.setAction(ACTION_PROPOSAL);
+                                            intent.putExtra(INTENT_DATA_PROPOSAL,proposal);
+                                            startActivity(intent);
                                         }else {
                                             container_send.setVisibility(View.INVISIBLE);
                                             showErrorDialog(finalErrorTitle, finalMessageBody);
                                         }
                                     }
                                 });
-
                                 // unlock
                                 lock.set(false);
                             }
@@ -376,22 +370,22 @@ public class CreateProposalActivity extends BaseActivity {
 
     }
 
-    private void initBtnEdit() {
-        btn_edit.setVisibility(View.VISIBLE);
-        btn_edit.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                try {
-                    proposal = buildProposal();
-                    if (proposal != null)
-                        proposal.setForumId(forumId);
-                    redirectToForum(proposal);
-                } catch (ValidationException e) {
-                    showErrorDialog("Validation error", e.getMessage());
-                }
-            }
-        });
-    }
+//    private void initBtnEdit() {
+//        btn_edit.setVisibility(View.VISIBLE);
+//        btn_edit.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                try {
+//                    proposal = buildProposal();
+//                    if (proposal != null)
+//                        proposal.setForumId(forumId);
+//                    redirectToForum(proposal);
+//                } catch (ValidationException e) {
+//                    showErrorDialog("Validation error", e.getMessage());
+//                }
+//            }
+//        });
+//    }
 
     private void initHelpViews() {
         View.OnClickListener onClickListener = new View.OnClickListener() {
@@ -506,7 +500,7 @@ public class CreateProposalActivity extends BaseActivity {
     protected boolean onBroadcastReceive(Bundle data) {
         if (data.getString(INTENT_BROADCAST_DATA_TYPE).equals(INTENT_BROADCAST_DATA_TRANSACTION_SUCCED)){
             showDoneLoading();
-            lockBroadcast.set(false);
+//            lockBroadcast.set(false);
             Toast.makeText(CreateProposalActivity.this,"Proposal broadcasted!, publishing in the forum..",Toast.LENGTH_SHORT).show();
         }
         return false;
@@ -527,54 +521,54 @@ public class CreateProposalActivity extends BaseActivity {
         }
 
 
-        View.OnClickListener onClickListener = null;
-        if (proposal.isSent()){
-            btn_create_proposal.setVisibility(View.GONE);
-            btn_publish_proposal.setVisibility(View.VISIBLE);
-            btn_publish_proposal.setText("UNPUBLISH");
-            onClickListener = new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Toast.makeText(v.getContext(),"unpublishing..",Toast.LENGTH_LONG).show();
-                    module.cancelProposalOnBLockchain(proposal);
-                }
-            };
-            btn_publish_proposal.setOnClickListener(onClickListener);
-        }else if (isEditing){
-            initBroadcastBtn();
-        }
+//        View.OnClickListener onClickListener = null;
+//        if (proposal.isSent()){
+//            btn_create_proposal.setVisibility(View.GONE);
+//            btn_publish_proposal.setVisibility(View.VISIBLE);
+//            btn_publish_proposal.setText("UNPUBLISH");
+//            onClickListener = new View.OnClickListener() {
+//                @Override
+//                public void onClick(View v) {
+//                    Toast.makeText(v.getContext(),"unpublishing..",Toast.LENGTH_LONG).show();
+//                    module.cancelProposalOnBLockchain(proposal);
+//                }
+//            };
+//            btn_publish_proposal.setOnClickListener(onClickListener);
+//        }else if (isEditing){
+//            initBroadcastBtn();
+//        }
 
     }
 
-    private void initBroadcastBtn(){
-        btn_publish_proposal.setVisibility(View.VISIBLE);
-        btn_publish_proposal.setText("BRODCAST");
-        View.OnClickListener onClickListener = new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (isEditing) {
-                    try{
-                        if(lockBroadcast.compareAndSet(false,true)) {
-                            // loading
-                            preparateLoading("Proposal broadcasted!",R.drawable.icon_done);
-
-                            Bundle bundle = new Bundle();
-                            Proposal proposalNew = buildProposal();
-                            proposalNew.setForumId(proposal.getForumId());
-                            bundle.putSerializable(BlockchainService.INTENT_EXTRA_PROPOSAL, proposalNew);
-                            sendWorkToBlockchainService(BlockchainService.ACTION_BROADCAST_PROPOSAL_TRANSACTION, bundle);
-                        }else
-                            Log.e(TAG,"Toco dos veces el broadcast..");
-                    } catch (ValidationException e) {
-                        showErrorDialog("Validation error",e.getMessage());
-                        lockBroadcast.set(false);
-                    }
-                }else
-                    Toast.makeText(v.getContext(),"You have to post before publish on blockchain",Toast.LENGTH_LONG).show();
-            }
-        };
-        btn_publish_proposal.setOnClickListener(onClickListener);
-    }
+//    private void initBroadcastBtn(){
+//        btn_publish_proposal.setVisibility(View.VISIBLE);
+//        btn_publish_proposal.setText("BRODCAST");
+//        View.OnClickListener onClickListener = new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                if (isEditing) {
+//                    try{
+//                        if(lockBroadcast.compareAndSet(false,true)) {
+//                            // loading
+//                            preparateLoading("Proposal broadcasted!",R.drawable.icon_done);
+//
+//                            Bundle bundle = new Bundle();
+//                            Proposal proposalNew = buildProposal();
+//                            proposalNew.setForumId(proposal.getForumId());
+//                            bundle.putSerializable(BlockchainService.INTENT_EXTRA_PROPOSAL, proposalNew);
+//                            sendWorkToBlockchainService(BlockchainService.ACTION_BROADCAST_PROPOSAL_TRANSACTION, bundle);
+//                        }else
+//                            Log.e(TAG,"Toco dos veces el broadcast..");
+//                    } catch (ValidationException e) {
+//                        showErrorDialog("Validation error",e.getMessage());
+//                        lockBroadcast.set(false);
+//                    }
+//                }else
+//                    Toast.makeText(v.getContext(),"You have to post before publish on blockchain",Toast.LENGTH_LONG).show();
+//            }
+//        };
+//        btn_publish_proposal.setOnClickListener(onClickListener);
+//    }
 
 
     private void preparateLoading(String textDone, int resImgDone){
@@ -723,17 +717,6 @@ public class CreateProposalActivity extends BaseActivity {
 
 
     private void showInsuficientFundsException(){
-//        AlertDialog alertDialog = new AlertDialog.Builder(this).create();
-//        alertDialog.setTitle("Error");
-//        alertDialog.setMessage("Insuficient funds, please check your available balance");
-//        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
-//                new DialogInterface.OnClickListener() {
-//                    public void onClick(DialogInterface dialog, int which) {
-//                        dialog.dismiss();
-//                    }
-//                });
-//        alertDialog.show();
-
         InsuficientFundsDialog insuficientFundsDialog = InsuficientFundsDialog.newInstance(module);
         insuficientFundsDialog.show(getFragmentManager(),"insuficientFundsDialog");
 

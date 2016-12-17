@@ -10,6 +10,8 @@ import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import com.squareup.picasso.Picasso;
+
 import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.core.iop_sdk.governance.Proposal;
 
@@ -67,12 +69,13 @@ public class VoteDialog extends DialogFragment implements SeekBar.OnSeekBarChang
 //        }
         if(mProgress >= 0 & mProgress < 31) {
             seekBar.setProgress(15);
-            seekBar.setBackgroundResource(R.drawable.verde);
+            seekBar.setBackgroundResource(R.drawable.img_swicht_verde);
         } else if(mProgress > 25 & mProgress < 70) {
+            seekBar.setBackgroundResource(R.drawable.img_siwcht_gris);
             seekBar.setProgress(50);
         } else {
             seekBar.setProgress(85);
-            seekBar.setBackgroundResource(R.drawable.rojo);
+            seekBar.setBackgroundResource(R.drawable.img_swicth_rojo);
         }
     }
 

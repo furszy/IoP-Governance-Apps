@@ -172,6 +172,24 @@ public abstract class BaseActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        updateBasicValues();
+    }
+
+    private void updateBasicValues(){
+        try {
+            File imgFile = module.getUserImageFile();
+            if (imgFile.exists())
+                Picasso.with(this).load(imgFile).into(img_photo);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+        updateBalances();
+    }
+
     private void initToolbar() {
         toolbar  = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -278,13 +296,6 @@ public abstract class BaseActivity extends AppCompatActivity {
             }
         });
 
-        try {
-            File imgFile = module.getUserImageFile();
-            if (imgFile.exists())
-                Picasso.with(this).load(imgFile).into(img_photo);
-        }catch (Exception e){
-            e.printStackTrace();
-        }
         executor.submit(new Runnable() {
             @Override
             public void run() {
@@ -306,11 +317,7 @@ public abstract class BaseActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-
                         imgQr.setImageBitmap(Cache.getQrLittleBitmapCache());
-
-                        updateBalances();
-
                     }
                 });
             }

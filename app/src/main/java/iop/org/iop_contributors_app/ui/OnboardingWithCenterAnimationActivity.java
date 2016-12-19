@@ -40,6 +40,7 @@ import iop.org.iop_contributors_app.ConnectionRefusedException;
 import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.ForumProfile;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.InvalidUserParametersException;
+import iop.org.iop_contributors_app.ui.components.AsteriskPasswordTransformationMethod;
 import iop.org.iop_contributors_app.ui.dialogs.DialogBuilder;
 import iop.org.iop_contributors_app.ui.settings.DevActivity;
 import iop.org.iop_contributors_app.wallet.WalletModule;
@@ -180,6 +181,8 @@ public class OnboardingWithCenterAnimationActivity extends AppCompatActivity {
                 checkPassword(s.toString());
             }
         });
+
+        txt_password.setTransformationMethod(new AsteriskPasswordTransformationMethod());
 
         txt_name.addTextChangedListener(new TextWatcher() {
             @Override

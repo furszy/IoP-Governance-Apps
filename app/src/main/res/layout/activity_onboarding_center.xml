@@ -102,6 +102,8 @@
                 android:backgroundTint="#fff"
                 android:digits="0123456789 abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ñÑ .,@-_"
                 android:ems="10"
+                android:inputType="textPassword"
+                android:password="true"
                 android:foregroundTint="#808080"
                 android:gravity="center"
                 android:hint="Password"

@@ -3,6 +3,7 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:gravity="center"
+    android:minWidth="300dp"
     android:padding="12dp">
 
     <ImageView
@@ -27,7 +28,7 @@
 
     <TextView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="48dp"
         android:layout_gravity="bottom"
         android:id="@+id/txt_share"
         android:gravity="center"

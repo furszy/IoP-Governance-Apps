@@ -22,6 +22,8 @@ import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.discourge.com.wareninja.opensource.discourse.DiscouseApiConstants;
 import iop.org.iop_contributors_app.ui.base.BaseActivity;
 
+import static iop.org.iop_contributors_app.ui.ProposalSummaryActivity.INTENT_DATA_PROPOSAL;
+
 
 /**
  * Created by mati on 07/11/16.
@@ -84,11 +86,12 @@ public class ForumActivity extends BaseActivity {
                 String[] addressSplitted = address.split("/");
                 String forumTitle = addressSplitted[4];
                 String forumId = addressSplitted[5];
-                Intent intent1 = new Intent(ForumActivity.this,CreateProposalActivity.class);
-                intent1.setAction(CreateProposalActivity.ACTION_EDIT_PROPOSAL);
+                Intent intent1 = new Intent(ForumActivity.this,ProposalSummaryActivity.class);
+                intent1.setAction(ProposalSummaryActivity.ACTION_SUMMARY_PROPOSAL);
                 intent1.putExtra(CreateProposalActivity.INTENT_DATA_FORUM_ID,Integer.valueOf(forumId));
                 intent1.putExtra(CreateProposalActivity.INTENT_DATA_FORUM_TITLE,forumTitle);
                 startActivity(intent1);
+                finish();
             }
         });
 

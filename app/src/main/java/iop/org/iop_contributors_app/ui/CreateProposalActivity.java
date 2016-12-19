@@ -350,6 +350,7 @@ public class CreateProposalActivity extends BaseActivity {
                                             intent.setAction(ACTION_PROPOSAL);
                                             intent.putExtra(INTENT_DATA_PROPOSAL,proposal);
                                             startActivity(intent);
+                                            finish();
                                         }else {
                                             container_send.setVisibility(View.INVISIBLE);
                                             showErrorDialog(finalErrorTitle, finalMessageBody);

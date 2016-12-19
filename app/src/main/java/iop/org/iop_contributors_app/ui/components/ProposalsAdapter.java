@@ -12,6 +12,8 @@ import iop.org.iop_contributors_app.furszy_sdk.android.adapter.FermatAdapterImpr
 import iop.org.iop_contributors_app.ui.ProposalSummaryActivity;
 import iop.org.iop_contributors_app.wallet.WalletModule;
 
+import static iop.org.iop_contributors_app.core.iop_sdk.blockchain.utils.CoinUtils.coinToString;
+
 /**
  * Created by mati on 17/11/16.
  */
@@ -54,7 +56,7 @@ public class ProposalsAdapter extends FermatAdapterImproved<Proposal,ProposalsHo
         });
         holder.txt_start_block.setText(String.valueOf(data.getStartBlock()));
         holder.txt_end_block.setText(String.valueOf(data.getEndBlock()));
-        holder.txt_total_amount.setText("Reward "+data.getBlockReward()+" IoPs");
+        holder.txt_total_amount.setText("Reward "+coinToString(data.getBlockReward())+" IoPs");
         holder.txt_go_forum.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

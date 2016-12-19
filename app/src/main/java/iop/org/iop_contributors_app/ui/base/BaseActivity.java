@@ -355,7 +355,7 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     }
 
-    protected void sendWorkToBlockchainService(String action,Bundle data){
+    public void sendWorkToBlockchainService(String action, Bundle data){
         Intent intent = new Intent(action,null,this, BlockchainServiceImpl.class);
         intent.putExtras(data);
         startService(intent);

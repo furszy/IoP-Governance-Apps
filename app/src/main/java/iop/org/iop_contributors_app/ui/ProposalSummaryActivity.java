@@ -1,6 +1,7 @@
 package iop.org.iop_contributors_app.ui;
 
 import android.app.AlertDialog;
+import android.app.DialogFragment;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -8,8 +9,10 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.text.Html;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
@@ -28,6 +31,8 @@ import org.json.JSONObject;
 
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.core.iop_sdk.governance.Proposal;
@@ -35,10 +40,14 @@ import iop.org.iop_contributors_app.core.iop_sdk.utils.TextUtils;
 import iop.org.iop_contributors_app.furszy_sdk.android.mine.SizeUtils;
 import iop.org.iop_contributors_app.services.BlockchainService;
 import iop.org.iop_contributors_app.ui.base.BaseActivity;
+import iop.org.iop_contributors_app.ui.dialogs.BroadcastContractDialog;
+import iop.org.iop_contributors_app.ui.dialogs.CancelLister;
 import iop.org.iop_contributors_app.ui.dialogs.wallet.InsuficientFundsDialog;
 import iop.org.iop_contributors_app.ui.validators.ValidationException;
 import iop.org.iop_contributors_app.wallet.WalletModule;
+import iop.org.iop_contributors_app.wallet.db.CantGetProposalException;
 
+import static iop.org.iop_contributors_app.core.iop_sdk.blockchain.utils.CoinUtils.coinToString;
 import static iop.org.iop_contributors_app.core.iop_sdk.utils.TextUtils.transformToHtmlWithColor;
 import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_TRANSACTION_SUCCED;
 import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_TYPE;
@@ -63,6 +72,7 @@ public class ProposalSummaryActivity extends BaseActivity implements View.OnClic
 
     public static final String ACTION_PROPOSAL = "action_proposal";
     public static final String INTENT_DATA_PROPOSAL = "proposal";
+    public static final String ACTION_SUMMARY_PROPOSAL = "summary_proposal";
 
     private Proposal proposal;
 
@@ -134,6 +144,16 @@ public class ProposalSummaryActivity extends BaseActivity implements View.OnClic
 
         if (getIntent().getExtras().containsKey(INTENT_DATA_PROPOSAL)) {
             proposal = (Proposal) getIntent().getSerializableExtra(INTENT_DATA_PROPOSAL);
+        }else if (getIntent().getAction().equals(ACTION_SUMMARY_PROPOSAL)){
+            int forumId = getIntent().getIntExtra(INTENT_DATA_FORUM_ID, -1);
+            String forumTitle = getIntent().getStringExtra(INTENT_DATA_FORUM_TITLE);
+            forumTitle = forumTitle.replace("-"," ");
+            Log.i(TAG,"editing mode, title: "+forumTitle+", id: "+forumId);
+            try {
+                proposal = module.getProposal(forumId);
+            } catch (CantGetProposalException e) {
+                e.printStackTrace();
+            }
         }
 
 
@@ -168,7 +188,7 @@ public class ProposalSummaryActivity extends BaseActivity implements View.OnClic
         loadProposal();
 
         if (proposal.isSent()){
-            btn_broadcast_proposal.setText("Cancel");
+            proposalSent();
         }else {
             btn_broadcast_proposal.setText("Broadcast");
         }
@@ -199,7 +219,6 @@ public class ProposalSummaryActivity extends BaseActivity implements View.OnClic
         txt_body.setText(proposal.getBody());
         txt_start_block.setText(Html.fromHtml(transformToHtmlWithColor("Start block: ","#cccccc")+transformToHtmlWithColor(String.valueOf(proposal.getStartBlock()),"#ffffff")));
         txt_end_block.setText(Html.fromHtml(transformToHtmlWithColor("End block: ","#cccccc")+transformToHtmlWithColor(String.valueOf(proposal.getEndBlock()),"#ffffff")));
-//        txt_block_reward.setText(String.valueOf(proposal.getBlockReward()));
         loadBeneficiaries(proposal.getBeneficiaries());
         txt_total_amount.setText("Total: "+coinToString(proposal.getBlockReward()*proposal.getEndBlock())+" IoPs");
 
@@ -216,25 +235,16 @@ public class ProposalSummaryActivity extends BaseActivity implements View.OnClic
         }
     }
 
-    private String coinToString(long amount){
-        String value = Coin.valueOf(amount).toPlainString();
-        if (value.length()==4 || value.length()==3) return value;
-        int pointIndex = value.indexOf('.');
-        if (pointIndex!=-1){
-            if (value.length()>pointIndex+2)
-                value = value.substring(0,pointIndex+3);
-            else
-                value = value.substring(0,pointIndex+2);
-        }
-        return value;
-    }
+
 
     @Override
     protected boolean onBroadcastReceive(Bundle data) {
-        if (data.getString(INTENT_BROADCAST_DATA_TYPE).equals(INTENT_BROADCAST_DATA_TRANSACTION_SUCCED)){
-            showDoneLoading();
-            lockBroadcast.set(false);
-            Toast.makeText(this,"Proposal broadcasted!, publishing in the forum..",Toast.LENGTH_SHORT).show();
+        if (data.containsKey(INTENT_BROADCAST_DATA_TYPE)) {
+            if (data.getString(INTENT_BROADCAST_DATA_TYPE).equals(INTENT_BROADCAST_DATA_TRANSACTION_SUCCED)) {
+                lockBroadcast.set(false);
+                showDoneLoading();
+                Toast.makeText(this, "Proposal broadcasted!, publishing in the forum..", Toast.LENGTH_SHORT).show();
+            }
         }
         return false;
     }
@@ -250,12 +260,9 @@ public class ProposalSummaryActivity extends BaseActivity implements View.OnClic
         if (id == R.id.btn_broadcast_proposal){
             if (!proposal.isSent()) {
                 if (lockBroadcast.compareAndSet(false, true)) {
-                    // loading
-                    preparateLoading("Proposal broadcasted!", R.drawable.icon_done);
 
-                    Bundle bundle = new Bundle();
-                    bundle.putSerializable(BlockchainService.INTENT_EXTRA_PROPOSAL, proposal);
-                    sendWorkToBlockchainService(BlockchainService.ACTION_BROADCAST_PROPOSAL_TRANSACTION, bundle);
+                    showBroadcastDialog();
+
                 } else
                     Log.e(TAG, "Toco dos veces el broadcast..");
             }else {
@@ -281,6 +288,17 @@ public class ProposalSummaryActivity extends BaseActivity implements View.OnClic
         progressBar.setVisibility(View.INVISIBLE);
         txt_done.setVisibility(View.VISIBLE);
         img_done.setVisibility(View.VISIBLE);
+        container_send.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                hideDoneLoading();
+                proposalSent();
+            }
+        });
+    }
+
+    private void proposalSent() {
+        btn_broadcast_proposal.setText("Cancel");
     }
 
     private void hideDoneLoading(){
@@ -300,6 +318,17 @@ public class ProposalSummaryActivity extends BaseActivity implements View.OnClic
         InsuficientFundsDialog insuficientFundsDialog = InsuficientFundsDialog.newInstance(module);
         insuficientFundsDialog.show(getFragmentManager(),"insuficientFundsDialog");
 
+    }
+
+    private void showBroadcastDialog() {
+        // loading
+        preparateLoading("Proposal broadcasted!", R.drawable.icon_done);
+        BroadcastContractDialog.newinstance(module,proposal).setCancelListener(new CancelLister() {
+            @Override
+            public void cancel() {
+                hideDoneLoading();
+            }
+        }).show(getSupportFragmentManager(),"broadcastContractDialog");
     }
 
     private void showErrorDialog(String title, String message) {
@@ -345,5 +374,7 @@ public class ProposalSummaryActivity extends BaseActivity implements View.OnClic
         String result = formatedStr.toString();
         return result.equals("")?json:formatedStr.toString();
     }
+
+
 
 }

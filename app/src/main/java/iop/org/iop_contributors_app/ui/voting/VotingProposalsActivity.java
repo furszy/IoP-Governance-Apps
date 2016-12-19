@@ -67,6 +67,13 @@ public class VotingProposalsActivity extends BaseActivity {
         adapter = new VotingProposalsAdapter(this,module);
         recyclerView.setAdapter(adapter);
 
+        container_empty_screen.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showVoteDialog(null);
+            }
+        });
+
     }
 
     /**

@@ -23,7 +23,7 @@
             android:layout_height="75dp"
             android:thumb="@drawable/vote_seekbar"
             android:progressDrawable="@null"
-            tools:background="@drawable/img_siwcht_gris"
+            android:background="@drawable/img_siwcht_gris"
             android:layout_gravity="center"
             android:minHeight="75px"
             android:maxHeight="75px"

@@ -69,13 +69,13 @@ public class VoteDialog extends DialogFragment implements SeekBar.OnSeekBarChang
 //        }
         if(mProgress >= 0 & mProgress < 31) {
             seekBar.setProgress(15);
-            seekBar.setBackgroundResource(R.drawable.img_swicht_verde);
+            seekBar.setBackgroundResource(R.drawable.img_swicth_rojo);
         } else if(mProgress > 25 & mProgress < 70) {
             seekBar.setBackgroundResource(R.drawable.img_siwcht_gris);
             seekBar.setProgress(50);
         } else {
             seekBar.setProgress(85);
-            seekBar.setBackgroundResource(R.drawable.img_swicth_rojo);
+            seekBar.setBackgroundResource(R.drawable.img_swicht_verde);
         }
     }
 

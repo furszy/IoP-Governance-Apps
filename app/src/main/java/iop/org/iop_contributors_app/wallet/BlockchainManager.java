@@ -14,9 +14,14 @@ import org.bitcoinj.core.Sha256Hash;
 import org.bitcoinj.core.StoredBlock;
 import org.bitcoinj.core.Transaction;
 import org.bitcoinj.core.TransactionBroadcast;
+import org.bitcoinj.core.UnsafeByteArrayOutputStream;
+import org.bitcoinj.core.Utils;
 import org.bitcoinj.core.listeners.PeerConnectedEventListener;
 import org.bitcoinj.core.listeners.PeerDataEventListener;
 import org.bitcoinj.core.listeners.PeerDisconnectedEventListener;
+import org.bitcoinj.net.discovery.MultiplexingDiscovery;
+import org.bitcoinj.net.discovery.PeerDiscovery;
+import org.bitcoinj.net.discovery.PeerDiscoveryException;
 import org.bitcoinj.params.RegTestParams;
 import org.bitcoinj.store.BlockStore;
 import org.bitcoinj.store.BlockStoreException;
@@ -25,12 +30,19 @@ import org.bitcoinj.wallet.Wallet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
+import iop.org.iop_contributors_app.core.iop_sdk.blockchain.explorer.TransactionFinder;
 import iop.org.iop_contributors_app.services.BlockchainState;
 import iop.org.iop_contributors_app.configurations.WalletPreferencesConfiguration;
 import iop.org.iop_contributors_app.wallet.util.RegtestUtil;
@@ -57,16 +69,16 @@ public class BlockchainManager {
     @Nullable
     private PeerGroup peerGroup;
 
+    private List<BlockchainManagerListener> blockchainManagerListeners;
 
 
     public BlockchainManager(ContextWrapper contextWrapper,WalletManager walletManager, WalletPreferencesConfiguration conf) {
         this.walletManager = walletManager;
         this.conf = conf;
         this.context = contextWrapper;
-
     }
 
-    public void start(){
+    public void init(){
         // todo: en vez de que el service este maneje el blockchain deberia crear una clase que lo haga..
         blockChainFile = new File(context.getDir("blockstore", Context.MODE_PRIVATE), WalletConstants.Files.BLOCKCHAIN_FILENAME);
         final boolean blockChainFileExists = blockChainFile.exists();
@@ -133,6 +145,17 @@ public class BlockchainManager {
         peerGroup.removeConnectedEventListener(listener);
     }
 
+    public void addBlockchainManagerListener(BlockchainManagerListener listener){
+        if (blockchainManagerListeners==null) blockchainManagerListeners = new ArrayList<>();
+        blockchainManagerListeners.add(listener);
+    }
+
+    public void removeBlockchainManagerListener(BlockchainManagerListener listener){
+        if (blockchainManagerListeners!=null){
+            blockchainManagerListeners.remove(listener);
+        }
+    }
+
     /**
      *
      * @param transactionHash
@@ -183,7 +206,7 @@ public class BlockchainManager {
 
         final Wallet wallet = walletManager.getWallet();
 
-        if (impediments.isEmpty() && peerGroup == null){
+        if (impediments.isEmpty() && peerGroup == null) {
 
             LOG.debug("acquiring wakelock");
             wakeLock.acquire();
@@ -216,55 +239,59 @@ public class BlockchainManager {
             peerGroup.setConnectTimeoutMillis(WalletConstants.PEER_TIMEOUT_MS);
             peerGroup.setPeerDiscoveryTimeoutMillis(WalletConstants.PEER_DISCOVERY_TIMEOUT_MS);
 
-//            peerGroup.addPeerDiscovery(new PeerDiscovery() {
-//
-//                private final PeerDiscovery normalPeerDiscovery = MultiplexingDiscovery.forServices(WalletConstants.NETWORK_PARAMETERS, 0);
-//
-//                @Override
-//                public InetSocketAddress[] getPeers(final long services, final long timeoutValue, final TimeUnit timeoutUnit)
-//                        throws PeerDiscoveryException
-//                {
-//                    final List<InetSocketAddress> peers = new LinkedList<InetSocketAddress>();
-//
-//                    boolean needsTrimPeersWorkaround = false;
-//
-//                    if (hasTrustedPeer)
-//                    {
-//                        LOG.info("trusted peer '" + trustedPeerHost + "'" + (connectTrustedPeerOnly ? " only" : ""));
-//
-//                        final InetSocketAddress addr = new InetSocketAddress(trustedPeerHost, WalletConstants.NETWORK_PARAMETERS.getPort());
-//                        if (addr.getAddress() != null)
-//                        {
-//                            peers.add(addr);
-//                            needsTrimPeersWorkaround = true;
-//                        }
-//                    }
-//
-//                    if (!connectTrustedPeerOnly)
-//                        peers.addAll(Arrays.asList(normalPeerDiscovery.getPeers(services, timeoutValue, timeoutUnit)));
-//
-//                    // workaround because PeerGroup will shuffle peers
-//                    if (needsTrimPeersWorkaround)
-//                        while (peers.size() >= maxConnectedPeers)
-//                            peers.remove(peers.size() - 1);
-//
-//                    return peers.toArray(new InetSocketAddress[0]);
-//                }
-//
-//                @Override
-//                public void shutdown()
-//                {
-//                    normalPeerDiscovery.shutdown();
-//                }
-//            });
-
             if (WalletConstants.NETWORK_PARAMETERS.equals(RegTestParams.get())) {
-				for (PeerAddress peerAddress : RegtestUtil.getConnectedPeers(WalletConstants.NETWORK_PARAMETERS,conf.getNode())) {
-					peerGroup.addAddress(peerAddress);
-				}
-			}else throw new RuntimeException("Pelotudo descomentá lo de arriba please");
+                for (PeerAddress peerAddress : RegtestUtil.getConnectedPeers(WalletConstants.NETWORK_PARAMETERS, conf.getNode())) {
+                    peerGroup.addAddress(peerAddress);
+                }
+            } else{
 
-            // start peergroup
+                peerGroup.addPeerDiscovery(new PeerDiscovery() {
+
+                    private final PeerDiscovery normalPeerDiscovery = MultiplexingDiscovery.forServices(WalletConstants.NETWORK_PARAMETERS, 0);
+
+                    @Override
+                    public InetSocketAddress[] getPeers(final long services, final long timeoutValue, final TimeUnit timeoutUnit)
+                            throws PeerDiscoveryException {
+                        final List<InetSocketAddress> peers = new LinkedList<InetSocketAddress>();
+
+                        boolean needsTrimPeersWorkaround = false;
+
+                        if (hasTrustedPeer) {
+                            LOG.info("trusted peer '" + trustedPeerHost + "'" + (connectTrustedPeerOnly ? " only" : ""));
+
+                            final InetSocketAddress addr = new InetSocketAddress(trustedPeerHost, WalletConstants.NETWORK_PARAMETERS.getPort());
+                            if (addr.getAddress() != null) {
+                                peers.add(addr);
+                                needsTrimPeersWorkaround = true;
+                            }
+                        }
+
+                        if (!connectTrustedPeerOnly)
+                            peers.addAll(Arrays.asList(normalPeerDiscovery.getPeers(services, timeoutValue, timeoutUnit)));
+
+                        // workaround because PeerGroup will shuffle peers
+                        if (needsTrimPeersWorkaround)
+                            while (peers.size() >= maxConnectedPeers)
+                                peers.remove(peers.size() - 1);
+
+                        return peers.toArray(new InetSocketAddress[0]);
+                    }
+
+                    @Override
+                    public void shutdown() {
+                        normalPeerDiscovery.shutdown();
+                    }
+                });
+            }
+
+            // notify that the peergroup is initialized
+            if (blockchainManagerListeners!=null) {
+                for (BlockchainManagerListener blockchainManagerListener : blockchainManagerListeners) {
+                    blockchainManagerListener.peerGroupInitialized(peerGroup);
+                }
+            }
+
+            // init peergroup
             peerGroup.startAsync();
             peerGroup.startBlockChainDownload(blockchainDownloadListener);
 

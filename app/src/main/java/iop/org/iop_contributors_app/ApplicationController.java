@@ -33,6 +33,7 @@ import iop.org.iop_contributors_app.profile_server.ModuleProfileServer;
 
 import iop.org.iop_contributors_app.services.BlockchainServiceImpl;
 import iop.org.iop_contributors_app.configurations.WalletPreferencesConfiguration;
+import iop.org.iop_contributors_app.ui.voting.VotingStartActivity;
 import iop.org.iop_contributors_app.utils.CrashReporter;
 import iop.org.iop_contributors_app.wallet.BlockchainManager;
 import iop.org.iop_contributors_app.wallet.WalletConstants;
@@ -64,6 +65,8 @@ public class ApplicationController extends Application {
     // android services
     private LocalBroadcastManager localBroadcastManager;
 
+    private static String APP_TYPE ;
+
     @Override
     public void onCreate() {
 
@@ -80,6 +83,11 @@ public class ApplicationController extends Application {
         initLogging();
 
         instance = this;
+
+        String packageName = packageInfo.packageName;
+        Intent launchIntent = getPackageManager().getLaunchIntentForPackage(packageName);
+        String className = launchIntent.getComponent().getClassName();
+        APP_TYPE = className;
 
         Threading.uncaughtExceptionHandler = new Thread.UncaughtExceptionHandler() {
             @Override
@@ -262,5 +270,9 @@ public class ApplicationController extends Application {
 
     public void sendLocalBroadcast(Intent intent) {
         localBroadcastManager.sendBroadcast(intent);
+    }
+
+    public boolean isVotingApp(){
+        return APP_TYPE.contains(VotingStartActivity.class.getName());
     }
 }

@@ -6,6 +6,7 @@ import android.text.format.DateUtils;
 import org.bitcoinj.core.Context;
 import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.params.RegTestParams;
+import org.bitcoinj.params.TestNet3Params;
 
 import java.io.File;
 

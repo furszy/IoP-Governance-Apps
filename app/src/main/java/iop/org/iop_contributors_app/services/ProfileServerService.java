@@ -207,7 +207,7 @@
 //        boolean isRegistered = configurationsPreferences.isRegisteredInServer();
 //
 //        if (!isRegistered) {
-//            // start conversation to request a home request (if it not logged)
+//            // init conversation to request a home request (if it not logged)
 //            startConverNonClPort();
 //            // Request home node request
 //            requestHomeNodeRequest();
@@ -510,7 +510,7 @@
 //            switch (conversationResponse.getResponseTypeCase()){
 //
 //                case START:
-//                    Log.d(TAG,"start conversation received in port: "+session.getPortType());
+//                    Log.d(TAG,"init conversation received in port: "+session.getPortType());
 //                    // saving the challenge signed..
 //                    byte[] signedChallenge = conversationResponse.getSignature().toByteArray();
 //                    module.getProfile().setSignedConnectionChallenge(signedChallenge);

@@ -3,6 +3,7 @@ package iop.org.iop_contributors_app;
 import junit.framework.Assert;
 
 import org.bitcoinj.core.Sha256Hash;
+import org.bitcoinj.core.Transaction;
 import org.bitcoinj.params.RegTestParams;
 import org.junit.Test;
 import org.libsodium.jni.encoders.Hex;
@@ -11,6 +12,9 @@ import java.math.BigInteger;
 import java.util.Arrays;
 
 import iop.org.iop_contributors_app.core.iop_sdk.blockchain.OpReturnOutputTransaction;
+import iop.org.iop_contributors_app.core.iop_sdk.crypto.CryptoBytes;
+
+import static iop.org.iop_contributors_app.core.iop_sdk.utils.ArraysUtils.numericTypeToByteArray;
 
 /**
  * Created by mati on 18/11/16.
@@ -54,7 +58,7 @@ public class ProposalTransactionTest {
         Assert.assertEquals(tag,getData(data,0,2));
         // chequeo la version
         Assert.assertEquals(version,getData(data,2,4));
-        // start height
+        // init height
         Assert.assertEquals(startHeight,getData(data,4,7));
         // end block
         Assert.assertEquals(endBlock,getData(data,7,9));
@@ -63,6 +67,71 @@ public class ProposalTransactionTest {
 
     }
 
+    // position
+    private static final int CONTRACT_TAG_POSITION = 0;
+    private static final int CONTRACT_VERSION_POSITION = 2;
+    private static final int CONTRACT_START_HEIGHT_POSITION = 4;
+    private static final int CONTRACT_END_HEIGHT_POSITION = 7;
+    private static final int CONTRACT_REWARD_POSITION = 9;
+    private static final int CONTRACT_HASH_POSITION = 12;
+    private static final int CONTRACT_FORUM_ID_POSITION = 44;
+    // size
+    private static final int CONTRACT_SIZE = 46;
+    private static final int CONTRACT_TAG_SIZE = 2;
+    private static final int CONTRACT_VERSION_SIZE = 2;
+    private static final int CONTRACT_START_HEIGHT_SIZE = 3;
+    private static final int CONTRACT_END_HEIGHT_SIZE = 2;
+    private static final int CONTRACT_REWARD_SIZE = 3;
+    private static final int CONTRACT_HASH_SIZE = 32;
+    private static final int CONTRACT_FORUM_ID_SIZE = 2;
+
+    @Test
+    public void createContract2(){
+
+        int blockStartHeight = 20;
+        int endHeight = 60;
+        long blockReward = 10000000;
+        byte[] proposalHash = CryptoBytes.fromHexToBytes("0080a9f7727726783617077919407ceec77865f5ae67d908b87ab0b42ef55fc9");
+        int forumId = 110;
+
+        // data
+        byte[] prevData = new byte[CONTRACT_SIZE];
+        numericTypeToByteArray(prevData,tag,CONTRACT_TAG_POSITION,CONTRACT_TAG_SIZE);
+        numericTypeToByteArray(prevData,version,CONTRACT_VERSION_POSITION,CONTRACT_VERSION_SIZE);
+        numericTypeToByteArray(prevData,blockStartHeight,CONTRACT_START_HEIGHT_POSITION,CONTRACT_START_HEIGHT_SIZE);
+        numericTypeToByteArray(prevData,endHeight,CONTRACT_END_HEIGHT_POSITION,CONTRACT_END_HEIGHT_SIZE);
+        numericTypeToByteArray(prevData,blockReward,CONTRACT_REWARD_POSITION,CONTRACT_REWARD_SIZE);
+        System.arraycopy(proposalHash,0,prevData,CONTRACT_HASH_POSITION,CONTRACT_HASH_SIZE);
+        numericTypeToByteArray(prevData,forumId,CONTRACT_FORUM_ID_POSITION,CONTRACT_FORUM_ID_SIZE);
+
+        Transaction transaction = new Transaction(RegTestParams.get());
+
+        OpReturnOutputTransaction opReturnOutputTransaction = new OpReturnOutputTransaction.Builder(RegTestParams.get())
+                .setParentTransaction(transaction)
+                .addData(prevData)
+                .build2();
+
+        System.out.println(getData2Hex(opReturnOutputTransaction.getData(),CONTRACT_REWARD_POSITION,CONTRACT_REWARD_SIZE));
+
+        Assert.assertEquals(blockReward,getData2(prevData,CONTRACT_REWARD_POSITION,CONTRACT_REWARD_SIZE));
+        // block reward
+        Assert.assertEquals(blockReward,getData2(opReturnOutputTransaction.getData(),CONTRACT_REWARD_POSITION,CONTRACT_REWARD_SIZE));
+
+
+    }
+
+
+    byte[] toBytes(int i)
+    {
+        byte[] result = new byte[4];
+
+        result[0] = (byte) (i >> 24);
+        result[1] = (byte) (i >> 16);
+        result[2] = (byte) (i >> 8);
+        result[3] = (byte) (i /*>> 0*/);
+
+        return result;
+    }
     /**
      * Field
      Description
@@ -106,7 +175,7 @@ public class ProposalTransactionTest {
         Assert.assertEquals(tag,getData(data,0,3));
         // chequeo la version
         Assert.assertEquals(voting,getData(data,3,4));
-        // start height
+        // init height
         byte[] res = new byte[32];
         System.arraycopy(data,4,res,0,32);
         boolean result = Arrays.equals(hash,res);
@@ -118,6 +187,20 @@ public class ProposalTransactionTest {
         System.arraycopy(data,init,retDat,0,end-init);
         String versionStr = Hex.HEX.encode(retDat);
         return new BigInteger(versionStr,16).intValue();
+    }
+
+    private int getData2(byte[] data, int init, int end){
+        byte[] retDat = new byte[end];
+        System.arraycopy(data,init,retDat,0,end);
+        String versionStr = Hex.HEX.encode(retDat);
+        return new BigInteger(versionStr,16).intValue();
+    }
+
+    private String getData2Hex(byte[] data, int init, int end){
+        byte[] retDat = new byte[end];
+        System.arraycopy(data,init,retDat,0,end);
+        String versionStr = Hex.HEX.encode(retDat);
+        return versionStr;
     }
 
     private void numericTypeToByteArray(byte[] src,int data,int posStart,int lenght){

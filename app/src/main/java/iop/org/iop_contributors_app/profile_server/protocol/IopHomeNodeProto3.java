@@ -8889,7 +8889,7 @@ public final class IopHomeNodeProto3 {
      * Request body.
      * </pre>
      *
-     * <code>optional .StartConversationRequest start = 2;</code>
+     * <code>optional .StartConversationRequest init = 2;</code>
      */
     IopHomeNodeProto3.StartConversationRequest getStart();
     /**
@@ -8897,7 +8897,7 @@ public final class IopHomeNodeProto3 {
      * Request body.
      * </pre>
      *
-     * <code>optional .StartConversationRequest start = 2;</code>
+     * <code>optional .StartConversationRequest init = 2;</code>
      */
     IopHomeNodeProto3.StartConversationRequestOrBuilder getStartOrBuilder();
 
@@ -9370,7 +9370,7 @@ public final class IopHomeNodeProto3 {
      * Request body.
      * </pre>
      *
-     * <code>optional .StartConversationRequest start = 2;</code>
+     * <code>optional .StartConversationRequest init = 2;</code>
      */
     public IopHomeNodeProto3.StartConversationRequest getStart() {
       if (requestTypeCase_ == 2) {
@@ -9383,7 +9383,7 @@ public final class IopHomeNodeProto3 {
      * Request body.
      * </pre>
      *
-     * <code>optional .StartConversationRequest start = 2;</code>
+     * <code>optional .StartConversationRequest init = 2;</code>
      */
     public IopHomeNodeProto3.StartConversationRequestOrBuilder getStartOrBuilder() {
       if (requestTypeCase_ == 2) {
@@ -10372,7 +10372,7 @@ public final class IopHomeNodeProto3 {
        * Request body.
        * </pre>
        *
-       * <code>optional .StartConversationRequest start = 2;</code>
+       * <code>optional .StartConversationRequest init = 2;</code>
        */
       public IopHomeNodeProto3.StartConversationRequest getStart() {
         if (startBuilder_ == null) {
@@ -10392,7 +10392,7 @@ public final class IopHomeNodeProto3 {
        * Request body.
        * </pre>
        *
-       * <code>optional .StartConversationRequest start = 2;</code>
+       * <code>optional .StartConversationRequest init = 2;</code>
        */
       public Builder setStart(IopHomeNodeProto3.StartConversationRequest value) {
         if (startBuilder_ == null) {
@@ -10412,7 +10412,7 @@ public final class IopHomeNodeProto3 {
        * Request body.
        * </pre>
        *
-       * <code>optional .StartConversationRequest start = 2;</code>
+       * <code>optional .StartConversationRequest init = 2;</code>
        */
       public Builder setStart(
           IopHomeNodeProto3.StartConversationRequest.Builder builderForValue) {
@@ -10430,7 +10430,7 @@ public final class IopHomeNodeProto3 {
        * Request body.
        * </pre>
        *
-       * <code>optional .StartConversationRequest start = 2;</code>
+       * <code>optional .StartConversationRequest init = 2;</code>
        */
       public Builder mergeStart(IopHomeNodeProto3.StartConversationRequest value) {
         if (startBuilder_ == null) {
@@ -10456,7 +10456,7 @@ public final class IopHomeNodeProto3 {
        * Request body.
        * </pre>
        *
-       * <code>optional .StartConversationRequest start = 2;</code>
+       * <code>optional .StartConversationRequest init = 2;</code>
        */
       public Builder clearStart() {
         if (startBuilder_ == null) {
@@ -10479,7 +10479,7 @@ public final class IopHomeNodeProto3 {
        * Request body.
        * </pre>
        *
-       * <code>optional .StartConversationRequest start = 2;</code>
+       * <code>optional .StartConversationRequest init = 2;</code>
        */
       public IopHomeNodeProto3.StartConversationRequest.Builder getStartBuilder() {
         return getStartFieldBuilder().getBuilder();
@@ -10489,7 +10489,7 @@ public final class IopHomeNodeProto3 {
        * Request body.
        * </pre>
        *
-       * <code>optional .StartConversationRequest start = 2;</code>
+       * <code>optional .StartConversationRequest init = 2;</code>
        */
       public IopHomeNodeProto3.StartConversationRequestOrBuilder getStartOrBuilder() {
         if ((requestTypeCase_ == 2) && (startBuilder_ != null)) {
@@ -10506,7 +10506,7 @@ public final class IopHomeNodeProto3 {
        * Request body.
        * </pre>
        *
-       * <code>optional .StartConversationRequest start = 2;</code>
+       * <code>optional .StartConversationRequest init = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
           IopHomeNodeProto3.StartConversationRequest, IopHomeNodeProto3.StartConversationRequest.Builder, IopHomeNodeProto3.StartConversationRequestOrBuilder> 
@@ -12283,7 +12283,7 @@ public final class IopHomeNodeProto3 {
      * Response body.
      * </pre>
      *
-     * <code>optional .StartConversationResponse start = 2;</code>
+     * <code>optional .StartConversationResponse init = 2;</code>
      */
     IopHomeNodeProto3.StartConversationResponse getStart();
     /**
@@ -12291,7 +12291,7 @@ public final class IopHomeNodeProto3 {
      * Response body.
      * </pre>
      *
-     * <code>optional .StartConversationResponse start = 2;</code>
+     * <code>optional .StartConversationResponse init = 2;</code>
      */
     IopHomeNodeProto3.StartConversationResponseOrBuilder getStartOrBuilder();
 
@@ -12763,7 +12763,7 @@ public final class IopHomeNodeProto3 {
      * Response body.
      * </pre>
      *
-     * <code>optional .StartConversationResponse start = 2;</code>
+     * <code>optional .StartConversationResponse init = 2;</code>
      */
     public IopHomeNodeProto3.StartConversationResponse getStart() {
       if (responseTypeCase_ == 2) {
@@ -12776,7 +12776,7 @@ public final class IopHomeNodeProto3 {
      * Response body.
      * </pre>
      *
-     * <code>optional .StartConversationResponse start = 2;</code>
+     * <code>optional .StartConversationResponse init = 2;</code>
      */
     public IopHomeNodeProto3.StartConversationResponseOrBuilder getStartOrBuilder() {
       if (responseTypeCase_ == 2) {
@@ -13764,7 +13764,7 @@ public final class IopHomeNodeProto3 {
        * Response body.
        * </pre>
        *
-       * <code>optional .StartConversationResponse start = 2;</code>
+       * <code>optional .StartConversationResponse init = 2;</code>
        */
       public IopHomeNodeProto3.StartConversationResponse getStart() {
         if (startBuilder_ == null) {
@@ -13784,7 +13784,7 @@ public final class IopHomeNodeProto3 {
        * Response body.
        * </pre>
        *
-       * <code>optional .StartConversationResponse start = 2;</code>
+       * <code>optional .StartConversationResponse init = 2;</code>
        */
       public Builder setStart(IopHomeNodeProto3.StartConversationResponse value) {
         if (startBuilder_ == null) {
@@ -13804,7 +13804,7 @@ public final class IopHomeNodeProto3 {
        * Response body.
        * </pre>
        *
-       * <code>optional .StartConversationResponse start = 2;</code>
+       * <code>optional .StartConversationResponse init = 2;</code>
        */
       public Builder setStart(
           IopHomeNodeProto3.StartConversationResponse.Builder builderForValue) {
@@ -13822,7 +13822,7 @@ public final class IopHomeNodeProto3 {
        * Response body.
        * </pre>
        *
-       * <code>optional .StartConversationResponse start = 2;</code>
+       * <code>optional .StartConversationResponse init = 2;</code>
        */
       public Builder mergeStart(IopHomeNodeProto3.StartConversationResponse value) {
         if (startBuilder_ == null) {
@@ -13848,7 +13848,7 @@ public final class IopHomeNodeProto3 {
        * Response body.
        * </pre>
        *
-       * <code>optional .StartConversationResponse start = 2;</code>
+       * <code>optional .StartConversationResponse init = 2;</code>
        */
       public Builder clearStart() {
         if (startBuilder_ == null) {
@@ -13871,7 +13871,7 @@ public final class IopHomeNodeProto3 {
        * Response body.
        * </pre>
        *
-       * <code>optional .StartConversationResponse start = 2;</code>
+       * <code>optional .StartConversationResponse init = 2;</code>
        */
       public IopHomeNodeProto3.StartConversationResponse.Builder getStartBuilder() {
         return getStartFieldBuilder().getBuilder();
@@ -13881,7 +13881,7 @@ public final class IopHomeNodeProto3 {
        * Response body.
        * </pre>
        *
-       * <code>optional .StartConversationResponse start = 2;</code>
+       * <code>optional .StartConversationResponse init = 2;</code>
        */
       public IopHomeNodeProto3.StartConversationResponseOrBuilder getStartOrBuilder() {
         if ((responseTypeCase_ == 2) && (startBuilder_ != null)) {
@@ -13898,7 +13898,7 @@ public final class IopHomeNodeProto3 {
        * Response body.
        * </pre>
        *
-       * <code>optional .StartConversationResponse start = 2;</code>
+       * <code>optional .StartConversationResponse init = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
           IopHomeNodeProto3.StartConversationResponse, IopHomeNodeProto3.StartConversationResponse.Builder, IopHomeNodeProto3.StartConversationResponseOrBuilder> 
@@ -24972,7 +24972,7 @@ public final class IopHomeNodeProto3 {
 
     /**
      * <pre>
-     * TimestampType. Specifies the start time of the contract.
+     * TimestampType. Specifies the init time of the contract.
      * </pre>
      *
      * <code>optional sint64 startTime = 3;</code>
@@ -25118,7 +25118,7 @@ public final class IopHomeNodeProto3 {
     private long startTime_;
     /**
      * <pre>
-     * TimestampType. Specifies the start time of the contract.
+     * TimestampType. Specifies the init time of the contract.
      * </pre>
      *
      * <code>optional sint64 startTime = 3;</code>
@@ -25579,7 +25579,7 @@ public final class IopHomeNodeProto3 {
       private long startTime_ ;
       /**
        * <pre>
-       * TimestampType. Specifies the start time of the contract.
+       * TimestampType. Specifies the init time of the contract.
        * </pre>
        *
        * <code>optional sint64 startTime = 3;</code>
@@ -25589,7 +25589,7 @@ public final class IopHomeNodeProto3 {
       }
       /**
        * <pre>
-       * TimestampType. Specifies the start time of the contract.
+       * TimestampType. Specifies the init time of the contract.
        * </pre>
        *
        * <code>optional sint64 startTime = 3;</code>
@@ -25602,7 +25602,7 @@ public final class IopHomeNodeProto3 {
       }
       /**
        * <pre>
-       * TimestampType. Specifies the start time of the contract.
+       * TimestampType. Specifies the init time of the contract.
        * </pre>
        *
        * <code>optional sint64 startTime = 3;</code>
@@ -25757,7 +25757,7 @@ public final class IopHomeNodeProto3 {
 
     /**
      * <pre>
-     * The exact copy of 'StartConversationResponse.challenge' from the start of the conversation.
+     * The exact copy of 'StartConversationResponse.challenge' from the init of the conversation.
      * </pre>
      *
      * <code>optional bytes challenge = 1;</code>
@@ -25847,7 +25847,7 @@ public final class IopHomeNodeProto3 {
     private com.google.protobuf.ByteString challenge_;
     /**
      * <pre>
-     * The exact copy of 'StartConversationResponse.challenge' from the start of the conversation.
+     * The exact copy of 'StartConversationResponse.challenge' from the init of the conversation.
      * </pre>
      *
      * <code>optional bytes challenge = 1;</code>
@@ -26139,7 +26139,7 @@ public final class IopHomeNodeProto3 {
       private com.google.protobuf.ByteString challenge_ = com.google.protobuf.ByteString.EMPTY;
       /**
        * <pre>
-       * The exact copy of 'StartConversationResponse.challenge' from the start of the conversation.
+       * The exact copy of 'StartConversationResponse.challenge' from the init of the conversation.
        * </pre>
        *
        * <code>optional bytes challenge = 1;</code>
@@ -26149,7 +26149,7 @@ public final class IopHomeNodeProto3 {
       }
       /**
        * <pre>
-       * The exact copy of 'StartConversationResponse.challenge' from the start of the conversation.
+       * The exact copy of 'StartConversationResponse.challenge' from the init of the conversation.
        * </pre>
        *
        * <code>optional bytes challenge = 1;</code>
@@ -26165,7 +26165,7 @@ public final class IopHomeNodeProto3 {
       }
       /**
        * <pre>
-       * The exact copy of 'StartConversationResponse.challenge' from the start of the conversation.
+       * The exact copy of 'StartConversationResponse.challenge' from the init of the conversation.
        * </pre>
        *
        * <code>optional bytes challenge = 1;</code>
@@ -26236,7 +26236,7 @@ public final class IopHomeNodeProto3 {
    *   * ERROR_INVALID_SIGNATURE - The client's signature of the challenge is not valid.
    *   * ERROR_NOT_FOUND - The identity is not a client of the node.
    *   * ERROR_INVALID_VALUE
-   *     * Response.details == "challenge" - 'CheckInRequest.challenge' is not the exact copy of 'StartConversationResponse.challenge' from the start of the conversation.
+   *     * Response.details == "challenge" - 'CheckInRequest.challenge' is not the exact copy of 'StartConversationResponse.challenge' from the init of the conversation.
    * </pre>
    *
    * Protobuf type {@code CheckInResponse}
@@ -26433,7 +26433,7 @@ public final class IopHomeNodeProto3 {
      *   * ERROR_INVALID_SIGNATURE - The client's signature of the challenge is not valid.
      *   * ERROR_NOT_FOUND - The identity is not a client of the node.
      *   * ERROR_INVALID_VALUE
-     *     * Response.details == "challenge" - 'CheckInRequest.challenge' is not the exact copy of 'StartConversationResponse.challenge' from the start of the conversation.
+     *     * Response.details == "challenge" - 'CheckInRequest.challenge' is not the exact copy of 'StartConversationResponse.challenge' from the init of the conversation.
      * </pre>
      *
      * Protobuf type {@code CheckInResponse}
@@ -26614,7 +26614,7 @@ public final class IopHomeNodeProto3 {
 
     /**
      * <pre>
-     * The exact copy of 'StartConversationResponse.challenge' from the start of the conversation.
+     * The exact copy of 'StartConversationResponse.challenge' from the init of the conversation.
      * </pre>
      *
      * <code>optional bytes challenge = 1;</code>
@@ -26701,7 +26701,7 @@ public final class IopHomeNodeProto3 {
     private com.google.protobuf.ByteString challenge_;
     /**
      * <pre>
-     * The exact copy of 'StartConversationResponse.challenge' from the start of the conversation.
+     * The exact copy of 'StartConversationResponse.challenge' from the init of the conversation.
      * </pre>
      *
      * <code>optional bytes challenge = 1;</code>
@@ -26990,7 +26990,7 @@ public final class IopHomeNodeProto3 {
       private com.google.protobuf.ByteString challenge_ = com.google.protobuf.ByteString.EMPTY;
       /**
        * <pre>
-       * The exact copy of 'StartConversationResponse.challenge' from the start of the conversation.
+       * The exact copy of 'StartConversationResponse.challenge' from the init of the conversation.
        * </pre>
        *
        * <code>optional bytes challenge = 1;</code>
@@ -27000,7 +27000,7 @@ public final class IopHomeNodeProto3 {
       }
       /**
        * <pre>
-       * The exact copy of 'StartConversationResponse.challenge' from the start of the conversation.
+       * The exact copy of 'StartConversationResponse.challenge' from the init of the conversation.
        * </pre>
        *
        * <code>optional bytes challenge = 1;</code>
@@ -27016,7 +27016,7 @@ public final class IopHomeNodeProto3 {
       }
       /**
        * <pre>
-       * The exact copy of 'StartConversationResponse.challenge' from the start of the conversation.
+       * The exact copy of 'StartConversationResponse.challenge' from the init of the conversation.
        * </pre>
        *
        * <code>optional bytes challenge = 1;</code>
@@ -27086,7 +27086,7 @@ public final class IopHomeNodeProto3 {
    * Specific Error Responses:
    *   * ERROR_INVALID_SIGNATURE - The client's signature of the challenge is not valid.
    *   * ERROR_INVALID_VALUE
-   *     * Response.details == "challenge" - 'VerifyIdentityRequest.challenge' is not the exact copy of 'StartConversationResponse.challenge' from the start of the conversation.
+   *     * Response.details == "challenge" - 'VerifyIdentityRequest.challenge' is not the exact copy of 'StartConversationResponse.challenge' from the init of the conversation.
    * </pre>
    *
    * Protobuf type {@code VerifyIdentityResponse}
@@ -27282,7 +27282,7 @@ public final class IopHomeNodeProto3 {
      * Specific Error Responses:
      *   * ERROR_INVALID_SIGNATURE - The client's signature of the challenge is not valid.
      *   * ERROR_INVALID_VALUE
-     *     * Response.details == "challenge" - 'VerifyIdentityRequest.challenge' is not the exact copy of 'StartConversationResponse.challenge' from the start of the conversation.
+     *     * Response.details == "challenge" - 'VerifyIdentityRequest.challenge' is not the exact copy of 'StartConversationResponse.challenge' from the init of the conversation.
      * </pre>
      *
      * Protobuf type {@code VerifyIdentityResponse}

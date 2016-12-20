@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
+import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,6 +17,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import iop.org.iop_contributors_app.core.iop_sdk.crypto.CryptoBytes;
 import iop.org.iop_contributors_app.utils.exceptions.NotValidParametersException;
 
 import static iop.org.iop_contributors_app.core.iop_sdk.governance.ProposalForum.TAG_BENEFICIARY_ADDRESS;
@@ -36,6 +38,9 @@ import static iop.org.iop_contributors_app.utils.Preconditions.checkEquals;
 public class Proposal implements Serializable {
 
     private static final Logger LOG = LoggerFactory.getLogger(Proposal.class);
+
+    public static final int BLOCK_REWARD_MAX_VALUE = 10000000;
+    public static final double START_BLOCK_MAX_VALUE = Math.pow((double) 2, (double) 24);
 
     /**
      * Proposal states
@@ -59,22 +64,23 @@ public class Proposal implements Serializable {
         EXECUTED        // Proposal YES > NO && Current height > blockEnd
     }
 
-    private boolean isMine = true;
-    private boolean isSent = false;
+    private boolean isMine;
+    private boolean isSent;
     private String lockedOutputHashHex;
     private long lockedOutputIndex;
     private ProposalState state = ProposalState.DRAFT;
+    private byte[] blockchainHash;
     // IoPIP -> IoP improvement proposal
     private short version = 0x0100;
-    private String title = "Propuesta a enviar numero 1011";
-    private String subTitle = "subTitulo4";
-    private String category = "categoria";
-    private String body = "Esta es una propuesta para crear propuestas, por lo cual debo poner cosas locas acá. ";
-    private int startBlock = 10;
-    private int endBlock = 10;
-    private long blockReward = 80000000;
+    private String title;
+    private String subTitle;
+    private String category;
+    private String body;
+    private int startBlock;
+    private int endBlock;
+    private long blockReward;
     /** topic id */
-    private int forumId = 80;
+    private int forumId;
     /** post id */
     private int forumPostId;
     // address -> value
@@ -83,6 +89,21 @@ public class Proposal implements Serializable {
     private byte[] ownerPubKey;
     /** will be used to put the proposal upper or lower in the voters list */
     private long extraFeeValue = 1000;
+
+    public static Proposal buildRandomProposal(){
+        Proposal proposal = new Proposal();
+        proposal.setMine(true);
+        proposal.setSent(false);
+        proposal.setState(ProposalState.DRAFT);
+        proposal.setTitle("Propuesta a enviar numero 1011");
+        proposal.setSubTitle("subTitulo4");
+        proposal.setCategory("categoria");
+        proposal.setBody("Esta es una propuesta para crear propuestas, por lo cual debo poner cosas locas acá. ");
+        proposal.setStartBlock(10);
+        proposal.setEndBlock(10);
+        proposal.setBlockReward(80000000);
+        return proposal;
+    }
 
     /**
      * StringBuilder stringBuilder = new StringBuilder()
@@ -106,6 +127,7 @@ public class Proposal implements Serializable {
      * @param formatedBody
      */
     public static Proposal buildFromBody(String formatedBody) {
+        LOG.info("buildFromBody: "+formatedBody);
         Proposal proposal = new Proposal();
         proposal.setTitle(getTagValue(formatedBody, PATTERN_TAG_TITLE,0));
         proposal.setSubTitle(getTagValue(formatedBody, PATTERN_TAG_SUBTITLE,0));
@@ -179,14 +201,14 @@ public class Proposal implements Serializable {
 
         ByteString buffTitle = ByteString.copyFromUtf8(this.title);
         ByteString buffSubTitle = ByteString.copyFromUtf8(this.subTitle);
-        ByteString buffCategory = ByteString.copyFromUtf8(this.category);
+//        ByteString buffCategory = ByteString.copyFromUtf8(this.category);
 //        ByteString buffLink = ByteString.copyFromUtf8(forumLink);
 
 
         ByteBuffer byteBuffer = ByteBuffer.allocate(4048);
         byteBuffer.put(buffTitle.toByteArray());
         byteBuffer.put(buffSubTitle.toByteArray());
-        byteBuffer.put(buffCategory.toByteArray());
+//        byteBuffer.put(buffCategory.toByteArray());
         byteBuffer.putInt(startBlock);
         byteBuffer.putInt(endBlock);
         byteBuffer.putLong(blockReward);
@@ -199,8 +221,15 @@ public class Proposal implements Serializable {
         return Sha256Hash.hash(buffToHash);
     }
 
-    public boolean checkHash(byte[] hash) {
-        return Arrays.equals(hash(), hash);
+    /**
+     * Check hash, esto se va a hacer cuando setee los datos del foro el la propuesta decodificada de la blockchain
+     * @return
+     */
+    public boolean checkHash() {
+        if (blockchainHash!=null){
+            return Arrays.equals(blockchainHash,hash());
+        }
+        return false;
     }
 
     public String buildExtraData() {
@@ -285,6 +314,10 @@ public class Proposal implements Serializable {
         return body;
     }
 
+
+    public byte[] getBlockchainHash() {
+        return blockchainHash;
+    }
     public short getVersion() {
         return version;
     }
@@ -335,6 +368,7 @@ public class Proposal implements Serializable {
     }
 
     public void setStartBlock(int startBlock) {
+        if (startBlock>START_BLOCK_MAX_VALUE) throw new IllegalArgumentException("Start block must be lower than "+START_BLOCK_MAX_VALUE);
         this.startBlock = startBlock;
     }
 
@@ -343,6 +377,7 @@ public class Proposal implements Serializable {
     }
 
     public void setBlockReward(long blockReward) {
+        if (blockReward>BLOCK_REWARD_MAX_VALUE)throw new IllegalArgumentException("Block reward must be lower than "+BLOCK_REWARD_MAX_VALUE);
         this.blockReward = blockReward;
     }
 
@@ -394,6 +429,10 @@ public class Proposal implements Serializable {
         this.forumPostId = forumPostId;
     }
 
+    public void setBlockchainHash(byte[] blockchainHash) {
+        this.blockchainHash = blockchainHash;
+    }
+
     public boolean equals(Proposal o2) throws NotValidParametersException {
         checkEquals(getTitle(),o2.getTitle(),"tittle is changed");
         checkEquals(getSubTitle(),o2.getSubTitle(),"Subtitle is changed");
@@ -406,6 +445,16 @@ public class Proposal implements Serializable {
             if (!o2.getBeneficiaries().containsValue(beneficiary.getValue())) throw new NotValidParametersException("Beneficiary value is changed");
         }
         return true;
+    }
+
+    public String toStringBlockchain(){
+        return  "Proposal{" +
+                ", startBlock=" + startBlock +
+                ", endBlock=" + endBlock +
+                ", blockReward=" + blockReward +
+                ", forumId=" + forumId +
+                ", blockchainHash="+ CryptoBytes.toHexString(blockchainHash)+
+                '}';
     }
 
     @Override

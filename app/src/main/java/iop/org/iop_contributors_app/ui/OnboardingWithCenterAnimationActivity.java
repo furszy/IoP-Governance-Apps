@@ -178,6 +178,7 @@ public class OnboardingWithCenterAnimationActivity extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable s) {
+                if (s.toString().equals("")){isPasswordCorrect=false; return;}
                 checkPassword(s.toString());
             }
         });

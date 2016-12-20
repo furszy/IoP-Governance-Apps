@@ -1,5 +1,7 @@
 package iop.org.iop_contributors_app.core.iop_sdk.governance;
 
+import com.google.common.util.concurrent.ListenableFuture;
+
 import org.bitcoinj.core.Address;
 import org.bitcoinj.core.Coin;
 import org.bitcoinj.core.InsufficientMoneyException;
@@ -18,6 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import iop.org.iop_contributors_app.core.iop_sdk.crypto.CryptoBytes;
 import iop.org.iop_contributors_app.wallet.BlockchainManager;
@@ -162,7 +166,8 @@ public class ProposalTransactionRequest {
 
             wallet.commitTx(sendRequest.tx);
 
-            blockchainManager.broadcastTransaction(sendRequest.tx.getHash().getBytes()).get();
+            ListenableFuture<Transaction> future = blockchainManager.broadcastTransaction(sendRequest.tx.getHash().getBytes());
+            future.get(1,TimeUnit.MINUTES);
 
             // now that the transaction is complete lock the output
             // lock address
@@ -179,6 +184,9 @@ public class ProposalTransactionRequest {
             e.printStackTrace();
         } catch (ExecutionException e) {
             e.printStackTrace();
+        } catch (TimeoutException e) {
+            e.printStackTrace();
+            throw new NotConnectedPeersException(e);
         }
     }
 

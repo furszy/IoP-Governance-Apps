@@ -399,7 +399,7 @@ public class ProfileActivity extends BaseActivity implements View.OnClickListene
 //                    e.printStackTrace();
 //                }
 //            }
-//        }).start();
+//        }).init();
 
 
 

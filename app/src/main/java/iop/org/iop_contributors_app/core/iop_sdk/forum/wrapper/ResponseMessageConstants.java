@@ -10,6 +10,8 @@ public class ResponseMessageConstants {
     public static final String USER_ERROR_STR = "user_error";
     public static final String REGISTER_ERROR_STR = "user_error";
     public static final String PROPOSALS_CONTRACTS = "proposals_contracts";
+    public static final String TOPIC_POST = "topic_post";
+
 
 
 

@@ -23,6 +23,8 @@ import org.bitcoinj.core.Block;
 import org.bitcoinj.core.Coin;
 import org.bitcoinj.core.FilteredBlock;
 import org.bitcoinj.core.Peer;
+import org.bitcoinj.core.PeerGroup;
+import org.bitcoinj.core.Sha256Hash;
 import org.bitcoinj.core.StoredBlock;
 import org.bitcoinj.core.Transaction;
 import org.bitcoinj.core.listeners.AbstractPeerDataEventListener;
@@ -45,11 +47,14 @@ import java.util.concurrent.atomic.AtomicLong;
 import iop.org.iop_contributors_app.ApplicationController;
 import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.configurations.WalletPreferencesConfiguration;
+import iop.org.iop_contributors_app.core.iop_sdk.blockchain.explorer.TransactionFinder;
+import iop.org.iop_contributors_app.core.iop_sdk.blockchain.explorer.TransactionFinderListener;
 import iop.org.iop_contributors_app.core.iop_sdk.governance.NotConnectedPeersException;
 import iop.org.iop_contributors_app.core.iop_sdk.governance.Proposal;
 import iop.org.iop_contributors_app.ui.CreateProposalActivity;
 import iop.org.iop_contributors_app.ui.base.BaseActivity;
 import iop.org.iop_contributors_app.wallet.BlockchainManager;
+import iop.org.iop_contributors_app.wallet.BlockchainManagerListener;
 import iop.org.iop_contributors_app.wallet.InvalidProposalException;
 import iop.org.iop_contributors_app.wallet.db.CantSaveProposalException;
 import iop.org.iop_contributors_app.wallet.exceptions.CantSendProposalException;
@@ -72,6 +77,7 @@ import static iop.org.iop_contributors_app.ui.CreateProposalActivity.INVALID_PRO
 import static iop.org.iop_contributors_app.ui.CreateProposalActivity.UNKNOWN_ERROR_DIALOG;
 import static iop.org.iop_contributors_app.ui.base.BaseActivity.ACTION_NOTIFICATION;
 import static iop.org.iop_contributors_app.wallet.WalletConstants.BLOCKCHAIN_STATE_BROADCAST_THROTTLE_MS;
+import static iop.org.iop_contributors_app.wallet.WalletConstants.CONTEXT;
 
 /**
  * Created by mati on 11/11/16.
@@ -83,12 +89,14 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
     private static final String TAG = "BlockchainServiceImpl";
 
     private ApplicationController application;
-
-    private BlockchainManager blockchainManager;
-
+    /** Root Module */
     private WalletModule walletModule;
-
+    /** Blockchain module manager */
+    private BlockchainManager blockchainManager;
+    /** Configurations */
     private WalletPreferencesConfiguration conf;
+    /** Special transaction explorer */
+    private TransactionFinder transactionFinder;
 
     private final Handler handler = new Handler();
     private final Handler delayHandler = new Handler();
@@ -238,22 +246,28 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
                     impediments.remove(BlockchainState.Impediment.NETWORK);
                 else
                     impediments.add(BlockchainState.Impediment.NETWORK);
-                check();
+//                check();
             }
             else if (Intent.ACTION_DEVICE_STORAGE_LOW.equals(action))
             {
                 LOG.info("device storage low");
 
                 impediments.add(BlockchainState.Impediment.STORAGE);
-                check();
+//                check();
             }
             else if (Intent.ACTION_DEVICE_STORAGE_OK.equals(action))
             {
                 LOG.info("device storage ok");
 
                 impediments.remove(BlockchainState.Impediment.STORAGE);
-                check();
+//                check();
             }
+            executorService.submit(new Runnable() {
+                @Override
+                public void run() {
+                    check();
+                }
+            });
         }
     };
 
@@ -272,6 +286,24 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
                             .setContentText("Transaction received for a value of "+coin1.toFriendlyString());
 
             nm.notify(1,mBuilder.build());
+        }
+    };
+
+    private TransactionFinderListener transactionFinderListener = new TransactionFinderListener() {
+        @Override
+        public void onReceiveTransaction(final Transaction tx) {
+            executorService.submit(new Runnable() {
+                @Override
+                public void run() {
+                    org.bitcoinj.core.Context.propagate(CONTEXT);
+                    // check and save proposal in db
+                    walletModule.txProposalArrive(tx);
+                }
+            });
+//            Intent intent = new Intent(ACTION_NOTIFICATION);
+//            intent.putExtra(INTENT_BROADCAST_TYPE,INTENT_DATA);
+//            intent.putExtra(INTENT_BROADCAST_DATA_TYPE, INTENT_BROADCAST_DATA_ON_COIN_RECEIVED);
+//            localBroadcast.sendBroadcast(intent);
         }
     };
 
@@ -324,14 +356,14 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
         peerConnectivityListener = new PeerConnectivityListener();
 
 //        broadcastPeerState(0);
-        blockchainManager.start();
+        blockchainManager.init();
 
 
         final IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
         intentFilter.addAction(Intent.ACTION_DEVICE_STORAGE_LOW);
         intentFilter.addAction(Intent.ACTION_DEVICE_STORAGE_OK);
-        registerReceiver(connectivityReceiver, intentFilter); // implicitly start PeerGroup
+        registerReceiver(connectivityReceiver, intentFilter); // implicitly init PeerGroup
 
 
         // coins received
@@ -352,7 +384,7 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
     public int onStartCommand(final Intent intent, int flags, int startId) {
 
         if (intent != null) {
-            LOG.info("service start command: " + intent
+            LOG.info("service init command: " + intent
                     + (intent.hasExtra(Intent.EXTRA_ALARM_COUNT) ? " (alarm count: " + intent.getIntExtra(Intent.EXTRA_ALARM_COUNT, 0) + ")" : ""));
 
             final String action = intent.getAction();
@@ -369,6 +401,7 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
                         }catch (InsuficientBalanceException e){
                             showDialogException(INSUFICIENTS_FUNDS_DIALOG,null);
                         }catch (CantSendProposalException e) {
+                            e.printStackTrace();
                             showDialogException(UNKNOWN_ERROR_DIALOG, e.getMessage());
                         }catch (CantSaveProposalException e){
                             showDialogException(CANT_SAVE_PROPOSAL_DIALOG,e.getMessage());
@@ -474,7 +507,29 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
      */
     private void check(){
 
+        org.bitcoinj.core.Context.propagate(WalletConstants.CONTEXT);
+
         if (!isChecking.getAndSet(true)) {
+
+            if (application.isVotingApp()) {
+                // obtain proposal contracts to filter
+                final List<String> txHashes = walletModule.requestProposals(blockchainManager.getChainHeadHeight());
+                blockchainManager.addBlockchainManagerListener(new BlockchainManagerListener() {
+                    @Override
+                    public void peerGroupInitialized(PeerGroup peerGroup) {
+                        // new thing
+                        transactionFinder = walletModule.getAndCreateFinder(peerGroup);
+                        transactionFinder.addTransactionFinderListener(transactionFinderListener);
+                        for (String txHash : txHashes) {
+                            transactionFinder.addTx(txHash);
+                            //todo: falta agregar el output de lockeo en el finder como hice abajo..
+                        }
+//                        transactionFinder.addTx("068af403e4f0935c419fb71ab625fb8364d7565a436c35a997ba6a75c9883b2b");
+//                        transactionFinder.addWatchedOutpoint(Sha256Hash.wrap("068af403e4f0935c419fb71ab625fb8364d7565a436c35a997ba6a75c9883b2b"),0,36);
+                        transactionFinder.startDownload();
+                    }
+                });
+            }
 
             blockchainManager.check(
                     impediments,

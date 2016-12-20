@@ -8,7 +8,8 @@ android {
 
 
     defaultConfig {
-        applicationId "iop.org.iop_contributors_app"
+        //applicationId "iop.org.iop_contributors_app"
+        applicationId "iop.org.iop_voting_app"
         minSdkVersion 21
         targetSdkVersion 24
         versionCode 1
@@ -128,6 +129,9 @@ dependencies {
 
     //qr
     compile group: 'com.google.zxing', name: 'core', version: '3.3.0'
+
+    compile group: 'com.squareup.okhttp', name: 'okhttp', version: '2.4.0'
+    compile 'com.squareup.okhttp:okhttp-urlconnection:2.2.0'
 
     // projects
     compile project(':furszy_lib')

@@ -3,6 +3,7 @@ package iop.org.iop_contributors_app.ui.voting;
 import android.app.FragmentManager;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -35,6 +36,8 @@ public class VotingProposalsActivity extends BaseActivity {
     private RecyclerView.LayoutManager layoutManager;
     private VotingProposalsAdapter adapter;
 
+    private SwipeRefreshLayout swipeRefreshLayout;
+
     private View container_empty_screen;
 
     private List<Proposal> proposals;
@@ -52,6 +55,7 @@ public class VotingProposalsActivity extends BaseActivity {
 
         module = ApplicationController.getInstance().getWalletModule();
 
+        swipeRefreshLayout = (SwipeRefreshLayout) root.findViewById(R.id.swipeRefreshLayout);
         recyclerView = (RecyclerView) root.findViewById(R.id.recycler_proposals);
         container_empty_screen = root.findViewById(R.id.container_empty_screen);
 
@@ -74,6 +78,23 @@ public class VotingProposalsActivity extends BaseActivity {
             }
         });
 
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                // Refresh items
+                executor.submit(loadProposals);
+            }
+        });
+
+    }
+
+
+    void onItemsLoadComplete() {
+        // Update the adapter and notify data set changed
+        // ...
+
+        // Stop refresh animation
+        swipeRefreshLayout.setRefreshing(false);
     }
 
     /**
@@ -115,6 +136,7 @@ public class VotingProposalsActivity extends BaseActivity {
                             adapter.changeDataSet(proposals);
                         } else
                             showEmptyScreen();
+                        onItemsLoadComplete();
                     }
                 });
             } catch (Exception e) {

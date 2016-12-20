@@ -184,7 +184,7 @@ public class CreateProposalActivity extends BaseActivity {
     }
 
     private void completeWithTestData() {
-        proposal = new Proposal();
+        proposal = Proposal.buildRandomProposal();
         proposal.setMine(true);
         String address = module.getNewAddress();
         Log.d(TAG,"fress address: "+address);

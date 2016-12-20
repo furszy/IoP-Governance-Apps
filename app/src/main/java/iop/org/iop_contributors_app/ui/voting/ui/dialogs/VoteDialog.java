@@ -9,21 +9,23 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 
 import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.core.iop_sdk.governance.Proposal;
+import iop.org.iop_contributors_app.ui.components.switch_seek_bar.SwitchSeekBar;
 
 /**
  * Created by mati on 12/12/16.
  */
 
-public class VoteDialog extends DialogFragment implements SeekBar.OnSeekBarChangeListener {
+public class VoteDialog extends DialogFragment implements SwitchSeekBar.SwitchListener {
 
 
     private View root;
-    private SeekBar seek_bar;
+    private SwitchSeekBar seek_bar;
     private Proposal proposal;
 
     public static VoteDialog newInstance(Proposal proposal) {
@@ -38,50 +40,33 @@ public class VoteDialog extends DialogFragment implements SeekBar.OnSeekBarChang
 
         root = inflater.inflate(R.layout.vote_dialog,null);
 
-        seek_bar = (SeekBar) root.findViewById(R.id.seek_bar);
+        seek_bar = (SwitchSeekBar) root.findViewById(R.id.seek_bar);
 
-        seek_bar.setOnSeekBarChangeListener(this);
+        seek_bar.addSwitchListener(this);
 
         return root;
 
     }
 
-    @Override
-    public void onProgressChanged(SeekBar seekBar, int progress,
-                                  boolean fromUser) {
-        // we don't need it
-    }
-
-    @Override
-    public void onStartTrackingTouch(SeekBar seekBar) {
-        // we don't need it
-    }
-
-    @Override
-    public void onStopTrackingTouch(SeekBar seekBar) {
-        int mProgress = seekBar.getProgress();
-//        if (mProgress==0){
-//            seekBar.setProgress(0);
-//        }else if(mProgress==1){
-//            seekBar.setProgress(1);
-//        }else if (mProgress==2){
-//            seekBar.setProgress(2);
-//        }
-        if(mProgress >= 0 & mProgress < 31) {
-            seekBar.setProgress(15);
-            seekBar.setBackgroundResource(R.drawable.img_swicth_rojo);
-        } else if(mProgress > 25 & mProgress < 70) {
-            seekBar.setBackgroundResource(R.drawable.img_siwcht_gris);
-            seekBar.setProgress(50);
-        } else {
-            seekBar.setProgress(85);
-            seekBar.setBackgroundResource(R.drawable.img_swicht_verde);
-        }
-    }
 
 
 
     public void setProposal(Proposal proposal) {
         this.proposal = proposal;
+    }
+
+    @Override
+    public void handleLeft() {
+        Toast.makeText(getActivity(),"No touched",Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void handleRight() {
+        Toast.makeText(getActivity(),"Yes touched",Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void handleCenter() {
+        Toast.makeText(getActivity(),"center touched",Toast.LENGTH_LONG).show();
     }
 }

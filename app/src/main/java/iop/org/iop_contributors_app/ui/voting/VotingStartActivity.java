@@ -369,12 +369,6 @@ public class VotingStartActivity extends AppCompatActivity {
         DialogBuilder dialogBuilder = new DialogBuilder(this);
         dialogBuilder.setTitle("Error");
         dialogBuilder.setMessage(message);
-        dialogBuilder.singleDismissButton(new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                startActivity(new Intent(VotingStartActivity.this,MainActivity.class));
-            }
-        });
 
         dialogBuilder.show();
     }

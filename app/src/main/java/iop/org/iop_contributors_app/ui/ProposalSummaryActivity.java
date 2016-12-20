@@ -214,6 +214,7 @@ public class ProposalSummaryActivity extends BaseActivity implements View.OnClic
 
     private void loadProposal(){
         txt_title.setText(proposal.getTitle());
+        txt_forum_id.setText(String.valueOf(proposal.getForumId()));
         txt_sub_title.setText(proposal.getSubTitle());
         txt_categories.setText(proposal.getCategory());
         txt_body.setText(proposal.getBody());

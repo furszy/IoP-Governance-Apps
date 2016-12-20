@@ -6,6 +6,7 @@ import org.bitcoinj.core.Base58;
 
 import java.util.Map;
 
+import iop.org.iop_contributors_app.core.iop_sdk.governance.Proposal;
 import iop.org.iop_contributors_app.wallet.WalletConstants;
 
 /**
@@ -46,7 +47,8 @@ public class CreateProposalActivityValidator {
         return endBlock;
     }
 
-    public long validateBlockReward(long blockReward) {
+    public long validateBlockReward(long blockReward) throws ValidationException {
+        if (blockReward>Proposal.BLOCK_REWARD_MAX_VALUE) throwValidationException("block reward must be lower than " + Proposal.BLOCK_REWARD_MAX_VALUE);
         return blockReward;
     }
 

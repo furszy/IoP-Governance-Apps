@@ -23,6 +23,7 @@ import iop.org.iop_contributors_app.ServerWrapper;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.discourge.com.wareninja.opensource.discourse.DiscourseApiClient;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.discourge.com.wareninja.opensource.discourse.DiscouseApiConstants;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.discourge.com.wareninja.opensource.discourse.utils.ResponseModel;
+import iop.org.iop_contributors_app.core.iop_sdk.forum.wrapper.ResponseMessageConstants;
 import iop.org.iop_contributors_app.core.iop_sdk.governance.Proposal;
 import iop.org.iop_contributors_app.utils.exceptions.NotValidParametersException;
 import iop.org.iop_contributors_app.wallet.db.CantUpdateProposalException;
@@ -212,7 +213,6 @@ public class ForumClientDiscourseImp implements ForumClient {
      * @param forumId
      * @return
      */
-    @Override
     public Proposal getProposal(int forumId) {
         LOG.info("getForumProposal");
         Proposal proposal = null;
@@ -234,6 +234,40 @@ public class ForumClientDiscourseImp implements ForumClient {
             proposal.setForumId(forumId);
 
         } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        return proposal;
+    }
+
+    /**
+     * Get topic
+     * ../t/:id.json
+     *
+     * @param forumId
+     * @return
+     */
+    @Override
+    public Proposal getProposalFromWrapper(int forumId) {
+        LOG.info("getForumProposal");
+        Proposal proposal = null;
+        Map<String, String> parameters = new HashMap<String, String>();
+        parameters.put("id", String.valueOf(forumId));
+        parameters.put("username", forumProfile.getUsername());
+        parameters.put("password", forumProfile.getPassword());
+        String topicPost = serverWrapper.getTopic(parameters);
+
+        LOG.info("topic post: "+topicPost);
+
+        try {
+            JSONObject jsonObject = new JSONObject(topicPost);
+            String formatedBody = jsonObject.getString(ResponseMessageConstants.TOPIC_POST);
+            proposal = Proposal.buildFromBody(formatedBody);
+            proposal.setForumId(forumId);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        } catch (Exception e){
             e.printStackTrace();
         }
 

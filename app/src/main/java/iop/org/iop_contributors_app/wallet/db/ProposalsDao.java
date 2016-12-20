@@ -93,8 +93,10 @@ public class ProposalsDao implements ProposalsContractDao {
 
         if (!proposal.getSubTitle().equals(proposalDb.getSubTitle()))
             change = true;
-        if (!proposal.getCategory().equals(proposalDb.getCategory()))
-            change = true;
+        if (proposal.getCategory()!=null) {
+            if (!proposal.getCategory().equals(proposalDb.getCategory()))
+                change = true;
+        }
         if (!proposal.getBody().equals(proposalDb.getBody()))
             change = true;
         if (proposal.getStartBlock()!=proposalDb.getStartBlock())

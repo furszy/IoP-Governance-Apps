@@ -28,6 +28,8 @@ import org.apache.http.util.EntityUtils;
 import org.apache.http.util.TextUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -40,6 +42,8 @@ import iop.org.iop_contributors_app.core.iop_sdk.forum.discourge.com.wareninja.o
 import iop.org.iop_contributors_app.core.iop_sdk.forum.discourge.com.wareninja.opensource.discourse.utils.ResponseModel;
 
 public class DiscourseApiClient {
+
+	private static final Logger LOG = LoggerFactory.getLogger(DiscouseApiConstants.class);
 
 	String api_url = "";// base url. e.g. http://your_discourse_domain.com
 	String api_key = "";
@@ -931,7 +935,7 @@ this.post('posts', { 'title': title, 'raw': raw, 'category': category, 'archetyp
 
 		String methodName = "";
 		methodName += "/t/"+parameters.get("id")+".json";
-		//methodName = webClient.enrichMethodName(methodName, this.api_key, this.api_username);// append api_key and api_username
+		methodName = webClient.enrichMethodName(methodName, this.api_key, this.api_username);// append api_key and api_username
 
 		//responseListener.onBegin("BEGIN"+"|"+TAG+"| methodName:"+methodName );
 

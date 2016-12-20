@@ -159,12 +159,12 @@
 //
 //        txt_password.addTextChangedListener(new TextWatcher() {
 //            @Override
-//            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+//            public void beforeTextChanged(CharSequence s, int init, int count, int after) {
 //
 //            }
 //
 //            @Override
-//            public void onTextChanged(CharSequence s, int start, int before, int count) {
+//            public void onTextChanged(CharSequence s, int init, int before, int count) {
 //
 //            }
 //
@@ -176,12 +176,12 @@
 //
 //        txt_name.addTextChangedListener(new TextWatcher() {
 //            @Override
-//            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+//            public void beforeTextChanged(CharSequence s, int init, int count, int after) {
 //
 //            }
 //
 //            @Override
-//            public void onTextChanged(CharSequence s, int start, int before, int count) {
+//            public void onTextChanged(CharSequence s, int init, int before, int count) {
 //
 //            }
 //

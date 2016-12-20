@@ -17,7 +17,7 @@
         android:orientation="vertical">
 
 
-        <iop.org.iop_contributors_app.ui.voting.ui.components.SeekBarHint
+        <iop.org.iop_contributors_app.ui.components.switch_seek_bar.SwitchSeekBar
             android:id="@+id/seek_bar"
             android:layout_width="250dp"
             android:layout_height="75dp"

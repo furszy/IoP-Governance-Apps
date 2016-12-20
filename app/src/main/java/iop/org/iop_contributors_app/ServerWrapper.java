@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -33,6 +34,7 @@ import iop.org.iop_contributors_app.core.iop_sdk.forum.ForumProfile;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.InvalidUserParametersException;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.discourge.com.wareninja.opensource.discourse.DiscouseApiConstants;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.discourge.com.wareninja.opensource.discourse.utils.RequestParameter;
+import iop.org.iop_contributors_app.core.iop_sdk.forum.discourge.com.wareninja.opensource.discourse.utils.ResponseModel;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.discourge.com.wareninja.opensource.discourse.utils.StringRequestParameter;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.wrapper.ResponseMessageConstants;
 
@@ -71,9 +73,9 @@ public class ServerWrapper {
      */
     public String connect(Map<String, String> parameters) throws InvalidUserParametersException, ConnectionRefusedException {
 
-        LOG.info("forum wrapper, connect to: "+url);
-
         String url = this.url+"/requestkey";
+
+        LOG.info("forum wrapper, connect to: "+url);
 
         //url = url + "?api_key=" + DiscouseApiConstants.API_KEY + "&api_username=system";
 
@@ -317,5 +319,48 @@ public class ServerWrapper {
         HttpResponse httpResponse = client.execute(httpPost);
 
         return httpResponse;
+    }
+
+    public String getTopic(Map<String, String> parameters) {
+        String url = this.url+"/getTopic";
+
+        LOG.info("getTopic URL: "+url);
+
+        try {
+
+            HttpClient client = new DefaultHttpClient(new BasicHttpParams());
+            HttpPost httpPost = new HttpPost(url);
+            //httpPost.setHeader("Content-type", "application/vnd.api+json");
+            httpPost.addHeader("Accept", "text/html,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5");
+            httpPost.setHeader("Content-type", "application/json");
+
+            //passes the results to a string builder/entity
+            StringEntity se = new StringEntity(getJsonFromParams(parameters), "UTF-8");
+            //sets the post request as the resulting string
+            httpPost.setEntity(se);
+
+
+            // make GET request to the given URL
+            HttpResponse httpResponse = client.execute(httpPost);
+
+            InputStream inputStream = null;
+            // receive response as inputStream
+            inputStream = httpResponse.getEntity().getContent();
+
+            String result = null;
+            // convert inputstream to string
+            if (inputStream != null)
+                result = convertInputStreamToString(inputStream);
+
+            return result;
+
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        } catch (ClientProtocolException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

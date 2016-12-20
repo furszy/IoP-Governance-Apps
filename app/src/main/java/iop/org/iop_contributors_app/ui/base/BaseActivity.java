@@ -175,7 +175,8 @@ public abstract class BaseActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        updateBasicValues();
+        if (hasDrawer())
+            updateBasicValues();
     }
 
     private void updateBasicValues(){

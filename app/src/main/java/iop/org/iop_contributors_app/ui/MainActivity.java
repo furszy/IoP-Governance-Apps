@@ -69,7 +69,7 @@ public class MainActivity extends BaseActivity {
 //                            e.printStackTrace();
 //                        }
 //                    }
-//                }).start();
+//                }).init();
 //
 //            }
 //        });
@@ -99,7 +99,7 @@ public class MainActivity extends BaseActivity {
 //        if (module.getProfile()==null){
 //            AlertDialog alertDialog = new AlertDialog.Builder(this).create();
 //            alertDialog.setTitle("Welcome!");
-//            alertDialog.setMessage("You need to create a Profile to start contributing");
+//            alertDialog.setMessage("You need to create a Profile to init contributing");
 //            alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
 //                    new DialogInterface.OnClickListener() {
 //                        public void onClick(DialogInterface dialog, int which) {

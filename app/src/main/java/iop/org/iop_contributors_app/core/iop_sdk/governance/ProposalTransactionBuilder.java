@@ -261,6 +261,8 @@ public  class ProposalTransactionBuilder {
 
         if (data.length!=CONTRACT_SIZE) throw new IllegalArgumentException("data has not the right size: "+data.length);
 
+        LOG.info("Data to decode: "+CryptoBytes.toHexString(data));
+
         Proposal proposal = new Proposal();
 
         short newTag = getShortData(data,CONTRACT_TAG_POSITION,CONTRACT_TAG_SIZE);
@@ -270,37 +272,45 @@ public  class ProposalTransactionBuilder {
         proposal.setStartBlock(getIntData(data,CONTRACT_START_HEIGHT_POSITION,CONTRACT_START_HEIGHT_SIZE));
         proposal.setEndBlock(getIntData(data,CONTRACT_END_HEIGHT_POSITION,CONTRACT_END_HEIGHT_SIZE));
         proposal.setBlockReward(getLongData(data,CONTRACT_REWARD_POSITION,CONTRACT_REWARD_SIZE));
+// 4343||0001||000014||003c||f5e100||0080a9f7727726783617077919407ceec77865f5ae67d908b87ab0b42ef55fc9||007f
+        //todo: el hash deberia matchear despues cuando traigo la propuesta del foro y chequeo que sea igual
+//        if (proposal.checkHash(getByteArray(data,CONTRACT_HASH_POSITION,CONTRACT_HASH_SIZE))) throw new IllegalArgumentException("Hash don't match");
+        proposal.setBlockchainHash(getByteArray(data,CONTRACT_HASH_POSITION,CONTRACT_HASH_SIZE));
         proposal.setForumId(getIntData(data,CONTRACT_FORUM_ID_POSITION,CONTRACT_FORUM_ID_SIZE));
-
-        if (proposal.checkHash(getByteArray(data,CONTRACT_HASH_POSITION,CONTRACT_HASH_SIZE))) throw new IllegalArgumentException("Hash don't match");
 
         return proposal;
     }
 
+    public static Proposal decodeContract(TransactionOutput transactionOutput) throws DecoderException, UnsupportedEncodingException {
+        byte[] contract = new byte[CONTRACT_SIZE];
+        System.arraycopy(transactionOutput.getScriptBytes(),2,contract,0,CONTRACT_SIZE);
+        return decodeContract(contract);
+    }
+
     private static byte[] getByteArray(byte[] data, int init, int lenght) {
-        byte[] retDat = new byte[init+lenght];
-        System.arraycopy(data,init,retDat,0,init+lenght);
+        byte[] retDat = new byte[lenght];
+        System.arraycopy(data,init,retDat,0,lenght);
         return retDat;
     }
 
 
     private static int getIntData(byte[] data, int init, int lenght){
-        byte[] retDat = new byte[init+lenght];
-        System.arraycopy(data,init,retDat,0,init+lenght);
+        byte[] retDat = new byte[lenght];
+        System.arraycopy(data,init,retDat,0,lenght);
         String versionStr = org.libsodium.jni.encoders.Hex.HEX.encode(retDat);
         return new BigInteger(versionStr,16).intValue();
     }
 
     private static short getShortData(byte[] data, int init, int lenght){
-        byte[] retDat = new byte[init+lenght];
-        System.arraycopy(data,init,retDat,0,init+lenght);
+        byte[] retDat = new byte[lenght];
+        System.arraycopy(data,init,retDat,0,lenght);
         String versionStr = org.libsodium.jni.encoders.Hex.HEX.encode(retDat);
         return new BigInteger(versionStr,16).shortValue();
     }
 
     private static long getLongData(byte[] data, int init, int lenght){
-        byte[] retDat = new byte[init+lenght];
-        System.arraycopy(data,init,retDat,0,init+lenght);
+        byte[] retDat = new byte[lenght];
+        System.arraycopy(data,init,retDat,0,lenght);
         String versionStr = org.libsodium.jni.encoders.Hex.HEX.encode(retDat);
         return new BigInteger(versionStr,16).longValue();
     }

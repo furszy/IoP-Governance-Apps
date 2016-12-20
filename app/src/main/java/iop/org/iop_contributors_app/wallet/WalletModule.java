@@ -10,7 +10,11 @@ import android.widget.Toast;
 import org.bitcoinj.core.Address;
 import org.bitcoinj.core.Coin;
 import org.bitcoinj.core.InsufficientMoneyException;
+import org.bitcoinj.core.PeerGroup;
+import org.bitcoinj.core.Sha256Hash;
 import org.bitcoinj.core.Transaction;
+import org.bitcoinj.core.TransactionOutPoint;
+import org.bitcoinj.core.TransactionOutput;
 import org.bitcoinj.wallet.Wallet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +25,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -29,6 +34,7 @@ import iop.org.iop_contributors_app.ConnectionRefusedException;
 import iop.org.iop_contributors_app.Profile;
 import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.ServerWrapper;
+import iop.org.iop_contributors_app.core.iop_sdk.blockchain.explorer.TransactionFinder;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.CantCreateTopicException;
 import iop.org.iop_contributors_app.core.iop_sdk.governance.NotConnectedPeersException;
 import iop.org.iop_contributors_app.core.iop_sdk.governance.Proposal;
@@ -37,6 +43,7 @@ import iop.org.iop_contributors_app.core.iop_sdk.forum.ForumClientDiscourseImp;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.InvalidUserParametersException;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.ForumConfigurations;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.ForumProfile;
+import iop.org.iop_contributors_app.core.iop_sdk.governance.ProposalTransactionBuilder;
 import iop.org.iop_contributors_app.core.iop_sdk.governance.ProposalTransactionRequest;
 import iop.org.iop_contributors_app.intents.constants.IntentsConstants;
 import iop.org.iop_contributors_app.services.BlockchainServiceImpl;
@@ -65,6 +72,8 @@ public class WalletModule implements ContextWrapper{
 
     private WalletManager walletManager;
     private BlockchainManager blockchainManager;
+    /** Class in charge of search and update special transactions */
+    private TransactionFinder transactionFinder;
 
     /** Profile server profile */
     private Profile profile;
@@ -531,13 +540,6 @@ public class WalletModule implements ContextWrapper{
         serverWrapper.setWrapperUrl(wrapperHost);
     }
 
-    public List<Proposal> getVotingProposals() throws Exception {
-        List<String> proposalsHashes = serverWrapper.getVotingProposals(0);
-        
-
-        return null;
-    }
-
     public void updateUser(String name, String password, String email, byte[] profImgData) {
         LOG.info("Saving image");
         forumConfigurations.setUserImg(profImgData);
@@ -546,4 +548,123 @@ public class WalletModule implements ContextWrapper{
     public File getUserImageFile() {
         return forumConfigurations.getUserImgFile();
     }
+
+
+    public TransactionFinder getAndCreateFinder(PeerGroup peerGroup){
+        this.transactionFinder = new TransactionFinder(WalletConstants.CONTEXT,peerGroup);
+        return transactionFinder;
+    }
+
+    /**
+     * Request tx hashes from node
+     * @param chainHeadHeight
+     */
+    public List<String> requestProposals(int chainHeadHeight) {
+        try {
+            // request tx hashes from node
+            List<String> txHashes = serverWrapper.getVotingProposals(0);
+            // insert in a new filter
+            return txHashes;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     *
+     * @return
+     * @throws Exception
+     */
+    public List<Proposal> getVotingProposals() throws Exception {
+        List<Proposal> proposals = new ArrayList<>();
+        proposals = proposalsDao.listProposals();
+//        for (Transaction transaction : transactionFinder.getWatchedTransactions()) {
+//            // new proposal
+//            Proposal proposal = null;
+//
+//            List<TransactionOutput> outputs = transaction.getOutputs();
+//            // empiezo en 2 porque el 0 es el de lockeo y el 1 es el de changeAddress
+//            for (int i = 2; i < outputs.size(); i++) {
+//                TransactionOutput transactionOutput = outputs.get(i);
+//                try {
+//                    proposal = ProposalTransactionBuilder.decodeContract(transactionOutput);
+//                    break;
+//                }catch (Exception e){
+//                    e.printStackTrace();
+//                    continue;
+//                }
+//            }
+//
+//            proposal.setMine(false);
+//
+//            // forum
+//            Proposal forumProposal = forumClient.getProposalFromWrapper(proposal.getForumId());
+//
+//            if (forumProposal!=null) {
+//                // set parameters
+//                forumProposal.setForumId(proposal.getForumId());
+//                forumProposal.setStartBlock(proposal.getStartBlock());
+//                forumProposal.setEndBlock(proposal.getEndBlock());
+//                forumProposal.setBlockReward(proposal.getBlockReward());
+//                forumProposal.setBlockchainHash(proposal.getBlockchainHash());
+//
+//                //check hash
+////            forumProposal.checkHash();
+//
+//                proposals.add(forumProposal);
+//            }else {
+//                LOG.error("Forum proposal bad decode");
+//            }
+//        }
+
+        return proposals;
+    }
+
+    /**
+     * New tx proposal arrive, this method check the proposal and save it in the database
+     * @param tx
+     */
+    public void txProposalArrive(Transaction tx) {
+        Proposal proposal = null;
+        List<TransactionOutput> outputs = tx.getOutputs();
+        try {
+            // empiezo en 2 porque el 0 es el de lockeo y el 1 es el de changeAddress
+            for (int i = 2; i < outputs.size(); i++) {
+                TransactionOutput transactionOutput = outputs.get(i);
+                try {
+                    proposal = ProposalTransactionBuilder.decodeContract(transactionOutput);
+                    LOG.info("Decoded proposal from blockchain: " + proposal.toStringBlockchain());
+                    break;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    continue;
+                }
+            }
+
+            proposal.setMine(false);
+
+            // forum
+            Proposal forumProposal = forumClient.getProposalFromWrapper(proposal.getForumId());
+
+            if (forumProposal != null) {
+                LOG.info("forumProposal arrive: "+forumProposal);
+                // set parameters
+                forumProposal.setForumId(proposal.getForumId());
+                forumProposal.setStartBlock(proposal.getStartBlock());
+                forumProposal.setEndBlock(proposal.getEndBlock());
+                forumProposal.setBlockReward(proposal.getBlockReward());
+                forumProposal.setBlockchainHash(proposal.getBlockchainHash());
+
+                proposalsDao.saveProposal(forumProposal);
+            } else {
+                LOG.error("txProposalArrive error", tx, "proposal decoded form blokcchain: " + proposal, "Proposal obtained from the forum: " + forumProposal);
+            }
+        }catch (CantSaveProposalExistException e) {
+            e.printStackTrace();
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
 }

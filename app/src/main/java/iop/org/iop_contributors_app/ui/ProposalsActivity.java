@@ -1,7 +1,5 @@
 package iop.org.iop_contributors_app.ui;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -9,14 +7,11 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import iop.org.iop_contributors_app.ApplicationController;
 import iop.org.iop_contributors_app.R;
-import iop.org.iop_contributors_app.core.iop_sdk.governance.Proposal;
+import iop.org.iop_contributors_app.core.iop_sdk.governance.propose.Proposal;
 import iop.org.iop_contributors_app.furszy_sdk.android.mine.AnimationUtils;
 import iop.org.iop_contributors_app.ui.base.BaseActivity;
 import iop.org.iop_contributors_app.ui.components.ProposalsAdapter;

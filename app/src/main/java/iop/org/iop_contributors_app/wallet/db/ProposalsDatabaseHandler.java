@@ -18,7 +18,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import iop.org.iop_contributors_app.core.iop_sdk.governance.Proposal;
+import iop.org.iop_contributors_app.core.iop_sdk.crypto.CryptoBytes;
+import iop.org.iop_contributors_app.core.iop_sdk.governance.propose.Proposal;
 
 public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
 
@@ -26,7 +27,7 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
 
     // All Static variables
     // Database Version
-    private static final int DATABASE_VERSION = 13;
+    private static final int DATABASE_VERSION = 14;
 
     // Database Name
     private static final String DATABASE_NAME = "walletManager";
@@ -54,6 +55,7 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
     private static final String KEY_PROPOSAL_VERSION = "version";
     private static final String KEY_PROPOSAL_OWNER_PUBKEY = "owner_pubkey";
     private static final String KEY_PROPOSAL_STATE = "prop_state";
+    private static final String KEY_PROPOSAL_BLOCKCHAIN_HASH = "blockchain_hash";
 
     private static final int KEY_PROPOSAL_POS_TITLE =                   0;
     private static final int KEY_PROPOSAL_POS_SUBTITLE =                1;
@@ -74,6 +76,8 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
     private static final int KEY_PROPOSAL_POS_VERSION =                 14;
     private static final int KEY_PROPOSAL_POS_OWNER_PUBKEY =            15;
     private static final int KEY_PROPOSAL_POS_PROPOSAL_STATE =          16;
+    private static final int KEY_PROPOSAL_POS_BLOCKCHAIN_HASH =         17;
+
 
 
     public ProposalsDatabaseHandler(Context context) {
@@ -103,7 +107,8 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
                 + KEY_PROPOSAL_LOCKED_OUTPUT_POSITION + " LONG,"
                 + KEY_PROPOSAL_VERSION + " SHORT,"
                 + KEY_PROPOSAL_OWNER_PUBKEY + " BLOB,"
-                + KEY_PROPOSAL_STATE + " TEXT"
+                + KEY_PROPOSAL_STATE + " TEXT,"
+                + KEY_PROPOSAL_BLOCKCHAIN_HASH + " TEXT"
                 + ")";
         db.execSQL(CREATE_CONTACTS_TABLE);
     }
@@ -165,7 +170,8 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
                             KEY_PROPOSAL_LOCKED_OUTPUT_POSITION,
                             KEY_PROPOSAL_VERSION,
                             KEY_PROPOSAL_OWNER_PUBKEY,
-                            KEY_PROPOSAL_STATE}, KEY_PROPOSAL_TITLE + "=?",
+                            KEY_PROPOSAL_STATE,
+                            KEY_PROPOSAL_BLOCKCHAIN_HASH}, KEY_PROPOSAL_TITLE + "=?",
                     new String[]{title}, null, null, null, null);
             if (cursor != null)
                 cursor.moveToFirst();
@@ -206,7 +212,8 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
                             KEY_PROPOSAL_LOCKED_OUTPUT_POSITION,
                             KEY_PROPOSAL_VERSION,
                             KEY_PROPOSAL_OWNER_PUBKEY,
-                            KEY_PROPOSAL_STATE}, KEY_PROPOSAL_FORUM_ID + "=?",
+                            KEY_PROPOSAL_STATE,
+                            KEY_PROPOSAL_BLOCKCHAIN_HASH}, KEY_PROPOSAL_FORUM_ID + "=?",
                     new String[]{String.valueOf(forumId)}, null, null, null, null);
             if (cursor != null)
                 cursor.moveToFirst();
@@ -477,9 +484,10 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
         short version = cursor.getShort(KEY_PROPOSAL_POS_VERSION);
         byte[] ownerPk = cursor.getBlob(KEY_PROPOSAL_POS_OWNER_PUBKEY);
         Proposal.ProposalState proposalState = Proposal.ProposalState.valueOf(cursor.getString(KEY_PROPOSAL_POS_PROPOSAL_STATE));
+        byte[] blockchainHash = CryptoBytes.fromHexToBytes(cursor.getString(KEY_PROPOSAL_POS_BLOCKCHAIN_HASH));
 
 
-        return new Proposal(
+        Proposal proposal = new Proposal(
                 isMine,
                 title,
                 subTitle,
@@ -498,6 +506,8 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
                 ownerPk,
                 proposalState
         );
+        proposal.setBlockchainHash(blockchainHash);
+        return proposal;
     }
 
     private ContentValues buildContentValues(Proposal proposal) throws JsonProcessingException {
@@ -524,6 +534,7 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
         values.put(KEY_PROPOSAL_VERSION,proposal.getVersion());
         values.put(KEY_PROPOSAL_OWNER_PUBKEY,proposal.getOwnerPubKey());
         values.put(KEY_PROPOSAL_STATE,proposal.getState().toString());
+        values.put(KEY_PROPOSAL_BLOCKCHAIN_HASH,CryptoBytes.toHexString(proposal.getBlockchainHash()));
         return values;
     }
 

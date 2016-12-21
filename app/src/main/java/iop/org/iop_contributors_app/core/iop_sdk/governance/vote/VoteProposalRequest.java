@@ -1,4 +1,4 @@
-package iop.org.iop_contributors_app.core.iop_sdk.governance;
+package iop.org.iop_contributors_app.core.iop_sdk.governance.vote;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -6,7 +6,6 @@ import org.bitcoinj.core.Address;
 import org.bitcoinj.core.Coin;
 import org.bitcoinj.core.InsufficientMoneyException;
 import org.bitcoinj.core.Transaction;
-import org.bitcoinj.core.TransactionConfidence;
 import org.bitcoinj.core.TransactionOutPoint;
 import org.bitcoinj.core.TransactionOutput;
 import org.bitcoinj.wallet.CoinSelection;
@@ -18,62 +17,59 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import iop.org.iop_contributors_app.core.iop_sdk.crypto.CryptoBytes;
+import iop.org.iop_contributors_app.core.iop_sdk.governance.NotConnectedPeersException;
+import iop.org.iop_contributors_app.ui.voting.db.VotesDao;
 import iop.org.iop_contributors_app.wallet.BlockchainManager;
 import iop.org.iop_contributors_app.wallet.WalletConstants;
 import iop.org.iop_contributors_app.wallet.WalletManager;
 import iop.org.iop_contributors_app.wallet.exceptions.InsuficientBalanceException;
 
 /**
- * Created by mati on 05/12/16.
+ * Created by mati on 21/12/16.
+ * //todo: el fee tiene que ser el 1% de la cantidad de votos. -> 0.5 votes -> 0.005 fee
  */
 
-public class ProposalTransactionRequest {
+public class VoteProposalRequest {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ProposalTransactionRequest.class.getName());
+    private static final Logger LOG = LoggerFactory.getLogger(VoteProposalRequest.class);
+
 
     private BlockchainManager blockchainManager;
     private WalletManager walletManager;
-    private ProposalsContractDao proposalsDao;
-
-    private Proposal proposal;
-    private String lockedOutputHashHex;
-    private int lockedOutputPosition = 0;
-    private long lockedBalance;
+    private VotesDao votesDao;
 
     private SendRequest sendRequest;
 
-    public ProposalTransactionRequest(BlockchainManager blockchainManager, WalletManager walletManager, ProposalsContractDao proposalsDao) {
+    private Vote vote;
+    private long lockedBalance;
+
+
+    public VoteProposalRequest(BlockchainManager blockchainManager, WalletManager walletManager, VotesDao votesDao) {
         this.blockchainManager = blockchainManager;
         this.walletManager = walletManager;
-        this.proposalsDao = proposalsDao;
+        this.votesDao = votesDao;
     }
 
-    public void forProposal(Proposal proposal) throws InsuficientBalanceException {
+    public void forVote(Vote vote) throws InsuficientBalanceException {
 
-        this.proposal = proposal;
+        if (vote.getVote() == Vote.VoteType.NEUTRAL) throw new IllegalArgumentException("Voto tipo neutral");
+
+        this.vote = vote;
 
         org.bitcoinj.core.Context.propagate(WalletConstants.CONTEXT);
 
-        ProposalTransactionBuilder proposalTransactionBuilder = new ProposalTransactionBuilder(
-                WalletConstants.NETWORK_PARAMETERS,
-                blockchainManager.getChainHeadHeight()
-        );
+        VoteTransactionBuilder voteTransactionBuilder = new VoteTransactionBuilder(WalletConstants.NETWORK_PARAMETERS);
 
         Wallet wallet = walletManager.getWallet();
 
-        Coin totalOuputsValue = Coin.ZERO;
-        for (Long aLong : proposal.getBeneficiaries().values()) {
-            totalOuputsValue = totalOuputsValue.add(Coin.valueOf(aLong));
-        }
 
-        // locked coins 1000 IoPs
-        totalOuputsValue = totalOuputsValue.add(Coin.valueOf(1000, 0));
+        Coin freezeOutputVotingPowerValue = Coin.valueOf(vote.getVotingPower());
+        Coin feeForVoting = Coin.valueOf(vote.getVotingPower()/100);
+        Coin totalOuputsValue = feeForVoting.plus(freezeOutputVotingPowerValue);
 
         List<TransactionOutput> unspentTransactions = new ArrayList<>();
         Coin totalInputsValue = Coin.ZERO;
@@ -81,7 +77,7 @@ public class ProposalTransactionRequest {
         for (TransactionOutput transactionOutput : wallet.getUnspents()) {
             //
             TransactionOutPoint transactionOutPoint = transactionOutput.getOutPointFor();
-            if (proposalsDao.isLockedOutput(transactionOutPoint.getHash().toString(), transactionOutPoint.getIndex())) {
+            if (votesDao.isLockedOutput(transactionOutPoint.getHash().toString(), transactionOutPoint.getIndex())) {
                 continue;
             }
             if (DefaultCoinSelector.isSelectable(transactionOutput.getParentTransaction())) {
@@ -96,45 +92,25 @@ public class ProposalTransactionRequest {
         }
 
         if (!inputsSatisfiedContractValue)
-            throw new InsuficientBalanceException("Inputs not satisfied contract value");
+            throw new InsuficientBalanceException("Inputs not satisfied vote value");
+
 
         // add inputs..
-        proposalTransactionBuilder.addInputs(unspentTransactions);
-
-        // lock address output
+        voteTransactionBuilder.addInputs(unspentTransactions);
+        // freeze address -> voting power
         Address lockAddress = wallet.freshReceiveAddress();
-        TransactionOutput transactionOutputToLock = proposalTransactionBuilder.addLockedAddressOutput(lockAddress);
-
-        // lock balance
-        lockedBalance += transactionOutputToLock.getValue().value;
-
-        // refund transaction, tengo el fee agregado al totalOutputsValue
-        Coin flyingCoins = totalInputsValue.minus(totalOuputsValue);
+        TransactionOutput transactionOutputToLock = voteTransactionBuilder.addLockedAddressOutput(lockAddress,vote.getVotingPower());
+        //update locked balance
+        lockedBalance+=transactionOutputToLock.getValue().getValue();
+        // op return output
+        voteTransactionBuilder.addContract(vote.isYesVote(),vote.getGenesisHash());
+        // refunds output
         // le resto el fee
-        flyingCoins = flyingCoins.minus(Coin.valueOf(proposal.getExtraFeeValue())).minus(WalletConstants.CONTEXT.getFeePerKb());
-        proposalTransactionBuilder.addRefundOutput(flyingCoins, wallet.freshReceiveAddress());
+        Coin flyingCoins = totalInputsValue.minus(totalOuputsValue).minus(feeForVoting).minus(WalletConstants.CONTEXT.getFeePerKb());
+        voteTransactionBuilder.addRefundOutput(flyingCoins, wallet.freshReceiveAddress());
 
-
-        // contract
-        proposalTransactionBuilder.addContract(
-                proposal.getStartBlock(),
-                proposal.getEndBlock(),
-                proposal.getBlockReward(),
-                proposal.hash(),
-                proposal.getForumId()
-        );
-
-        // beneficiaries outputs
-        for (Map.Entry<String, Long> beneficiary : proposal.getBeneficiaries().entrySet()) {
-            LOG.info("beneficiary address: "+beneficiary.getKey());
-            proposalTransactionBuilder.addBeneficiary(
-                    Address.fromBase58(WalletConstants.NETWORK_PARAMETERS, beneficiary.getKey()),
-                    Coin.valueOf(beneficiary.getValue())
-            );
-
-        }
         // build the transaction..
-        Transaction tran = proposalTransactionBuilder.build();
+        Transaction tran = voteTransactionBuilder.build();
 
         LOG.info("Transaction fee: " + tran.getFee());
 
@@ -143,6 +119,10 @@ public class ProposalTransactionRequest {
         sendRequest.signInputs = true;
         sendRequest.shuffleOutputs = false;
         sendRequest.coinSelector = new MyCoinSelector();
+
+        LOG.info("Total outputs sum: "+sendRequest.tx.getOutputSum());
+        LOG.info("Total inputs sum sum: "+sendRequest.tx.getInputSum());
+
 
         // complete transaction
         try {
@@ -154,7 +134,6 @@ public class ProposalTransactionRequest {
 
         LOG.info("inputs value: " + tran.getInputSum().toFriendlyString() + ", outputs value: " + tran.getOutputSum().toFriendlyString() + ", fee: " + tran.getFee().toFriendlyString());
         LOG.info("total en el aire: " + tran.getInputSum().minus(tran.getOutputSum().minus(tran.getFee())).toFriendlyString());
-
     }
 
     public void broadcast() throws NotConnectedPeersException {
@@ -167,16 +146,14 @@ public class ProposalTransactionRequest {
             wallet.commitTx(sendRequest.tx);
 
             ListenableFuture<Transaction> future = blockchainManager.broadcastTransaction(sendRequest.tx.getHash().getBytes());
-            future.get(1,TimeUnit.MINUTES);
+            future.get(1, TimeUnit.MINUTES);
 
             // now that the transaction is complete lock the output
             // lock address
             String parentTransactionHashHex = sendRequest.tx.getHash().toString();
             LOG.info("Locking transaction with 1000 IoPs: position: "+0+", parent hash: "+parentTransactionHashHex);
-            proposal.setLockedOutputHashHex(parentTransactionHashHex);
-            proposal.setLockedOutputIndex(lockedOutputPosition);
-            lockedOutputHashHex = parentTransactionHashHex;
-            lockedOutputPosition = 0;
+            vote.setLockedOutputHashHex(parentTransactionHashHex);
+            vote.setLockedOutputIndex(0);
 
             LOG.info("TRANSACCION BROADCASTEADA EXITOSAMENTE, hash: "+sendRequest.tx.getHash().toString());
 
@@ -190,18 +167,13 @@ public class ProposalTransactionRequest {
         }
     }
 
-    public Proposal getUpdatedProposal() {
-        return proposal;
-    }
-
     public long getLockedBalance() {
         return lockedBalance;
     }
 
-    public Transaction getTransaction() {
-        return sendRequest.tx;
+    public Vote getUpdatedVote() {
+        return vote;
     }
-
 
     private class MyCoinSelector implements org.bitcoinj.wallet.CoinSelector {
         @Override
@@ -210,11 +182,4 @@ public class ProposalTransactionRequest {
         }
     }
 
-    public String getLockedOutputHashHex() {
-        return lockedOutputHashHex;
-    }
-
-    public int getLockedOutputPosition() {
-        return lockedOutputPosition;
-    }
 }

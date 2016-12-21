@@ -7,11 +7,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.logging.Logger;
 
-import iop.org.iop_contributors_app.core.iop_sdk.governance.Proposal;
-import iop.org.iop_contributors_app.core.iop_sdk.governance.ProposalTransactionBuilder;
-import iop.org.iop_contributors_app.core.iop_sdk.governance.ProposalsContractDao;
+import iop.org.iop_contributors_app.core.iop_sdk.governance.propose.Proposal;
+import iop.org.iop_contributors_app.core.iop_sdk.governance.propose.ProposalTransactionBuilder;
+import iop.org.iop_contributors_app.core.iop_sdk.governance.propose.ProposalsContractDao;
 
 /**
  * Created by mati on 16/11/16.

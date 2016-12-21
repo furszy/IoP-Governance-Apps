@@ -58,14 +58,20 @@ public class IntentsConstants {
     /**
      *  Posibles elecciones de dialogs
      */
-    public static final String RESTORE_SUCCED_DIALOG = BaseActivity.class.getPackage().toString() + "_restore_succed_dialog";
+    public static final int RESTORE_SUCCED_DIALOG = 1000;//BaseActivity.class.getPackage().toString() + "_restore_succed_dialog";
 
+    public static final int UNKNOWN_ERROR_DIALOG = 0;
+    public static final int INSUFICIENTS_FUNDS_DIALOG = 1;
+    public static final int CANT_SAVE_PROPOSAL_DIALOG = 2;
+    public static final int COMMON_ERROR_DIALOG = 3;
+    public static final int INVALID_PROPOSAL_DIALOG = 4;
 
     /**
      * Data
      */
 
     public static final String INTENT_BROADCAST_DATA_TRANSACTION_SUCCED = BaseActivity.class.getPackage().toString() + "_broadcast_transaction_succed";
+    public static final String INTENT_BROADCAST_DATA_VOTE_TRANSACTION_SUCCED = BaseActivity.class.getPackage().toString() + "_broadcast_vote_transaction_succed";
     public static final String INTENT_BROADCAST_DATA_ON_COIN_RECEIVED = BaseActivity.class.getPackage().toString() + "_broadcast_coin_received";
     public static final String INTENT_BROADCAST_DATA_ON_PROPOSAL_TRANSACTION_RECEIVED = BaseActivity.class.getPackage().toString() + "_broadcast_proposal_transaction_received";
 

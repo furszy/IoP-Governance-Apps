@@ -6,15 +6,10 @@ import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.SeekBar;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import com.squareup.picasso.Picasso;
-
 import iop.org.iop_contributors_app.R;
-import iop.org.iop_contributors_app.core.iop_sdk.governance.Proposal;
+import iop.org.iop_contributors_app.core.iop_sdk.governance.propose.Proposal;
 import iop.org.iop_contributors_app.ui.components.switch_seek_bar.SwitchSeekBar;
 
 /**

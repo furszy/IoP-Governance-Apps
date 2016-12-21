@@ -17,18 +17,27 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import org.bitcoinj.core.Address;
+import org.bitcoinj.core.Coin;
 import org.bitcoinj.core.InsufficientMoneyException;
 import org.bitcoinj.wallet.Wallet;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import iop.org.iop_contributors_app.ApplicationController;
 import iop.org.iop_contributors_app.R;
+import iop.org.iop_contributors_app.services.BlockchainService;
+import iop.org.iop_contributors_app.ui.ProposalSummaryActivity;
+import iop.org.iop_contributors_app.wallet.CantSendTransactionException;
+import iop.org.iop_contributors_app.wallet.WalletConstants;
 import iop.org.iop_contributors_app.wallet.WalletModule;
 
 /**
  * Created by mati on 05/12/16.
+ * //todo: falta mejorar esto y armar una clase que sirva de conversor de tokens de una vez por todas..
  */
 
 public class IoPBalanceActivity extends AppCompatActivity {
@@ -49,6 +58,8 @@ public class IoPBalanceActivity extends AppCompatActivity {
 
     private boolean isAddressFine;
     private boolean isAmountFine;
+
+    private ExecutorService executorService;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -102,9 +113,15 @@ public class IoPBalanceActivity extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable s) {
-                if (s.length()==32){
-                    isAddressFine=true;
+                if (!s.toString().equals("") && s.toString().length()>20) {
+                    try {
+                        Address.fromBase58(WalletConstants.NETWORK_PARAMETERS, s.toString());
+                        isAddressFine = true;
+                    }catch (Exception e){
+                        // nothing
+                    }
                 }
+
             }
         });
 
@@ -165,26 +182,87 @@ public class IoPBalanceActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                if (isAddressFine && isAmountFine) {
+                if (isAddressFine) {
 
-                    String address = edit_address.getText().toString();
-                    long amount = Long.parseLong(edit_amount.getText().toString());
+                    if (isAmountFine) {
+                        final String address = edit_address.getText().toString();
+                        final long amount = Long.parseLong(edit_amount.getText().toString());
 
-                    try {
-                        module.sendTransaction(address, amount);
-                    } catch (InsufficientMoneyException e) {
-                        showErrorDialog("Error", "Insuficient balance");
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                        final long realAmount = Coin.valueOf((int) amount,0).getValue();
+
+
+                        if(executorService==null){
+                            executorService = Executors.newSingleThreadExecutor();
+                        }
+                        executorService.submit(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    module.sendTransaction(address, realAmount);
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            showErrorDialog("Succed","Tokens exported from wallet");
+                                        }
+                                    });
+                                } catch (InsufficientMoneyException e) {
+                                    e.printStackTrace();
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            showErrorDialog("Error", "Insuficient balance");
+                                        }
+                                    });
+                                }catch (final CantSendTransactionException e) {
+                                    e.printStackTrace();
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            showErrorDialog("Error", e.getMessage());
+                                        }
+                                    });
+                                } catch (final Exception e) {
+                                    e.printStackTrace();
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            showErrorDialog("Error", e.getMessage());
+                                        }
+                                    });
+                                }
+
+                            }
+                        });
+
+                    }else {
+                        showErrorDialog("Error","Invalid amount");
                     }
                 }else {
-                    showErrorDialog("Error","Cant process data, please check your inputs");
+                    showErrorDialog("Error","Invalid address");
                 }
 
             }
         });
     }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (executorService!=null){
+            executorService.shutdown();
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (executorService!=null){
+            if (!executorService.isShutdown()){
+                executorService.shutdown();
+            }
+            executorService = null;
+        }
+    }
 
     private void loadBalances() {
         txt_balance = (TextView) findViewById(R.id.txt_balance);

@@ -8,7 +8,7 @@ android {
 
 
     defaultConfig {
-        //applicationId "iop.org.iop_contributors_app"
+//        applicationId "iop.org.iop_contributors_app"
         applicationId "iop.org.iop_voting_app"
         minSdkVersion 21
         targetSdkVersion 24

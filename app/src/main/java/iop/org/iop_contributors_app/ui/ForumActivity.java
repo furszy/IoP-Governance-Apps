@@ -168,9 +168,11 @@ public class ForumActivity extends BaseActivity {
             super.onLoadResource(view, url);
             Log.d(TAG,"onLoadResource");
             try {
-                if (!webView.getUrl().equals(address)) {
-                    checkUrl(webView.getUrl());
-                    address = webView.getUrl();
+                if (webView!=null) {
+                    if (!webView.getUrl().equals(address)) {
+                        checkUrl(webView.getUrl());
+                        address = webView.getUrl();
+                    }
                 }
             }catch (Exception e){
                 e.printStackTrace();

@@ -2,11 +2,10 @@ package iop.org.iop_contributors_app.ui.validators;
 
 import org.bitcoinj.core.Address;
 import org.bitcoinj.core.AddressFormatException;
-import org.bitcoinj.core.Base58;
 
 import java.util.Map;
 
-import iop.org.iop_contributors_app.core.iop_sdk.governance.Proposal;
+import iop.org.iop_contributors_app.core.iop_sdk.governance.propose.Proposal;
 import iop.org.iop_contributors_app.wallet.WalletConstants;
 
 /**

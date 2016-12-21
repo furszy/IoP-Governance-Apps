@@ -4,14 +4,16 @@ import android.content.Intent;
 import android.view.View;
 
 import iop.org.iop_contributors_app.R;
-import iop.org.iop_contributors_app.core.iop_sdk.governance.Proposal;
+import iop.org.iop_contributors_app.core.iop_sdk.governance.propose.Proposal;
 import iop.org.iop_contributors_app.ui.CreateProposalActivity;
 import iop.org.iop_contributors_app.ui.ForumActivity;
 import iop.org.iop_contributors_app.furszy_sdk.android.adapter.FermatAdapterImproved;
+import iop.org.iop_contributors_app.ui.voting.VotingProposalActivity;
 import iop.org.iop_contributors_app.ui.voting.VotingProposalsActivity;
 import iop.org.iop_contributors_app.wallet.WalletModule;
 
 import static iop.org.iop_contributors_app.core.iop_sdk.blockchain.utils.CoinUtils.coinToString;
+import static iop.org.iop_contributors_app.ui.ProposalSummaryActivity.INTENT_DATA_PROPOSAL;
 
 /**
  * Created by mati on 17/11/16.
@@ -73,7 +75,10 @@ public class VotingProposalsAdapter extends FermatAdapterImproved<Proposal,Votin
         holder.txt_go_vote.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ((VotingProposalsActivity)context).showVoteDialog(data);
+                Intent intent = new Intent(v.getContext(), VotingProposalActivity.class);
+                intent.putExtra(INTENT_DATA_PROPOSAL,data);
+                context.startActivity(intent);
+//                ((VotingProposalsActivity)context).showVoteDialog(data);
             }
         });
     }

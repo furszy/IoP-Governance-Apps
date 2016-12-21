@@ -5,7 +5,7 @@ import android.content.Intent;
 import android.view.View;
 
 import iop.org.iop_contributors_app.R;
-import iop.org.iop_contributors_app.core.iop_sdk.governance.Proposal;
+import iop.org.iop_contributors_app.core.iop_sdk.governance.propose.Proposal;
 import iop.org.iop_contributors_app.ui.CreateProposalActivity;
 import iop.org.iop_contributors_app.ui.ForumActivity;
 import iop.org.iop_contributors_app.furszy_sdk.android.adapter.FermatAdapterImproved;

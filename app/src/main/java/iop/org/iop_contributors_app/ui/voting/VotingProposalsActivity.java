@@ -1,7 +1,5 @@
 package iop.org.iop_contributors_app.ui.voting;
 
-import android.app.FragmentManager;
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
@@ -13,11 +11,8 @@ import java.util.List;
 
 import iop.org.iop_contributors_app.ApplicationController;
 import iop.org.iop_contributors_app.R;
-import iop.org.iop_contributors_app.core.iop_sdk.governance.Proposal;
-import iop.org.iop_contributors_app.ui.CreateProposalActivity;
+import iop.org.iop_contributors_app.core.iop_sdk.governance.propose.Proposal;
 import iop.org.iop_contributors_app.ui.base.BaseActivity;
-import iop.org.iop_contributors_app.ui.components.ProposalsAdapter;
-import iop.org.iop_contributors_app.ui.settings.fragments.SettingsFragment;
 import iop.org.iop_contributors_app.ui.voting.ui.components.VotingProposalsAdapter;
 import iop.org.iop_contributors_app.ui.voting.ui.dialogs.VoteDialog;
 import iop.org.iop_contributors_app.wallet.WalletModule;

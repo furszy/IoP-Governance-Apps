@@ -1,4 +1,4 @@
-package iop.org.iop_contributors_app.ui.dialogs;
+package iop.org.iop_contributors_app.ui.voting.ui.dialogs;
 
 import android.content.DialogInterface;
 import android.os.Bundle;
@@ -11,22 +11,25 @@ import android.widget.TextView;
 
 import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.core.iop_sdk.governance.propose.Proposal;
+import iop.org.iop_contributors_app.core.iop_sdk.governance.vote.Vote;
 import iop.org.iop_contributors_app.services.BlockchainService;
 import iop.org.iop_contributors_app.ui.ProposalSummaryActivity;
+import iop.org.iop_contributors_app.ui.base.BaseActivity;
+import iop.org.iop_contributors_app.ui.voting.VotingProposalsActivity;
 import iop.org.iop_contributors_app.wallet.WalletModule;
 
-public class BroadcastContractDialog extends DialogFragment {
+public class BroadcastVoteDialog extends DialogFragment {
 
     private WalletModule module;
-    private Proposal proposal;
+    private Vote vote;
     private CancelLister cancelListener;
 
 
-    public static BroadcastContractDialog newinstance(WalletModule module, Proposal proposal) {
-        BroadcastContractDialog broadcastContractDialog = new BroadcastContractDialog();
-        broadcastContractDialog.setModule(module);
-        broadcastContractDialog.setProposal(proposal);
-        return broadcastContractDialog;
+    public static BroadcastVoteDialog newinstance(WalletModule module, Vote vote) {
+        BroadcastVoteDialog broadcastVoteDialog = new BroadcastVoteDialog();
+        broadcastVoteDialog.setModule(module);
+        broadcastVoteDialog.setVote(vote);
+        return broadcastVoteDialog;
     }
 
     public void setModule(WalletModule module) {
@@ -37,7 +40,7 @@ public class BroadcastContractDialog extends DialogFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-        View root = inflater.inflate(R.layout.broadcast_contract_dialog,null);
+        View root = inflater.inflate(R.layout.broadcast_vote_dialog,null);
 
         TextView txt_send = (TextView) root.findViewById(R.id.txt_send);
         TextView txt_cancel = (TextView) root.findViewById(R.id.txt_cancel);
@@ -58,13 +61,9 @@ public class BroadcastContractDialog extends DialogFragment {
             }
         });
 
-        return root;
-    }
 
-    private void handleSend(){
-        Bundle bundle = new Bundle();
-        bundle.putSerializable(BlockchainService.INTENT_EXTRA_PROPOSAL, proposal);
-        ((ProposalSummaryActivity)getActivity()).sendWorkToBlockchainService(BlockchainService.ACTION_BROADCAST_PROPOSAL_TRANSACTION, bundle);
+
+        return root;
     }
 
     @Override
@@ -73,8 +72,16 @@ public class BroadcastContractDialog extends DialogFragment {
         cancelListener.cancel();
     }
 
-    public void setProposal(Proposal proposal) {
-        this.proposal = proposal;
+    private void handleSend(){
+        Bundle bundle = new Bundle();
+        // todo: acá tengo que mandar el voto..
+        bundle.putSerializable(BlockchainService.INTENT_EXTRA_PROPOSAL_VOTE, vote);
+        ((BaseActivity)getActivity()).sendWorkToBlockchainService(BlockchainService.ACTION_BROADCAST_VOTE_PROPOSAL_TRANSACTION, bundle);
+    }
+
+
+    public void setVote(Vote vote) {
+        this.vote = vote;
     }
 
     public DialogFragment setCancelListener(CancelLister cancelListener) {

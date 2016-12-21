@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
@@ -15,14 +14,10 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -30,9 +25,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -40,8 +33,7 @@ import iop.org.furszy_lib.ChromeHelpPopup;
 import iop.org.iop_contributors_app.ApplicationController;
 import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.CantCreateTopicException;
-import iop.org.iop_contributors_app.core.iop_sdk.governance.Proposal;
-import iop.org.iop_contributors_app.services.BlockchainService;
+import iop.org.iop_contributors_app.core.iop_sdk.governance.propose.Proposal;
 import iop.org.iop_contributors_app.ui.base.BaseActivity;
 import iop.org.iop_contributors_app.ui.dialogs.wallet.InsuficientFundsDialog;
 import iop.org.iop_contributors_app.ui.validators.CreateProposalActivityValidator;
@@ -79,13 +71,7 @@ public class CreateProposalActivity extends BaseActivity {
 
     // dialogs
     public static final String INTENT_EXTRA_MESSAGE_DIALOG = "extraDialogMessage";
-    public static final String ACTION_RECEIVE_EXCEPTION = CreateProposalActivity.class.getName() + "_receive_exception";
 
-    public static final int UNKNOWN_ERROR_DIALOG = 0;
-    public static final int INSUFICIENTS_FUNDS_DIALOG = 1;
-    public static final int CANT_SAVE_PROPOSAL_DIALOG = 2;
-    public static final int COMMON_ERROR_DIALOG = 3;
-    public static final int INVALID_PROPOSAL_DIALOG = 4;
 
     // action edit
     public static final String ACTION_EDIT_PROPOSAL = "actionEditProp";
@@ -105,39 +91,39 @@ public class CreateProposalActivity extends BaseActivity {
     private Map<Integer,ChromeHelpPopup> popups;
 
 
-    private final BroadcastReceiver receiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, final Intent intent) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    switch (intent.getIntExtra(INTENT_DIALOG,0)){
-                        case UNKNOWN_ERROR_DIALOG:
-                            showCantSendProposalDialog();
-                            break;
-                        case INSUFICIENTS_FUNDS_DIALOG:
-                            showInsuficientFundsException();
-                            break;
-                        case CANT_SAVE_PROPOSAL_DIALOG:
-                            showErrorDialog("Error", intent.getStringExtra(INTENT_EXTRA_MESSAGE_DIALOG));
-                            break;
-                        case INVALID_PROPOSAL_DIALOG:
-                            loadProposal();
-                            showErrorDialog("Error",intent.getStringExtra(INTENT_EXTRA_MESSAGE_DIALOG));
-                            break;
-                        case COMMON_ERROR_DIALOG:
-                            showErrorDialog("Error", intent.getStringExtra(INTENT_EXTRA_MESSAGE_DIALOG));
-                            break;
-                        default:
-                            Log.e(TAG,"BroadcastReceiver fail");
-                            break;
-                    }
-                    hideDoneLoading();
-                }
-            });
-
-        }
-    };
+//    private final BroadcastReceiver receiver = new BroadcastReceiver() {
+//        @Override
+//        public void onReceive(Context context, final Intent intent) {
+//            runOnUiThread(new Runnable() {
+//                @Override
+//                public void run() {
+//                    switch (intent.getIntExtra(INTENT_DIALOG,0)){
+//                        case UNKNOWN_ERROR_DIALOG:
+//                            showCantSendProposalDialog();
+//                            break;
+//                        case INSUFICIENTS_FUNDS_DIALOG:
+//                            showInsuficientFundsException();
+//                            break;
+//                        case CANT_SAVE_PROPOSAL_DIALOG:
+//                            showErrorDialog("Error", intent.getStringExtra(INTENT_EXTRA_MESSAGE_DIALOG));
+//                            break;
+//                        case INVALID_PROPOSAL_DIALOG:
+//                            loadProposal();
+//                            showErrorDialog("Error",intent.getStringExtra(INTENT_EXTRA_MESSAGE_DIALOG));
+//                            break;
+//                        case COMMON_ERROR_DIALOG:
+//                            showErrorDialog("Error", intent.getStringExtra(INTENT_EXTRA_MESSAGE_DIALOG));
+//                            break;
+//                        default:
+//                            Log.e(TAG,"BroadcastReceiver fail");
+//                            break;
+//                    }
+//                    hideDoneLoading();
+//                }
+//            });
+//
+//        }
+//    };
 
 
     // UI
@@ -691,18 +677,18 @@ public class CreateProposalActivity extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        IntentFilter intent = new IntentFilter(ACTION_RECEIVE_EXCEPTION);
-        localBroadcastManager.registerReceiver(receiver,intent);
+//        IntentFilter intent = new IntentFilter(ACTION_RECEIVE_EXCEPTION);
+//        localBroadcastManager.registerReceiver(receiver,intent);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        try {
-            localBroadcastManager.unregisterReceiver(receiver);
-        } catch (Exception e) {
-            // nothing
-        }
+//        try {
+//            localBroadcastManager.unregisterReceiver(receiver);
+//        } catch (Exception e) {
+//            // nothing
+//        }
 
         if (popups!=null){
             popups.clear();

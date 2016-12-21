@@ -1,4 +1,4 @@
-package iop.org.iop_contributors_app.core.iop_sdk.governance;
+package iop.org.iop_contributors_app.core.iop_sdk.governance.propose;
 
 import org.apache.commons.codec.DecoderException;
 import org.bitcoinj.core.Address;
@@ -16,7 +16,6 @@ import java.util.List;
 
 import iop.org.iop_contributors_app.core.iop_sdk.blockchain.OpReturnOutputTransaction;
 import iop.org.iop_contributors_app.core.iop_sdk.crypto.CryptoBytes;
-import iop.org.iop_contributors_app.utils.Preconditions;
 
 import static iop.org.iop_contributors_app.core.iop_sdk.utils.ArraysUtils.numericTypeToByteArray;
 import static iop.org.iop_contributors_app.utils.Preconditions.compareLessThan;
@@ -49,7 +48,7 @@ public  class ProposalTransactionBuilder {
     private static final int CONTRACT_FORUM_ID_SIZE = 2;
 
     /** tag */
-    private static short tag = 0x4343;
+    private static final short tag = 0x4343;
     /**  */
     private static short version = 1;
 

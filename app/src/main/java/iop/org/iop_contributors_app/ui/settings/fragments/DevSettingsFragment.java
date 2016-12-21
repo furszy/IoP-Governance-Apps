@@ -14,7 +14,6 @@ import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 import android.util.Log;
-import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -35,19 +34,16 @@ import org.bitcoinj.core.InsufficientMoneyException;
 import org.bitcoinj.core.Transaction;
 import org.bitcoinj.core.TransactionOutput;
 import org.bitcoinj.params.RegTestParams;
-import org.bitcoinj.wallet.CoinSelection;
 import org.bitcoinj.wallet.SendRequest;
 import org.bitcoinj.wallet.Wallet;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.core.iop_sdk.blockchain.OpReturnOutputTransaction;
-import iop.org.iop_contributors_app.core.iop_sdk.governance.Proposal;
+import iop.org.iop_contributors_app.core.iop_sdk.governance.propose.Proposal;
 import iop.org.iop_contributors_app.utils.Cache;
 import iop.org.iop_contributors_app.wallet.InvalidAddressException;
 import iop.org.iop_contributors_app.wallet.WalletConstants;

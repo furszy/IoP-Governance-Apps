@@ -1,7 +1,6 @@
 package iop.org.iop_contributors_app.ui;
 
 import android.app.AlertDialog;
-import android.app.DialogFragment;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -9,58 +8,50 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.text.Html;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.bitcoinj.core.Coin;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 import iop.org.iop_contributors_app.R;
-import iop.org.iop_contributors_app.core.iop_sdk.governance.Proposal;
-import iop.org.iop_contributors_app.core.iop_sdk.utils.TextUtils;
+import iop.org.iop_contributors_app.core.iop_sdk.governance.propose.Proposal;
 import iop.org.iop_contributors_app.furszy_sdk.android.mine.SizeUtils;
-import iop.org.iop_contributors_app.services.BlockchainService;
 import iop.org.iop_contributors_app.ui.base.BaseActivity;
 import iop.org.iop_contributors_app.ui.dialogs.BroadcastContractDialog;
 import iop.org.iop_contributors_app.ui.dialogs.CancelLister;
+import iop.org.iop_contributors_app.ui.dialogs.SimpleDialogs;
 import iop.org.iop_contributors_app.ui.dialogs.wallet.InsuficientFundsDialog;
-import iop.org.iop_contributors_app.ui.validators.ValidationException;
-import iop.org.iop_contributors_app.wallet.WalletModule;
 import iop.org.iop_contributors_app.wallet.db.CantGetProposalException;
 
 import static iop.org.iop_contributors_app.core.iop_sdk.blockchain.utils.CoinUtils.coinToString;
 import static iop.org.iop_contributors_app.core.iop_sdk.utils.TextUtils.transformToHtmlWithColor;
+import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.CANT_SAVE_PROPOSAL_DIALOG;
+import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.COMMON_ERROR_DIALOG;
+import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INSUFICIENTS_FUNDS_DIALOG;
+import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENTE_BROADCAST_DIALOG_TYPE;
 import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_TRANSACTION_SUCCED;
 import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_TYPE;
 import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENT_DIALOG;
-import static iop.org.iop_contributors_app.ui.CreateProposalActivity.ACTION_RECEIVE_EXCEPTION;
-import static iop.org.iop_contributors_app.ui.CreateProposalActivity.CANT_SAVE_PROPOSAL_DIALOG;
-import static iop.org.iop_contributors_app.ui.CreateProposalActivity.COMMON_ERROR_DIALOG;
-import static iop.org.iop_contributors_app.ui.CreateProposalActivity.INSUFICIENTS_FUNDS_DIALOG;
+import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INVALID_PROPOSAL_DIALOG;
+import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.UNKNOWN_ERROR_DIALOG;
 import static iop.org.iop_contributors_app.ui.CreateProposalActivity.INTENT_DATA_FORUM_ID;
 import static iop.org.iop_contributors_app.ui.CreateProposalActivity.INTENT_DATA_FORUM_TITLE;
 import static iop.org.iop_contributors_app.ui.CreateProposalActivity.INTENT_EXTRA_MESSAGE_DIALOG;
-import static iop.org.iop_contributors_app.ui.CreateProposalActivity.INVALID_PROPOSAL_DIALOG;
-import static iop.org.iop_contributors_app.ui.CreateProposalActivity.UNKNOWN_ERROR_DIALOG;
+import static iop.org.iop_contributors_app.ui.dialogs.SimpleDialogs.showErrorDialog;
 
 /**
  * Created by mati on 16/12/16.
@@ -102,40 +93,18 @@ public class ProposalSummaryActivity extends BaseActivity implements View.OnClic
     /** broadcast flag */
     private AtomicBoolean lockBroadcast = new AtomicBoolean(false);
 
-    private final BroadcastReceiver receiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, final Intent intent) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    switch (intent.getIntExtra(INTENT_DIALOG,0)){
-                        case UNKNOWN_ERROR_DIALOG:
-                            showCantSendProposalDialog();
-                            break;
-                        case INSUFICIENTS_FUNDS_DIALOG:
-                            showInsuficientFundsException();
-                            break;
-                        case CANT_SAVE_PROPOSAL_DIALOG:
-                            showErrorDialog("Error", intent.getStringExtra(INTENT_EXTRA_MESSAGE_DIALOG));
-                            break;
-                        case INVALID_PROPOSAL_DIALOG:
-                            loadProposal();
-                            showErrorDialog("Error",intent.getStringExtra(INTENT_EXTRA_MESSAGE_DIALOG));
-                            break;
-                        case COMMON_ERROR_DIALOG:
-                            showErrorDialog("Error", intent.getStringExtra(INTENT_EXTRA_MESSAGE_DIALOG));
-                            break;
-                        default:
-                            Log.e(TAG,"BroadcastReceiver fail");
-                            break;
-                    }
-                    hideDoneLoading();
-                    lockBroadcast.set(false);
-                }
-            });
-
-        }
-    };
+//    private final BroadcastReceiver receiver = new BroadcastReceiver() {
+//        @Override
+//        public void onReceive(Context context, final Intent intent) {
+//            runOnUiThread(new Runnable() {
+//                @Override
+//                public void run() {
+//
+//                }
+//            });
+//
+//        }
+//    };
 
     @Override
     protected void onCreateView(ViewGroup container, Bundle savedInstance) {
@@ -198,18 +167,18 @@ public class ProposalSummaryActivity extends BaseActivity implements View.OnClic
     @Override
     protected void onResume() {
         super.onResume();
-        IntentFilter intent = new IntentFilter(ACTION_RECEIVE_EXCEPTION);
-        localBroadcastManager.registerReceiver(receiver,intent);
+//        IntentFilter intent = new IntentFilter(ACTION_RECEIVE_EXCEPTION);
+//        localBroadcastManager.registerReceiver(receiver,intent);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        try {
-            localBroadcastManager.unregisterReceiver(receiver);
-        } catch (Exception e) {
-            // nothing
-        }
+//        try {
+//            localBroadcastManager.unregisterReceiver(receiver);
+//        } catch (Exception e) {
+//            // nothing
+//        }
     }
 
     private void loadProposal(){
@@ -246,6 +215,30 @@ public class ProposalSummaryActivity extends BaseActivity implements View.OnClic
                 showDoneLoading();
                 Toast.makeText(this, "Proposal broadcasted!, publishing in the forum..", Toast.LENGTH_SHORT).show();
             }
+        } else if(data.getString(INTENTE_BROADCAST_DIALOG_TYPE).equals(INTENT_DIALOG)){
+            switch (data.getInt(INTENTE_BROADCAST_DIALOG_TYPE,0)){
+                case UNKNOWN_ERROR_DIALOG:
+                    showCantSendProposalDialog();
+                    break;
+                case INSUFICIENTS_FUNDS_DIALOG:
+                    SimpleDialogs.showInsuficientFundsException(this,module);
+                    break;
+                case CANT_SAVE_PROPOSAL_DIALOG:
+                    showErrorDialog(this,"Error", data.getString(INTENT_EXTRA_MESSAGE_DIALOG));
+                    break;
+                case INVALID_PROPOSAL_DIALOG:
+                    loadProposal();
+                    showErrorDialog(this,"Error",data.getString(INTENT_EXTRA_MESSAGE_DIALOG));
+                    break;
+                case COMMON_ERROR_DIALOG:
+                    showErrorDialog(this,"Error", data.getString(INTENT_EXTRA_MESSAGE_DIALOG));
+                    break;
+                default:
+                    Log.e(TAG,"BroadcastReceiver fail");
+                    break;
+            }
+            hideDoneLoading();
+            lockBroadcast.set(false);
         }
         return false;
     }
@@ -298,12 +291,12 @@ public class ProposalSummaryActivity extends BaseActivity implements View.OnClic
         });
     }
 
-    private void proposalSent() {
-        btn_broadcast_proposal.setText("Cancel");
-    }
-
     private void hideDoneLoading(){
         container_send.setVisibility(View.INVISIBLE);
+    }
+
+    private void proposalSent() {
+        btn_broadcast_proposal.setText("Cancel");
     }
 
 
@@ -312,13 +305,6 @@ public class ProposalSummaryActivity extends BaseActivity implements View.OnClic
         String url = module.getForumUrl()+"/t/"+proposal.getTitle().toLowerCase().replace(" ","-")+"/"+proposal.getForumId();
         intent1.putExtra(ForumActivity.INTENT_URL,url);
         startActivity(intent1);
-    }
-
-
-    private void showInsuficientFundsException(){
-        InsuficientFundsDialog insuficientFundsDialog = InsuficientFundsDialog.newInstance(module);
-        insuficientFundsDialog.show(getFragmentManager(),"insuficientFundsDialog");
-
     }
 
     private void showBroadcastDialog() {
@@ -331,20 +317,6 @@ public class ProposalSummaryActivity extends BaseActivity implements View.OnClic
             }
         }).show(getSupportFragmentManager(),"broadcastContractDialog");
     }
-
-    private void showErrorDialog(String title, String message) {
-        AlertDialog alertDialog = new AlertDialog.Builder(this).create();
-        alertDialog.setTitle((title!=null)?title:"Upss");
-        alertDialog.setMessage(message);
-        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                });
-        alertDialog.show();
-    }
-
 
     private void showCantSendProposalDialog() {
         AlertDialog alertDialog = new AlertDialog.Builder(this).create();

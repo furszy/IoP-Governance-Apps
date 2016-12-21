@@ -24,7 +24,7 @@ import iop.org.iop_contributors_app.core.iop_sdk.forum.discourge.com.wareninja.o
 import iop.org.iop_contributors_app.core.iop_sdk.forum.discourge.com.wareninja.opensource.discourse.DiscouseApiConstants;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.discourge.com.wareninja.opensource.discourse.utils.ResponseModel;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.wrapper.ResponseMessageConstants;
-import iop.org.iop_contributors_app.core.iop_sdk.governance.Proposal;
+import iop.org.iop_contributors_app.core.iop_sdk.governance.propose.Proposal;
 import iop.org.iop_contributors_app.utils.exceptions.NotValidParametersException;
 import iop.org.iop_contributors_app.wallet.db.CantUpdateProposalException;
 

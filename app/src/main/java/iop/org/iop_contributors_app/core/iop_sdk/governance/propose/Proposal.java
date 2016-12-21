@@ -1,4 +1,4 @@
-package iop.org.iop_contributors_app.core.iop_sdk.governance;
+package iop.org.iop_contributors_app.core.iop_sdk.governance.propose;
 
 import com.google.protobuf.ByteString;
 
@@ -7,7 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
-import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,6 +17,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import iop.org.iop_contributors_app.core.iop_sdk.crypto.CryptoBytes;
+import iop.org.iop_contributors_app.core.iop_sdk.governance.ProposalForum;
 import iop.org.iop_contributors_app.utils.exceptions.NotValidParametersException;
 
 import static iop.org.iop_contributors_app.core.iop_sdk.governance.ProposalForum.TAG_BENEFICIARY_ADDRESS;
@@ -101,7 +101,7 @@ public class Proposal implements Serializable {
         proposal.setBody("Esta es una propuesta para crear propuestas, por lo cual debo poner cosas locas acá. ");
         proposal.setStartBlock(10);
         proposal.setEndBlock(10);
-        proposal.setBlockReward(80000000);
+        proposal.setBlockReward(8000000);
         return proposal;
     }
 

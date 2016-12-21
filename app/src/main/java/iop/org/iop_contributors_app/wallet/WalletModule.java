@@ -9,11 +9,10 @@ import android.widget.Toast;
 
 import org.bitcoinj.core.Address;
 import org.bitcoinj.core.Coin;
+import org.bitcoinj.core.Context;
 import org.bitcoinj.core.InsufficientMoneyException;
 import org.bitcoinj.core.PeerGroup;
-import org.bitcoinj.core.Sha256Hash;
 import org.bitcoinj.core.Transaction;
-import org.bitcoinj.core.TransactionOutPoint;
 import org.bitcoinj.core.TransactionOutput;
 import org.bitcoinj.wallet.Wallet;
 import org.slf4j.Logger;
@@ -37,20 +36,23 @@ import iop.org.iop_contributors_app.ServerWrapper;
 import iop.org.iop_contributors_app.core.iop_sdk.blockchain.explorer.TransactionFinder;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.CantCreateTopicException;
 import iop.org.iop_contributors_app.core.iop_sdk.governance.NotConnectedPeersException;
-import iop.org.iop_contributors_app.core.iop_sdk.governance.Proposal;
+import iop.org.iop_contributors_app.core.iop_sdk.governance.propose.Proposal;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.ForumClient;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.ForumClientDiscourseImp;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.InvalidUserParametersException;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.ForumConfigurations;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.ForumProfile;
-import iop.org.iop_contributors_app.core.iop_sdk.governance.ProposalTransactionBuilder;
-import iop.org.iop_contributors_app.core.iop_sdk.governance.ProposalTransactionRequest;
+import iop.org.iop_contributors_app.core.iop_sdk.governance.propose.ProposalTransactionBuilder;
+import iop.org.iop_contributors_app.core.iop_sdk.governance.propose.ProposalTransactionRequest;
+import iop.org.iop_contributors_app.core.iop_sdk.governance.vote.Vote;
+import iop.org.iop_contributors_app.core.iop_sdk.governance.vote.VoteProposalRequest;
 import iop.org.iop_contributors_app.intents.constants.IntentsConstants;
 import iop.org.iop_contributors_app.services.BlockchainServiceImpl;
 import iop.org.iop_contributors_app.services.ServicesCodes;
 import iop.org.iop_contributors_app.configurations.WalletPreferencesConfiguration;
 import iop.org.iop_contributors_app.ui.base.BaseActivity;
 import iop.org.iop_contributors_app.ui.dialogs.DialogBuilder;
+import iop.org.iop_contributors_app.ui.voting.db.VotesDao;
 import iop.org.iop_contributors_app.utils.exceptions.NotValidParametersException;
 import iop.org.iop_contributors_app.wallet.db.CantGetProposalException;
 import iop.org.iop_contributors_app.wallet.db.CantSaveProposalException;
@@ -93,12 +95,15 @@ public class WalletModule implements ContextWrapper{
     //todo: leer lo que puse adnetro..
     private ProposalsDao proposalsDao;
 
+    private VotesDao votesDao;
+
 
     public WalletModule(ApplicationController context, WalletPreferencesConfiguration configuration, ForumConfigurations forumConfigurations) {
         this.context = context;
         this.configuration = configuration;
         this.forumConfigurations = forumConfigurations;
         proposalsDao = new ProposalsDao(context);
+        votesDao = new VotesDao(context);
         // locked outputs
         lockedBalance = proposalsDao.getTotalLockedBalance();
         forumConfigurations.getWrapperUrl();
@@ -332,14 +337,45 @@ public class WalletModule implements ContextWrapper{
 
     }
 
-    public void sendTransaction(String address, long amount) throws InsufficientMoneyException {
+    public boolean sendVote(Vote vote) throws InsuficientBalanceException, NotConnectedPeersException, CantSendVoteException {
+
         try {
+            VoteProposalRequest proposalVoteRequest = new VoteProposalRequest(blockchainManager, walletManager, votesDao);
+            proposalVoteRequest.forVote(vote);
+            proposalVoteRequest.broadcast();
+
+            vote = proposalVoteRequest.getUpdatedVote();
+            // lock contract output
+            boolean resp = votesDao.lockOutput(vote.getLockedOutputHex(),vote.getLockedOutputIndex());
+            LOG.info("vote locked "+resp);
+            // locked balance
+            lockedBalance += proposalVoteRequest.getLockedBalance();
+            LOG.info("locked balance acumulated: "+lockedBalance);
+
+            LOG.info("sendVote finished");
+
+        } catch (InsuficientBalanceException e){
+            throw e;
+        } catch (NotConnectedPeersException e){
+            throw e;
+        } catch (Exception e){
+            e.printStackTrace();
+            throw new CantSendVoteException("Uknown error, please send log",e);
+        }
+        return false;
+    }
+
+    public void sendTransaction(String address, long amount) throws InsufficientMoneyException, CantSendTransactionException {
+        try {
+            Context.propagate(WalletConstants.CONTEXT);
             Transaction tx = walletManager.createAndLockTransaction(address,amount);
             blockchainManager.broadcastTransaction(tx.getHash().getBytes()).get();
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {
             e.printStackTrace();
+        } catch (Wallet.DustySendRequested e){
+            throw new CantSendTransactionException("Dusty send transaction",e);
         }
     }
 
@@ -559,12 +595,12 @@ public class WalletModule implements ContextWrapper{
      * Request tx hashes from node
      * @param chainHeadHeight
      */
-    public List<String> requestProposals(int chainHeadHeight) {
+    public ServerWrapper.RequestProposalsResponse requestProposals(int chainHeadHeight) {
         try {
             // request tx hashes from node
-            List<String> txHashes = serverWrapper.getVotingProposals(0);
-            // insert in a new filter
-            return txHashes;
+            ServerWrapper.RequestProposalsResponse requestProposalsResponse = serverWrapper.getVotingProposals(0);
+
+            return requestProposalsResponse;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -667,4 +703,8 @@ public class WalletModule implements ContextWrapper{
         }
     }
 
+
+    public boolean checkIfVoteExist(Vote vote) {
+        return votesDao.exist(vote);
+    }
 }

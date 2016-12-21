@@ -533,16 +533,18 @@ public abstract class BaseActivity extends AppCompatActivity {
 
                 if (type.equals(INTENT_DIALOG)){
                     // tipo de dialog
-                    String dialogType = bundle.getString(INTENTE_BROADCAST_DIALOG_TYPE);
+                    int dialogType = bundle.getInt(INTENTE_BROADCAST_DIALOG_TYPE);
 
-                    if (dialogType.equals(RESTORE_SUCCED_DIALOG)){
+                    if (dialogType == RESTORE_SUCCED_DIALOG){
                         DialogIntentsBuilder.buildSuccedRestoreDialog(BaseActivity.this,module.getWalletManager(),intent)
                                 .show();
 
+                    }else {
+                        onBroadcastReceive(bundle);
                     }
                 }else
                     if (type.equals(INTENT_DATA)){
-
+                        Log.e(TAG,"llegó algo al intent_data inesperado!");
 
                     }
                 else

@@ -69,6 +69,9 @@ public class TransactionFinder implements PeerFilterProvider, PeerDataEventListe
 
     /** Listeners */
     private List<TransactionFinderListener> listeners;
+    /** last best chain height requested, esto sirve para saber hasta donde tengo actualizada la lista con las propuestas */
+    // todo: deberia guardar esto en algun lado..
+    private String lastBestChainHash;
 
     public TransactionFinder(Context context) {
         this.context = context;
@@ -152,7 +155,11 @@ public class TransactionFinder implements PeerFilterProvider, PeerDataEventListe
         outpoints.add(transactionStorage.saveWatchedOutput(hash,index,dataLenght));
     }
 
-    public void addWatchedOutpoint(String hash, int index,int dataLenght){
+    public void setLastBestChainHash(String lastBestChainHash) {
+        this.lastBestChainHash = lastBestChainHash;
+    }
+
+    public void addWatchedOutpoint(String hash, int index, int dataLenght){
         addWatchedOutpoint(Sha256Hash.wrap(hash),index,dataLenght);
     }
 
@@ -241,7 +248,14 @@ public class TransactionFinder implements PeerFilterProvider, PeerDataEventListe
 
     @Override
     public void onBlocksDownloaded(Peer peer, Block block, @Nullable FilteredBlock filteredBlock, int blocksLeft) {
-        System.out.println("onBlocksDownloaded: " + blocksLeft);
+        LOG.info("onBlocksDownloaded: " + blocksLeft);
+
+        if (block.getHash().toString().equals(lastBestChainHash)){
+            // acá deberia cambiar pedir las nuevas transacciones de propuesta, eliminar el ultimo bloque y cambiar el filtro para recibir las transacciones de ese bloque
+            LOG.info("block == lastBestChainHash");
+        }
+
+
         if (filteredBlock!=null){
 //                        System.out.println("Filtered block: "+filteredBlock);
             for (Map.Entry<Sha256Hash, Transaction> hashTransactionEntry : filteredBlock.getAssociatedTransactions().entrySet()) {
@@ -309,6 +323,7 @@ public class TransactionFinder implements PeerFilterProvider, PeerDataEventListe
     public Message onPreMessageReceived(Peer peer, Message m) {
         return m;
     }
+
 
 
     // ********************************************** END BLOCK LISTENER REGION **********************************************

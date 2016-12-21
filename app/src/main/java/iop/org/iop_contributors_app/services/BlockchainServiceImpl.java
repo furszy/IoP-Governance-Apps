@@ -24,7 +24,6 @@ import org.bitcoinj.core.Coin;
 import org.bitcoinj.core.FilteredBlock;
 import org.bitcoinj.core.Peer;
 import org.bitcoinj.core.PeerGroup;
-import org.bitcoinj.core.Sha256Hash;
 import org.bitcoinj.core.StoredBlock;
 import org.bitcoinj.core.Transaction;
 import org.bitcoinj.core.listeners.AbstractPeerDataEventListener;
@@ -46,15 +45,18 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import iop.org.iop_contributors_app.ApplicationController;
 import iop.org.iop_contributors_app.R;
+import iop.org.iop_contributors_app.ServerWrapper;
 import iop.org.iop_contributors_app.configurations.WalletPreferencesConfiguration;
 import iop.org.iop_contributors_app.core.iop_sdk.blockchain.explorer.TransactionFinder;
 import iop.org.iop_contributors_app.core.iop_sdk.blockchain.explorer.TransactionFinderListener;
 import iop.org.iop_contributors_app.core.iop_sdk.governance.NotConnectedPeersException;
-import iop.org.iop_contributors_app.core.iop_sdk.governance.Proposal;
+import iop.org.iop_contributors_app.core.iop_sdk.governance.propose.Proposal;
+import iop.org.iop_contributors_app.core.iop_sdk.governance.vote.Vote;
 import iop.org.iop_contributors_app.ui.CreateProposalActivity;
 import iop.org.iop_contributors_app.ui.base.BaseActivity;
 import iop.org.iop_contributors_app.wallet.BlockchainManager;
 import iop.org.iop_contributors_app.wallet.BlockchainManagerListener;
+import iop.org.iop_contributors_app.wallet.CantSendVoteException;
 import iop.org.iop_contributors_app.wallet.InvalidProposalException;
 import iop.org.iop_contributors_app.wallet.db.CantSaveProposalException;
 import iop.org.iop_contributors_app.wallet.exceptions.CantSendProposalException;
@@ -62,19 +64,23 @@ import iop.org.iop_contributors_app.wallet.WalletConstants;
 import iop.org.iop_contributors_app.wallet.WalletModule;
 import iop.org.iop_contributors_app.wallet.exceptions.InsuficientBalanceException;
 
+import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.CANT_SAVE_PROPOSAL_DIALOG;
+import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.COMMON_ERROR_DIALOG;
+import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INSUFICIENTS_FUNDS_DIALOG;
+import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENTE_BROADCAST_DIALOG_TYPE;
 import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_ON_COIN_RECEIVED;
 import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_TYPE;
 import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_TRANSACTION_SUCCED;
+import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_VOTE_TRANSACTION_SUCCED;
 import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENT_BROADCAST_TYPE;
 import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENT_DATA;
 import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENT_DIALOG;
 import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENT_NOTIFICATION;
-import static iop.org.iop_contributors_app.ui.CreateProposalActivity.CANT_SAVE_PROPOSAL_DIALOG;
-import static iop.org.iop_contributors_app.ui.CreateProposalActivity.COMMON_ERROR_DIALOG;
-import static iop.org.iop_contributors_app.ui.CreateProposalActivity.INSUFICIENTS_FUNDS_DIALOG;
+import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INVALID_PROPOSAL_DIALOG;
+import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.UNKNOWN_ERROR_DIALOG;
 import static iop.org.iop_contributors_app.ui.CreateProposalActivity.INTENT_EXTRA_MESSAGE_DIALOG;
-import static iop.org.iop_contributors_app.ui.CreateProposalActivity.INVALID_PROPOSAL_DIALOG;
-import static iop.org.iop_contributors_app.ui.CreateProposalActivity.UNKNOWN_ERROR_DIALOG;
+
+
 import static iop.org.iop_contributors_app.ui.base.BaseActivity.ACTION_NOTIFICATION;
 import static iop.org.iop_contributors_app.wallet.WalletConstants.BLOCKCHAIN_STATE_BROADCAST_THROTTLE_MS;
 import static iop.org.iop_contributors_app.wallet.WalletConstants.CONTEXT;
@@ -399,15 +405,19 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
                                 broadcastProposalSuced(proposal.getTitle());
                             }
                         }catch (InsuficientBalanceException e){
+                            e.printStackTrace();
                             showDialogException(INSUFICIENTS_FUNDS_DIALOG,null);
                         }catch (CantSendProposalException e) {
                             e.printStackTrace();
                             showDialogException(UNKNOWN_ERROR_DIALOG, e.getMessage());
                         }catch (CantSaveProposalException e){
+                            e.printStackTrace();
                             showDialogException(CANT_SAVE_PROPOSAL_DIALOG,e.getMessage());
                         } catch (InvalidProposalException e) {
+                            e.printStackTrace();
                             showDialogException(INVALID_PROPOSAL_DIALOG, e.getMessage()+".\n\nEdit in the forum first if you want any change.");
                         } catch (NotConnectedPeersException e) {
+                            e.printStackTrace();
                             showDialogException(COMMON_ERROR_DIALOG,"Not connected peers, please try again later");
                         } catch (Exception e){
                             e.printStackTrace();
@@ -415,6 +425,27 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
                     }
                 });
 
+
+            } else if(ACTION_BROADCAST_VOTE_PROPOSAL_TRANSACTION.equals(action)){
+                executorService.submit(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            // Obtengo el voto del intent
+                            Vote vote = (Vote) intent.getSerializableExtra(INTENT_EXTRA_PROPOSAL_VOTE);
+                            if (walletModule.sendVote(vote)) {
+                                broadcastVoteSucced(vote);
+                            }
+                        } catch (InsuficientBalanceException e) {
+                            showDialogException(INSUFICIENTS_FUNDS_DIALOG,null);
+                        } catch (NotConnectedPeersException e) {
+                            showDialogException(COMMON_ERROR_DIALOG,"Not connected peers, please try again later");
+                        } catch (CantSendVoteException e) {
+                            showDialogException(UNKNOWN_ERROR_DIALOG, e.getMessage());
+                        }
+
+                    }
+                });
 
             } else if (BlockchainService.ACTION_CANCEL_COINS_RECEIVED.equals(action)) {
 //                notificationCount = 0;
@@ -439,8 +470,10 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
 
 
     private void showDialogException(int dialogType, String message){
-        Intent intent = new Intent(CreateProposalActivity.ACTION_RECEIVE_EXCEPTION);
-        intent.putExtra(INTENT_DIALOG,dialogType);
+        Intent intent = new Intent(CreateProposalActivity.ACTION_NOTIFICATION);
+        intent.putExtra(INTENT_BROADCAST_TYPE,INTENT_DIALOG);
+        intent.putExtra(INTENTE_BROADCAST_DIALOG_TYPE,dialogType);
+//        intent.putExtra(INTENT_DIALOG,dialogType);public static final String ACTION_RECEIVE_EXCEPTION = CreateProposalActivity.class.getName() + "_receive_exception";
         intent.putExtra(INTENT_EXTRA_MESSAGE_DIALOG,message);
         localBroadcast.sendBroadcast(intent);
     }
@@ -450,6 +483,15 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
         intent.putExtra("title",title);
         intent.putExtra(INTENT_BROADCAST_TYPE,INTENT_DATA+INTENT_NOTIFICATION);
         intent.putExtra(INTENT_BROADCAST_DATA_TYPE, INTENT_BROADCAST_DATA_TRANSACTION_SUCCED);
+        localBroadcast.sendBroadcast(intent);
+    }
+
+    private void broadcastVoteSucced(Vote vote){
+        Intent intent = new Intent(BaseActivity.ACTION_NOTIFICATION);
+//        intent.putExtra(I,title);
+        intent.putExtra(INTENT_BROADCAST_TYPE,INTENT_DATA+INTENT_NOTIFICATION);
+        intent.putExtra(INTENT_BROADCAST_DATA_TYPE, INTENT_BROADCAST_DATA_VOTE_TRANSACTION_SUCCED);
+        intent.putExtra(INTENT_EXTRA_PROPOSAL_VOTE,vote);
         localBroadcast.sendBroadcast(intent);
     }
 
@@ -513,13 +555,15 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
 
             if (application.isVotingApp()) {
                 // obtain proposal contracts to filter
-                final List<String> txHashes = walletModule.requestProposals(blockchainManager.getChainHeadHeight());
+                final ServerWrapper.RequestProposalsResponse requestProposalsResponse = walletModule.requestProposals(blockchainManager.getChainHeadHeight());
+                final List<String> txHashes = requestProposalsResponse.getTxHashes();
                 blockchainManager.addBlockchainManagerListener(new BlockchainManagerListener() {
                     @Override
                     public void peerGroupInitialized(PeerGroup peerGroup) {
                         // new thing
                         transactionFinder = walletModule.getAndCreateFinder(peerGroup);
                         transactionFinder.addTransactionFinderListener(transactionFinderListener);
+                        transactionFinder.setLastBestChainHash(requestProposalsResponse.getBestChainHash());
                         for (String txHash : txHashes) {
                             transactionFinder.addTx(txHash);
                             //todo: falta agregar el output de lockeo en el finder como hice abajo..

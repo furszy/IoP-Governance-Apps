@@ -38,6 +38,7 @@ import iop.org.iop_contributors_app.core.iop_sdk.forum.discourge.com.wareninja.o
 import iop.org.iop_contributors_app.core.iop_sdk.forum.discourge.com.wareninja.opensource.discourse.utils.StringRequestParameter;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.wrapper.ResponseMessageConstants;
 
+import static iop.org.iop_contributors_app.core.iop_sdk.forum.wrapper.ResponseMessageConstants.BEST_CHAIN_HEIGHT_HASH;
 import static iop.org.iop_contributors_app.core.iop_sdk.forum.wrapper.ResponseMessageConstants.REGISTER_ERROR_STR;
 import static iop.org.iop_contributors_app.core.iop_sdk.forum.wrapper.ResponseMessageConstants.USER_ERROR_STR;
 import static iop.org.iop_contributors_app.core.iop_sdk.utils.StreamsUtils.convertInputStreamToString;
@@ -204,6 +205,28 @@ public class ServerWrapper {
         return false;
     }
 
+    public class RequestProposalsResponse{
+
+        int bestChainHeight;
+        String bestChainHash;
+        List<String> txHashes;
+
+        public RequestProposalsResponse() {
+        }
+
+        public List<String> getTxHashes() {
+            return txHashes;
+        }
+
+        public int getBestChainHeight() {
+            return bestChainHeight;
+        }
+
+        public String getBestChainHash() {
+            return bestChainHash;
+        }
+    }
+
 
     /**
      *
@@ -211,14 +234,15 @@ public class ServerWrapper {
      * @param blockHeight
      * @return list of proposal transactions hashes
      */
-    public List<String> getVotingProposals(int blockHeight) throws Exception {
+    public RequestProposalsResponse getVotingProposals(int blockHeight) throws Exception {
         String url = this.url+"/requestproposals";
 
         //url = url + "?api_key=" + DiscouseApiConstants.API_KEY + "&api_username=system";
-        List<String> ret = new ArrayList<>();
+
+
+        RequestProposalsResponse requestProposalsResponse = new RequestProposalsResponse();
 
         List<RequestParameter> requestParams = new ArrayList<>();
-
 
         try {
 
@@ -258,11 +282,15 @@ public class ServerWrapper {
 
 
             if (httpResponse.getStatusLine().getStatusCode()==200){
+                List<String> ret = new ArrayList<>();
                 JSONObject jsonObject = new JSONObject(result);
                 JSONArray transactions = jsonObject.getJSONArray("transactions");
                 for (i=0;i<transactions.length();i++){
                     ret.add(transactions.getString(i));
                 }
+                requestProposalsResponse.bestChainHeight = jsonObject.getJSONObject("Data").getInt("currentheight");
+                requestProposalsResponse.txHashes = ret;
+                requestProposalsResponse.bestChainHash = jsonObject.getString(BEST_CHAIN_HEIGHT_HASH);
             }else {
                 throw new Exception("Something fail, server code: "+httpResponse.getStatusLine().getStatusCode());
             }
@@ -274,7 +302,7 @@ public class ServerWrapper {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        return ret;
+        return requestProposalsResponse;
     }
 
     public String getJsonFromParams(Map<String,String> requestParams) {

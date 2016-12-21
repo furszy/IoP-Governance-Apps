@@ -9,7 +9,10 @@ public class ResponseMessageConstants {
     public static final String API_KEY = "api_key";
     public static final String USER_ERROR_STR = "user_error";
     public static final String REGISTER_ERROR_STR = "user_error";
+    // request proposals
     public static final String PROPOSALS_CONTRACTS = "proposals_contracts";
+    public static final String BEST_CHAIN_HEIGHT_HASH = "best_hash";
+    // request topic
     public static final String TOPIC_POST = "topic_post";
 
 

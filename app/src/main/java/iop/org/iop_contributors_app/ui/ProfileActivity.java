@@ -51,7 +51,7 @@ import static iop.org.iop_contributors_app.core.iop_sdk.utils.StringUtils.cleanS
  * Created by mati on 07/11/16.
  */
 
-public class ProfileActivity extends BaseActivity implements View.OnClickListener{
+public class ProfileActivity extends ContributorBaseActivity implements View.OnClickListener{
 
 
     private static final String TAG = "ProfileActivity";

@@ -23,6 +23,7 @@ public class BroadcastVoteDialog extends DialogFragment {
     private WalletModule module;
     private Vote vote;
     private CancelLister cancelListener;
+    private boolean isActionOkey;
 
 
     public static BroadcastVoteDialog newinstance(WalletModule module, Vote vote) {
@@ -49,6 +50,7 @@ public class BroadcastVoteDialog extends DialogFragment {
             @Override
             public void onClick(View v) {
                 handleSend();
+                isActionOkey = true;
                 dismiss();
             }
         });
@@ -69,7 +71,8 @@ public class BroadcastVoteDialog extends DialogFragment {
     @Override
     public void onDismiss(DialogInterface dialog) {
         super.onDismiss(dialog);
-        cancelListener.cancel();
+//        cancelListener.cancel();
+        cancelListener.onDismiss(isActionOkey);
     }
 
     private void handleSend(){

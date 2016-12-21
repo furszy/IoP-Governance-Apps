@@ -57,7 +57,7 @@ import static iop.org.iop_contributors_app.ui.dialogs.SimpleDialogs.showErrorDia
  * Created by mati on 16/12/16.
  */
 
-public class ProposalSummaryActivity extends BaseActivity implements View.OnClickListener {
+public class ProposalSummaryActivity extends ContributorBaseActivity implements View.OnClickListener {
 
     private static final String TAG = "ProposalSummaryActivity";
 

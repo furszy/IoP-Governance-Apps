@@ -7,4 +7,5 @@ public interface CancelLister {
 
     void cancel();
 
+    void onDismiss(boolean isActionOk);
 }

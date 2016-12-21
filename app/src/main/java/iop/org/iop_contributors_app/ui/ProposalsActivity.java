@@ -21,7 +21,7 @@ import iop.org.iop_contributors_app.wallet.WalletModule;
  * Created by mati on 17/11/16.
  */
 
-public class ProposalsActivity extends BaseActivity {
+public class ProposalsActivity extends ContributorBaseActivity {
 
 
     private WalletModule module;

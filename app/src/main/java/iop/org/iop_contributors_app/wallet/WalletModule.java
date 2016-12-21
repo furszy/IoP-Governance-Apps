@@ -354,6 +354,8 @@ public class WalletModule implements ContextWrapper{
 
             LOG.info("sendVote finished");
 
+            return true;
+
         } catch (InsuficientBalanceException e){
             throw e;
         } catch (NotConnectedPeersException e){
@@ -362,7 +364,6 @@ public class WalletModule implements ContextWrapper{
             e.printStackTrace();
             throw new CantSendVoteException("Uknown error, please send log",e);
         }
-        return false;
     }
 
     public void sendTransaction(String address, long amount) throws InsufficientMoneyException, CantSendTransactionException {

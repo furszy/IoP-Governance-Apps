@@ -11,6 +11,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import iop.org.iop_contributors_app.R;
@@ -31,6 +32,7 @@ import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.CA
 import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.COMMON_ERROR_DIALOG;
 import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INSUFICIENTS_FUNDS_DIALOG;
 import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENTE_BROADCAST_DIALOG_TYPE;
+import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_TYPE;
 import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_VOTE_TRANSACTION_SUCCED;
 import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENT_BROADCAST_TYPE;
 import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENT_DIALOG;
@@ -47,7 +49,7 @@ import static iop.org.iop_contributors_app.ui.ProposalSummaryActivity.INTENT_DAT
  * Created by mati on 20/12/16.
  */
 
-public class VotingProposalActivity extends BaseActivity implements View.OnClickListener {
+public class VotingProposalActivity extends VotingBaseActivity implements View.OnClickListener {
 
 
     private static final String TAG = "VotingProposalActivity";
@@ -169,10 +171,12 @@ public class VotingProposalActivity extends BaseActivity implements View.OnClick
     @Override
     protected boolean onBroadcastReceive(Bundle bundle) {
 
-        if (bundle.containsKey(INTENT_BROADCAST_DATA_VOTE_TRANSACTION_SUCCED)){
-            Vote vote = (Vote) bundle.getSerializable(INTENT_EXTRA_PROPOSAL_VOTE);
-            if (vote.equals(this.vote)){
-                showDoneLoading();
+        if (bundle.containsKey(INTENT_BROADCAST_DATA_TYPE)){
+            if (bundle.getString(INTENT_BROADCAST_DATA_TYPE).equals(INTENT_BROADCAST_DATA_VOTE_TRANSACTION_SUCCED)) {
+                Vote vote = (Vote) bundle.getSerializable(INTENT_EXTRA_PROPOSAL_VOTE);
+                if (Arrays.equals(vote.getGenesisHash(),this.vote.getGenesisHash())) {
+                    showDoneLoading();
+                }
             }
         }else if(bundle.getString(INTENT_BROADCAST_TYPE).equals(INTENT_DIALOG)){
             switch (bundle.getInt(INTENTE_BROADCAST_DIALOG_TYPE,0)){
@@ -253,7 +257,7 @@ public class VotingProposalActivity extends BaseActivity implements View.OnClick
 
     private void showBroadcastDialog() {
         // loading
-        preparateLoading("Proposal broadcasted!", R.drawable.icon_done);
+        preparateLoading("Vote sent!", R.drawable.icon_done);
 
         long amountIoPToshis = IoPCalculator.iopToIopToshis(votingAmount);
 
@@ -265,6 +269,14 @@ public class VotingProposalActivity extends BaseActivity implements View.OnClick
                 public void cancel() {
                     hideDoneLoading();
                     lockBroadcast.set(false);
+                }
+
+                @Override
+                public void onDismiss(boolean isActionOk) {
+                    if(!isActionOk){
+                        hideDoneLoading();
+                        lockBroadcast.set(false);
+                    }
                 }
             }).show(getSupportFragmentManager(),"broadcastContractDialog");
         } else {

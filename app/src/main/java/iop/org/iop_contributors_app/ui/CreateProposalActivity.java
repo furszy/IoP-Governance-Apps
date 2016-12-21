@@ -62,7 +62,7 @@ import static iop.org.iop_contributors_app.ui.ProposalSummaryActivity.INTENT_DAT
  * Created by mati on 17/11/16.
  */
 
-public class CreateProposalActivity extends BaseActivity {
+public class CreateProposalActivity extends ContributorBaseActivity {
 
 
     private static final String TAG = "CreateProposalActivity";

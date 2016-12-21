@@ -29,7 +29,7 @@ import static iop.org.iop_contributors_app.ui.ProposalSummaryActivity.INTENT_DAT
  * Created by mati on 07/11/16.
  */
 
-public class ForumActivity extends BaseActivity {
+public class ForumActivity extends ContributorBaseActivity {
 
     private static final String TAG = "ForumActivity";
 

@@ -111,6 +111,8 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     protected ExecutorService executor;
 
+    private FermatListItemListeners<NavMenuItem> navMenuListener;
+
     @Override
     public final void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -247,29 +249,13 @@ public abstract class BaseActivity extends AppCompatActivity {
             public void onItemClickListener(NavMenuItem data, int position) {
                 int id = data.getId();
 
-                Intent intent = null;
                 // position selected
                 saveNavSelection(position);
 
-                switch (id){
-//                    case MENU_DRAWER_HOME:
-//                        intent = new Intent(BaseActivity.this, MainActivity.class);
-//                        break;
-                    case MENU_DRAWER_FORUM:
-                        intent = new Intent(BaseActivity.this, ForumActivity.class);
-                        break;
-                    case MENU_DRAWER_CREATE_PROPOSAL:
-                        intent = new Intent(BaseActivity.this, CreateProposalActivity.class);
-                        break;
-                    case MENU_DRAWER_PROPOSALS:
-                        intent = new Intent(BaseActivity.this, ProposalsActivity.class);
-                        break;
-                    case MENU_DRAWER_SETTINGS:
-                        intent = new Intent(BaseActivity.this, SettingsActivity.class);
-                        break;
-                }
-
-                startActivity(intent);
+                if (navMenuListener!=null)
+                    navMenuListener.onItemClickListener(data,position);
+                else
+                    Log.d(TAG,"Te estas olvidando de setear el navMenuListener..");
 
                 drawerLayout.closeDrawers();
             }
@@ -339,21 +325,15 @@ public abstract class BaseActivity extends AppCompatActivity {
         }
     }
 
-    private final static int MENU_DRAWER_HOME = 0;
-    private final static int MENU_DRAWER_FORUM = 1;
-    private final static int MENU_DRAWER_CREATE_PROPOSAL = 2;
-    private final static int MENU_DRAWER_PROPOSALS = 3;
-    private final static int MENU_DRAWER_SETTINGS = 4;
 
-    private List<NavMenuItem> loadNavMenuItems() {
-        List<NavMenuItem> items = new ArrayList<>();
-//        items.add(new NavMenuItem(MENU_DRAWER_HOME,true,"Home",R.drawable.icon_home_on));
-        items.add(new NavMenuItem(MENU_DRAWER_PROPOSALS,true,"Proposals",R.drawable.icon_mycontracts_off_drawer));
-        items.add(new NavMenuItem(MENU_DRAWER_FORUM,false,"Forum",R.drawable.icon_forum_off));
-        items.add(new NavMenuItem(MENU_DRAWER_CREATE_PROPOSAL,false,"Create Proposal",R.drawable.icon_createcontributioncontract_off_drawer));
-        items.add(new NavMenuItem(MENU_DRAWER_SETTINGS,false,"Settings",R.drawable.icon_settings_off));
-        return items;
+    public void setNavMenuListener(FermatListItemListeners<NavMenuItem> listener){
+        navMenuListener = listener;
     }
+    // abstrac methods
+    protected List<NavMenuItem> loadNavMenuItems(){
+        return null;
+    }
+
 
     protected void sendWorkToProfileService(Bundle data){
 //        Intent intent = new Intent(this, ProfileServerService.class);
@@ -554,7 +534,7 @@ public abstract class BaseActivity extends AppCompatActivity {
                             android.support.v4.app.NotificationCompat.Builder mBuilder =
                                     new NotificationCompat.Builder(getApplicationContext())
                                             .setSmallIcon(R.drawable.ic__launcher)
-                                            .setContentTitle("Proposal broadcast succed!")
+                                            .setContentTitle("Transaction broadcast succed!")
                                             .setContentText(intent.getStringExtra("title"));
 
                             notificationManager.notify(0, mBuilder.build());

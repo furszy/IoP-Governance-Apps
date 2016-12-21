@@ -14,7 +14,7 @@ import iop.org.iop_contributors_app.ui.settings.fragments.SettingsFragment;
  * Created by mati on 22/11/16.
  */
 
-public class SettingsActivity  extends BaseActivity {
+public class SettingsActivity  extends ContributorBaseActivity {
 
 
     private Fragment settingsFragment;

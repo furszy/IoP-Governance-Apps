@@ -72,6 +72,7 @@
                 android:layout_height="wrap_content"
                 android:paddingTop="12dp"
                 android:text="Soy un fucking cuerpo y me aburre escribir mucho, por eso escribo cualquier cosa..\n despues puede decirles que sigo aburrido por hacer pantallas..."
+                android:maxLines="6"
                 android:textColor="#808080" />
 
 
@@ -253,7 +254,7 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="40dp"
+        android:layout_height="48dp"
         android:background="#662D91"
         android:layout_alignParentBottom="true"
         android:orientation="horizontal">
@@ -264,7 +265,7 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="center"
-            android:text="Forum"
+            android:text="Cancel"
             android:textColor="#fff" />
 
 

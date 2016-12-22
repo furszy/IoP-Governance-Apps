@@ -56,9 +56,13 @@ public abstract class ContributorBaseActivity extends BaseActivity {
     };
 
     protected void beforeCreate(Bundle savedInstanceState){
-        setNavMenuListener(listener);
     }
 
+    @Override
+    protected void onNavViewCreated() {
+        super.onNavViewCreated();
+        setNavMenuListener(listener);
+    }
 
     protected List<NavMenuItem> loadNavMenuItems() {
         List<NavMenuItem> items = new ArrayList<>();

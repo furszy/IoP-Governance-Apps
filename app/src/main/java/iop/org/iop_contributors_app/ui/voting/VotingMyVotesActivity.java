@@ -12,7 +12,6 @@ import java.util.List;
 import iop.org.iop_contributors_app.ApplicationController;
 import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.core.iop_sdk.governance.propose.Proposal;
-import iop.org.iop_contributors_app.ui.base.BaseActivity;
 import iop.org.iop_contributors_app.ui.voting.ui.components.VotingProposalsAdapter;
 import iop.org.iop_contributors_app.ui.voting.ui.dialogs.VoteDialog;
 import iop.org.iop_contributors_app.wallet.WalletModule;
@@ -21,7 +20,10 @@ import iop.org.iop_contributors_app.wallet.WalletModule;
  * Created by mati on 17/11/16.
  */
 
-public class VotingProposalsActivity extends VotingBaseActivity {
+public class VotingMyVotesActivity extends VotingBaseActivity {
+
+
+    private WalletModule module;
 
     private View root;
     private RecyclerView recyclerView;
@@ -45,6 +47,8 @@ public class VotingProposalsActivity extends VotingBaseActivity {
 
         root = getLayoutInflater().inflate(R.layout.proposals_voting_main,container);
 
+        module = ApplicationController.getInstance().getWalletModule();
+
         swipeRefreshLayout = (SwipeRefreshLayout) root.findViewById(R.id.swipeRefreshLayout);
         recyclerView = (RecyclerView) root.findViewById(R.id.recycler_proposals);
         container_empty_screen = root.findViewById(R.id.container_empty_screen);
@@ -58,7 +62,8 @@ public class VotingProposalsActivity extends VotingBaseActivity {
         recyclerView.setLayoutManager(layoutManager);
 
         // specify an adapter (see also next example)
-        adapter = new VotingProposalsAdapter(this,module);
+        // todo: adapter
+        //adapter = new VotingProposalsAdapter(this,module);
         recyclerView.setAdapter(adapter);
 
         container_empty_screen.setOnClickListener(new View.OnClickListener() {

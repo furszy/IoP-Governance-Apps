@@ -60,6 +60,10 @@ public abstract class VotingBaseActivity extends BaseActivity {
     };
 
     protected void beforeCreate(Bundle savedInstanceState){
+    }
+
+    protected void onNavViewCreated(){
+        setNavViewHeaderBackground(R.drawable.img_test);
         setNavMenuListener(listener);
     }
 
@@ -67,9 +71,9 @@ public abstract class VotingBaseActivity extends BaseActivity {
     protected List<NavMenuItem> loadNavMenuItems() {
         List<NavMenuItem> items = new ArrayList<>();
 //        items.add(new NavMenuItem(MENU_DRAWER_HOME,true,"Home",R.drawable.icon_home_on));
-        items.add(new NavMenuItem(MENU_DRAWER_PROPOSALS,true,"My Votes", R.drawable.icon_mycontracts_off_drawer));
-        items.add(new NavMenuItem(MENU_DRAWER_FORUM,false,"Forum",R.drawable.icon_forum_off));
         items.add(new NavMenuItem(MENU_DRAWER_CREATE_PROPOSAL,false,"Vote",R.drawable.icon_createcontributioncontract_off_drawer));
+        items.add(new NavMenuItem(MENU_DRAWER_FORUM,false,"Forum",R.drawable.icon_forum_off));
+        items.add(new NavMenuItem(MENU_DRAWER_PROPOSALS,true,"My Votes", R.drawable.icon_mycontracts_off_drawer));
         items.add(new NavMenuItem(MENU_DRAWER_SETTINGS,false,"Settings",R.drawable.icon_settings_off));
         return items;
     }

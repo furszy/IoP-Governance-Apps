@@ -94,9 +94,7 @@ public abstract class BaseActivity extends AppCompatActivity {
     private ViewGroup container;
     protected Toolbar toolbar;
 
-    private RecyclerView navViewRecyclerView;
-    private RecyclerView.LayoutManager layoutManager;
-    private NavViewAdapter navViewAdapter;
+    private NavViewHelper navViewHelper;
 
     private TextView txt_available_balance;
     private TextView txt_lock_balance;
@@ -111,7 +109,6 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     protected ExecutorService executor;
 
-    private FermatListItemListeners<NavMenuItem> navMenuListener;
 
     @Override
     public final void onCreate(Bundle savedInstanceState) {
@@ -234,40 +231,21 @@ public abstract class BaseActivity extends AppCompatActivity {
             }
         });
 
+        navViewHelper = new NavViewHelper(
+                this,
+                drawerLayout,
+                navigationView,
+                (RecyclerView) navigationView.findViewById(R.id.recycler_nav_view)
+        );
+        // init navView.
+        navViewHelper.setItemsList(loadNavMenuItems());
+        navViewHelper.setHeaderView(headerView);
+        navViewHelper.init();
 
-        navViewRecyclerView = (RecyclerView) navigationView.findViewById(R.id.recycler_nav_view);
+        // Method to initialize navView in childs
+        onNavViewCreated();
 
-        navViewRecyclerView.setHasFixedSize(true);
-
-        layoutManager = new LinearLayoutManager(this,LinearLayoutManager.VERTICAL,false);
-        navViewRecyclerView.setLayoutManager(layoutManager);
-
-
-        navViewAdapter = new NavViewAdapter(this,loadNavMenuItems());
-        navViewAdapter.setFermatListEventListener(new FermatListItemListeners<NavMenuItem>() {
-            @Override
-            public void onItemClickListener(NavMenuItem data, int position) {
-                int id = data.getId();
-
-                // position selected
-                saveNavSelection(position);
-
-                if (navMenuListener!=null)
-                    navMenuListener.onItemClickListener(data,position);
-                else
-                    Log.d(TAG,"Te estas olvidando de setear el navMenuListener..");
-
-                drawerLayout.closeDrawers();
-            }
-
-            @Override
-            public void onLongItemClickListener(NavMenuItem data, int position) {
-
-            }
-        });
-
-        navViewRecyclerView.setAdapter(navViewAdapter);
-
+        // todo: pasar esto al navViewHelper, no lo aún ya que es lo mismo en las apps voting y en contributors
         imgQr = (ImageView) navigationView.findViewById(R.id.img_qr);
         txt_available_balance = (TextView) headerView.findViewById(R.id.txt_available_balance);
         txt_lock_balance = (TextView) headerView.findViewById(R.id.txt_lock_balance);
@@ -312,10 +290,6 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     }
 
-    private void saveNavSelection(int position) {
-        NavData.navSelection = position;
-    }
-
     private void updateBalances(){
         try {
             txt_available_balance.setText(module.getAvailableBalanceStr() + " IoPs");
@@ -325,14 +299,29 @@ public abstract class BaseActivity extends AppCompatActivity {
         }
     }
 
+    /***************************** Nav View region  ************************************/
 
-    public void setNavMenuListener(FermatListItemListeners<NavMenuItem> listener){
-        navMenuListener = listener;
+    protected void onNavViewCreated(){
+
     }
-    // abstrac methods
+
     protected List<NavMenuItem> loadNavMenuItems(){
         return null;
     }
+
+    protected void setNavViewHeaderBackground(int resource){
+        navViewHelper.setHeaderViewBackground(resource);
+    }
+
+    protected void setNavViewBackgroundColor(int color){
+        navViewHelper.setNavViewBackgroundColor(color);
+    }
+
+    public void setNavMenuListener(FermatListItemListeners<NavMenuItem> navMenuListener) {
+        navViewHelper.setNavMenuListener(navMenuListener);
+    }
+
+    /***************************** end Nav View region  ************************************/
 
 
     protected void sendWorkToProfileService(Bundle data){
@@ -379,6 +368,12 @@ public abstract class BaseActivity extends AppCompatActivity {
         localBroadcastManager.unregisterReceiver(notificationReceiver);
         super.onStop();
 
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        navViewHelper.onDestroy();
     }
 
     private void showQrDialog(Activity activity){

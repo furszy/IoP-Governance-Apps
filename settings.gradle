@@ -1,1 +1,1 @@
-include ':app', ':furszy_lib'
+include ':app', ':furszy_lib'//, ':voting_app'

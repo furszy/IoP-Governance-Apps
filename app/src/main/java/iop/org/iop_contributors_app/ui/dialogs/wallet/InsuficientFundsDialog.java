@@ -69,11 +69,8 @@ public class InsuficientFundsDialog extends DialogFragment {
         });
         ImageView image = (ImageView) root.findViewById(R.id.img_qr);
 
-        String address = Cache.getCacheAddress();
-        if (address==null) {
-            address = module.getNewAddress();
-            Cache.setCacheAddress(address);
-        }
+        String address = module.getReceiveAddress();
+
         // qr
         Bitmap qrBitmap = Cache.getQrBigBitmapCache();
         try {

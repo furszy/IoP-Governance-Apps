@@ -314,5 +314,25 @@ public  class ProposalTransactionBuilder {
         return new BigInteger(versionStr,16).longValue();
     }
 
+    public static boolean isProposal(Transaction transaction) {
+        List<TransactionOutput> list = transaction.getOutputs();
+        if (list.size()>2) {
+            for (int i = 2; i < list.size(); i++) {
+                TransactionOutput transactionOutput = list.get(i);
+                try {
+                    if (ProposalTransactionBuilder.decodeContract(transactionOutput) != null) {
+                        return true;
+                    }
+                } catch (DecoderException e) {
+                    // nothing
+                } catch (UnsupportedEncodingException e) {
+                    // nothing
+                } catch (Exception e) {
+                    // nothing
+                }
+            }
+        }
+        return false;
+    }
 }
 

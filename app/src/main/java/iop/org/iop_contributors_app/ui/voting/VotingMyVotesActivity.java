@@ -12,8 +12,10 @@ import java.util.List;
 import iop.org.iop_contributors_app.ApplicationController;
 import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.core.iop_sdk.governance.propose.Proposal;
-import iop.org.iop_contributors_app.ui.voting.ui.components.VotingProposalsAdapter;
+import iop.org.iop_contributors_app.ui.voting.base.VotingBaseActivity;
+import iop.org.iop_contributors_app.ui.voting.ui.components.my_votes.MyVotesAdapter;
 import iop.org.iop_contributors_app.ui.voting.ui.dialogs.VoteDialog;
+import iop.org.iop_contributors_app.ui.voting.util.VoteWrapper;
 import iop.org.iop_contributors_app.wallet.WalletModule;
 
 /**
@@ -28,13 +30,13 @@ public class VotingMyVotesActivity extends VotingBaseActivity {
     private View root;
     private RecyclerView recyclerView;
     private RecyclerView.LayoutManager layoutManager;
-    private VotingProposalsAdapter adapter;
+    private MyVotesAdapter adapter;
 
     private SwipeRefreshLayout swipeRefreshLayout;
 
     private View container_empty_screen;
 
-    private List<Proposal> proposals;
+    private List<VoteWrapper> votes;
 
 
     @Override
@@ -63,7 +65,7 @@ public class VotingMyVotesActivity extends VotingBaseActivity {
 
         // specify an adapter (see also next example)
         // todo: adapter
-        //adapter = new VotingProposalsAdapter(this,module);
+        adapter = new MyVotesAdapter(this,module);
         recyclerView.setAdapter(adapter);
 
         container_empty_screen.setOnClickListener(new View.OnClickListener() {
@@ -77,7 +79,7 @@ public class VotingMyVotesActivity extends VotingBaseActivity {
             @Override
             public void onRefresh() {
                 // Refresh items
-                executor.submit(loadProposals);
+                executor.submit(loadMyVotes);
             }
         });
 
@@ -107,28 +109,29 @@ public class VotingMyVotesActivity extends VotingBaseActivity {
 
     @Override
     protected void onResume() {
-        if (proposals==null){
-            executor.execute(loadProposals);
+        if (votes==null){
+            executor.execute(loadMyVotes);
         }
         super.onResume();
     }
+
 
     @Override
     protected void onStop() {
         super.onStop();
     }
 
-    Runnable loadProposals = new Runnable() {
+    Runnable loadMyVotes = new Runnable() {
         @Override
         public void run() {
             try {
-                proposals = module.getVotingProposals();
+                votes = module.listMyVotes();
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        if (proposals!=null && !proposals.isEmpty()) {
+                        if (votes!=null && !votes.isEmpty()) {
                             hideEmptyScreen();
-                            adapter.changeDataSet(proposals);
+                            adapter.changeDataSet(votes);
                         } else
                             showEmptyScreen();
                         onItemsLoadComplete();

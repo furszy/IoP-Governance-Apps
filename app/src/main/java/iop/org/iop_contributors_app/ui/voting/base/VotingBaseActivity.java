@@ -1,6 +1,7 @@
-package iop.org.iop_contributors_app.ui.voting;
+package iop.org.iop_contributors_app.ui.voting.base;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 
 import java.util.ArrayList;
@@ -14,6 +15,7 @@ import iop.org.iop_contributors_app.ui.ForumActivity;
 import iop.org.iop_contributors_app.ui.ProposalsActivity;
 import iop.org.iop_contributors_app.ui.SettingsActivity;
 import iop.org.iop_contributors_app.ui.base.BaseActivity;
+import iop.org.iop_contributors_app.ui.base.NavViewHelper;
 
 /**
  * Created by mati on 21/12/16.
@@ -62,21 +64,25 @@ public abstract class VotingBaseActivity extends BaseActivity {
     protected void beforeCreate(Bundle savedInstanceState){
     }
 
-    protected void onNavViewCreated(){
-        setNavViewHeaderBackground(R.drawable.img_test);
-        setNavMenuListener(listener);
+    protected void onNavViewCreated(NavViewHelper navViewHelper){
+        navViewHelper.setNavViewAdapter(new VotingNavViewAdapter(this,loadNavMenuItems()));
+        navViewHelper.setHeaderViewBackground(R.drawable.img_test);
+        navViewHelper.setNavMenuListener(listener);
+        navViewHelper.setNavViewBackgroundColor(Color.WHITE);
     }
 
 
     protected List<NavMenuItem> loadNavMenuItems() {
         List<NavMenuItem> items = new ArrayList<>();
 //        items.add(new NavMenuItem(MENU_DRAWER_HOME,true,"Home",R.drawable.icon_home_on));
-        items.add(new NavMenuItem(MENU_DRAWER_CREATE_PROPOSAL,false,"Vote",R.drawable.icon_createcontributioncontract_off_drawer));
+        items.add(new NavMenuItem(MENU_DRAWER_CREATE_PROPOSAL,false,"Vote",R.drawable.ic_votes_drawer));
         items.add(new NavMenuItem(MENU_DRAWER_FORUM,false,"Forum",R.drawable.icon_forum_off));
         items.add(new NavMenuItem(MENU_DRAWER_PROPOSALS,true,"My Votes", R.drawable.icon_mycontracts_off_drawer));
         items.add(new NavMenuItem(MENU_DRAWER_SETTINGS,false,"Settings",R.drawable.icon_settings_off));
         return items;
     }
+
+
 
 
 }

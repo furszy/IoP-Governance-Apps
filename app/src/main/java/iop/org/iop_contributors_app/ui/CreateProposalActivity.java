@@ -1,11 +1,8 @@
 package iop.org.iop_contributors_app.ui;
 
 import android.app.AlertDialog;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
@@ -34,7 +31,6 @@ import iop.org.iop_contributors_app.ApplicationController;
 import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.CantCreateTopicException;
 import iop.org.iop_contributors_app.core.iop_sdk.governance.propose.Proposal;
-import iop.org.iop_contributors_app.ui.base.BaseActivity;
 import iop.org.iop_contributors_app.ui.dialogs.wallet.InsuficientFundsDialog;
 import iop.org.iop_contributors_app.ui.validators.CreateProposalActivityValidator;
 import iop.org.iop_contributors_app.ui.validators.CreateProposalWatcher;
@@ -54,7 +50,6 @@ import static iop.org.iop_contributors_app.core.iop_sdk.governance.ProposalForum
 import static iop.org.iop_contributors_app.core.iop_sdk.governance.ProposalForum.FIELD_VALUE;
 import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_TYPE;
 import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_TRANSACTION_SUCCED;
-import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENT_DIALOG;
 import static iop.org.iop_contributors_app.ui.ProposalSummaryActivity.ACTION_PROPOSAL;
 import static iop.org.iop_contributors_app.ui.ProposalSummaryActivity.INTENT_DATA_PROPOSAL;
 
@@ -172,9 +167,9 @@ public class CreateProposalActivity extends ContributorBaseActivity {
     private void completeWithTestData() {
         proposal = Proposal.buildRandomProposal();
         proposal.setMine(true);
-        String address = module.getNewAddress();
+        String address = module.getReceiveAddress();
         Log.d(TAG,"fress address: "+address);
-        proposal.addBeneficiary(address, 80000000);
+        proposal.addBeneficiary(address, 8000000);
         forumTitle = proposal.getTitle();
         loadProposal();
     }
@@ -225,7 +220,7 @@ public class CreateProposalActivity extends ContributorBaseActivity {
             @Override
             public void onClick(View v) {
                 if (!isEditing)
-                    edit_beneficiary_address_1.setText(module.getNewAddress());
+                    edit_beneficiary_address_1.setText(module.getReceiveAddress());
             }
         });
 

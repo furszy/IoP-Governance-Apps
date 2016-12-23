@@ -128,4 +128,8 @@ public class ProposalsDao implements ProposalsContractDao {
     public void clean() {
         proposalsDatabaseHandler.deleteDb();
     }
+
+    public List<Proposal> listProposals(List<String> transactionHashes) {
+        return proposalsDatabaseHandler.getAllProposals(transactionHashes);
+    }
 }

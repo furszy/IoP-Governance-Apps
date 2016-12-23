@@ -1,7 +1,6 @@
 package iop.org.iop_contributors_app;
 
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
@@ -24,22 +23,16 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import iop.org.iop_contributors_app.core.iop_sdk.forum.ForumClientDiscourseImp;
-import iop.org.iop_contributors_app.core.iop_sdk.forum.ForumProfile;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.InvalidUserParametersException;
-import iop.org.iop_contributors_app.core.iop_sdk.forum.discourge.com.wareninja.opensource.discourse.DiscouseApiConstants;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.discourge.com.wareninja.opensource.discourse.utils.RequestParameter;
-import iop.org.iop_contributors_app.core.iop_sdk.forum.discourge.com.wareninja.opensource.discourse.utils.ResponseModel;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.discourge.com.wareninja.opensource.discourse.utils.StringRequestParameter;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.wrapper.ResponseMessageConstants;
 
 import static iop.org.iop_contributors_app.core.iop_sdk.forum.wrapper.ResponseMessageConstants.BEST_CHAIN_HEIGHT_HASH;
-import static iop.org.iop_contributors_app.core.iop_sdk.forum.wrapper.ResponseMessageConstants.REGISTER_ERROR_STR;
 import static iop.org.iop_contributors_app.core.iop_sdk.forum.wrapper.ResponseMessageConstants.USER_ERROR_STR;
 import static iop.org.iop_contributors_app.core.iop_sdk.utils.StreamsUtils.convertInputStreamToString;
 
@@ -256,8 +249,9 @@ public class ServerWrapper {
 
             LOG.info("getVotingProposals URL: "+url);
 
-
-            HttpClient client = new DefaultHttpClient(new BasicHttpParams());
+            BasicHttpParams basicHttpParams = new BasicHttpParams();
+            HttpConnectionParams.setSoTimeout(basicHttpParams, (int) TimeUnit.MINUTES.toMillis(1));
+            HttpClient client = new DefaultHttpClient(basicHttpParams);
             HttpGet httpGet = new HttpGet(url);
             //httpPost.setHeader("Content-type", "application/vnd.api+json");
             httpGet.addHeader("Accept", "text/html,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5");
@@ -305,25 +299,6 @@ public class ServerWrapper {
         return requestProposalsResponse;
     }
 
-    public String getJsonFromParams(Map<String,String> requestParams) {
-
-        JsonObject jsonObject = new JsonObject();
-
-        for (Map.Entry<String, String> stringStringEntry : requestParams.entrySet()) {
-            if ( !stringStringEntry.getKey().equalsIgnoreCase("api_key") && !stringStringEntry.getKey().equalsIgnoreCase("api_username")) {
-                jsonObject.addProperty(
-                        stringStringEntry.getKey()
-                        , ""+stringStringEntry.getValue()//, requestParam.getValueStr()
-                );
-            }
-        }
-        return jsonObject.toString();
-    }
-
-    public void setWrapperUrl(String wrapperUrl) {
-        this.wrapperUrl = wrapperUrl;
-        changeUrl();
-    }
 
     public HttpResponse registerUser(Map<String, String> parameters) throws IOException {
 
@@ -351,9 +326,11 @@ public class ServerWrapper {
 
     public String getTopic(Map<String, String> parameters) {
         String url = this.url+"/getTopic";
-
         LOG.info("getTopic URL: "+url);
+        return post(url,parameters);
+    }
 
+    private String post(String url, Map<String,String> parameters){
         try {
 
             HttpClient client = new DefaultHttpClient(new BasicHttpParams());
@@ -390,5 +367,25 @@ public class ServerWrapper {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public String getJsonFromParams(Map<String,String> requestParams) {
+
+        JsonObject jsonObject = new JsonObject();
+
+        for (Map.Entry<String, String> stringStringEntry : requestParams.entrySet()) {
+            if ( !stringStringEntry.getKey().equalsIgnoreCase("api_key") && !stringStringEntry.getKey().equalsIgnoreCase("api_username")) {
+                jsonObject.addProperty(
+                        stringStringEntry.getKey()
+                        , ""+stringStringEntry.getValue()//, requestParam.getValueStr()
+                );
+            }
+        }
+        return jsonObject.toString();
+    }
+
+    public void setWrapperUrl(String wrapperUrl) {
+        this.wrapperUrl = wrapperUrl;
+        changeUrl();
     }
 }

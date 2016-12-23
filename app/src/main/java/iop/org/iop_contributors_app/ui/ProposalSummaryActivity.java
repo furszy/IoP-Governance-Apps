@@ -45,6 +45,7 @@ import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.IN
 import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENTE_BROADCAST_DIALOG_TYPE;
 import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_TRANSACTION_SUCCED;
 import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_TYPE;
+import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENT_BROADCAST_TYPE;
 import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENT_DIALOG;
 import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INVALID_PROPOSAL_DIALOG;
 import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.UNKNOWN_ERROR_DIALOG;
@@ -215,7 +216,7 @@ public class ProposalSummaryActivity extends ContributorBaseActivity implements 
                 showDoneLoading();
                 Toast.makeText(this, "Proposal broadcasted!, publishing in the forum..", Toast.LENGTH_SHORT).show();
             }
-        } else if(data.getString(INTENTE_BROADCAST_DIALOG_TYPE).equals(INTENT_DIALOG)){
+        } else if(data.getString(INTENT_BROADCAST_TYPE).equals(INTENT_DIALOG)){
             switch (data.getInt(INTENTE_BROADCAST_DIALOG_TYPE,0)){
                 case UNKNOWN_ERROR_DIALOG:
                     showCantSendProposalDialog();

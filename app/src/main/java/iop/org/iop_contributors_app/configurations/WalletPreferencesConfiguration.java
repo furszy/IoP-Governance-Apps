@@ -15,6 +15,8 @@ public class WalletPreferencesConfiguration extends Configurations{
 
     public static final String PREFS_KEY_NODE = "node";
 
+    public static final String PREFS_KEY_RECEIVE_ADDRESS = "receive_address";
+
     private static final String PREFS_KEY_BEST_CHAIN_HEIGHT_EVER = "best_chain_height_ever";
 
     public WalletPreferencesConfiguration(SharedPreferences prefs) {
@@ -43,5 +45,13 @@ public class WalletPreferencesConfiguration extends Configurations{
 
     public String getNode(){
         return getString(PREFS_KEY_NODE, HardCodedConstans.HOST);
+    }
+
+    public void saveReceiveAddress(String address){
+        save(PREFS_KEY_RECEIVE_ADDRESS,address);
+    }
+
+    public String getReceiveAddress(){
+        return getString(PREFS_KEY_RECEIVE_ADDRESS,null);
     }
 }

@@ -263,6 +263,72 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
         return contactList;
     }
 
+    public List<Proposal> getAllProposals(List<String> transactionHashes) {
+        Log.d(TAG,"getProposal");
+        List<Proposal> proposals = new ArrayList<>();
+        try {
+
+            StringBuilder selection = new StringBuilder();
+            String[] where = new String[transactionHashes.size()];
+
+            for (int i = 0; i < transactionHashes.size(); i++) {
+                String hash = transactionHashes.get(i);
+
+                selection.append(KEY_PROPOSAL_BLOCKCHAIN_HASH+"=?");
+                where[i] = hash;
+
+                if (i!=transactionHashes.size()-1){
+                    selection.append(" OR ");
+                }
+            }
+
+            SQLiteDatabase db = this.getReadableDatabase();
+            Cursor cursor = db.query(TABLE_PROPOSALS, new String[]{
+                            KEY_PROPOSAL_TITLE,
+                            KEY_PROPOSAL_SUBTITLE,
+                            KEY_PROPOSAL_CATEGORY,
+                            KEY_PROPOSAL_BODY,
+                            KEY_PROPOSAL_START_BLOCK,
+                            KEY_PROPOSAL_END_BLOCK,
+                            KEY_PROPOSAL_BLOCK_REWARD,
+                            KEY_PROPOSAL_FORUM_ID,
+                            KEY_PROPOSAL_BENEFICIARIES,
+                            KEY_PROPOSAL_EXTRA_FEE_VALUE,
+                            KEY_PROPOSAL_IS_MINE,
+                            KEY_PROPOSAL_IS_SENT,
+                            KEY_PROPOSAL_LOCKED_OUTPUT_HASH,
+                            KEY_PROPOSAL_LOCKED_OUTPUT_POSITION,
+                            KEY_PROPOSAL_VERSION,
+                            KEY_PROPOSAL_OWNER_PUBKEY,
+                            KEY_PROPOSAL_STATE,
+                            KEY_PROPOSAL_BLOCKCHAIN_HASH}, selection.toString(), where, null, null, null, null);
+
+            if (cursor.moveToFirst()) {
+                do {
+                    Proposal proposal = null;
+                    try {
+                        proposal = buildProposal(cursor);
+
+                        // Adding contact to list
+                        proposals.add(proposal);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                } while (cursor.moveToNext());
+            }
+
+            Log.d(TAG,"Proposal list return with: "+proposals.size()+" results");
+
+
+            cursor.close();
+            db.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return proposals;
+    }
+
     // Updating single contact
     public int updateProposal(Proposal proposal) throws JsonProcessingException {
         SQLiteDatabase db = this.getWritableDatabase();
@@ -484,7 +550,9 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
         short version = cursor.getShort(KEY_PROPOSAL_POS_VERSION);
         byte[] ownerPk = cursor.getBlob(KEY_PROPOSAL_POS_OWNER_PUBKEY);
         Proposal.ProposalState proposalState = Proposal.ProposalState.valueOf(cursor.getString(KEY_PROPOSAL_POS_PROPOSAL_STATE));
-        byte[] blockchainHash = CryptoBytes.fromHexToBytes(cursor.getString(KEY_PROPOSAL_POS_BLOCKCHAIN_HASH));
+        byte[] blockchainHash = null;
+        String blockchainHashHex = cursor.getString(KEY_PROPOSAL_POS_BLOCKCHAIN_HASH);
+        if (blockchainHashHex!=null) blockchainHash = CryptoBytes.fromHexToBytes(blockchainHashHex);
 
 
         Proposal proposal = new Proposal(
@@ -534,7 +602,7 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
         values.put(KEY_PROPOSAL_VERSION,proposal.getVersion());
         values.put(KEY_PROPOSAL_OWNER_PUBKEY,proposal.getOwnerPubKey());
         values.put(KEY_PROPOSAL_STATE,proposal.getState().toString());
-        values.put(KEY_PROPOSAL_BLOCKCHAIN_HASH,CryptoBytes.toHexString(proposal.getBlockchainHash()));
+        if (proposal.getBlockchainHash()!=null) values.put(KEY_PROPOSAL_BLOCKCHAIN_HASH,CryptoBytes.toHexString(proposal.getBlockchainHash()));
         return values;
     }
 
@@ -557,6 +625,7 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
         }
         return contentValues;
     }
+
 
 
 }

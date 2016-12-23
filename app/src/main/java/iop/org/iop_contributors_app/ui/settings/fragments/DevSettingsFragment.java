@@ -9,6 +9,7 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.os.Handler;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
@@ -40,6 +41,7 @@ import org.bitcoinj.wallet.Wallet;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.core.iop_sdk.blockchain.OpReturnOutputTransaction;
@@ -67,6 +69,8 @@ public class DevSettingsFragment extends PreferenceFragment implements Preferenc
 
     private byte[] transactionHash = new byte[32];
     private boolean proposalSended;
+
+    private Handler handler = new Handler();
 
 
     public final static DevSettingsFragment newInstance(WalletModule module) {
@@ -140,14 +144,21 @@ public class DevSettingsFragment extends PreferenceFragment implements Preferenc
         if (preference.getKey().equals("id_restart_blockchain")){
             module.getWalletManager().resetBlockchain();
             module.cleanProposalDb();
-            Toast.makeText(getActivity(),"Reseting blockchain, please close (swipe open apps manager) and restart the app",Toast.LENGTH_LONG).show();
+            Toast.makeText(getActivity(),"Reseting blockchain...\nApp will be closed to clean data in 5 seconds",Toast.LENGTH_LONG).show();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    android.os.Process.killProcess(android.os.Process.myPid());
+                    System.exit(0);
+                }
+            }, TimeUnit.SECONDS.toMillis(5));
         }else if(preference.getKey().equals("id_broadcast_transaction")){
             executorService.submit(new Runnable() {
                 @Override
                 public void run() {
                     Context.propagate(WalletConstants.CONTEXT);
                     Proposal proposal = new Proposal();
-                    proposal.addBeneficiary(module.getNewAddress(),proposal.getBlockReward());
+                    proposal.addBeneficiary(module.getReceiveAddress(),proposal.getBlockReward());
                     try {
                         module.sendProposal(proposal,transactionHash);
                         proposalSended = true;
@@ -203,7 +214,7 @@ public class DevSettingsFragment extends PreferenceFragment implements Preferenc
 
                         Coin value = Coin.valueOf(1000, 0);
                         Coin balance = Coin.valueOf(module.getAvailableBalance());
-                        String address = module.getNewAddress();
+                        String address = module.getReceiveAddress();
 
                         if (value.isGreaterThan(balance)) {
                             if (module.requestCoins(address)) {
@@ -334,11 +345,9 @@ public class DevSettingsFragment extends PreferenceFragment implements Preferenc
 
             ImageView image = (ImageView) dialog.findViewById(R.id.img_qr);
 
-            String address = Cache.getCacheAddress();
-            if (address==null) {
-                address = module.getNewAddress();
-                Cache.setCacheAddress(address);
-            }
+
+            final String address = module.getReceiveAddress();
+
             // qr
             Bitmap qrBitmap = Cache.getQrBigBitmapCache();
             if (qrBitmap == null) {
@@ -357,7 +366,7 @@ public class DevSettingsFragment extends PreferenceFragment implements Preferenc
             View.OnClickListener clickListener = new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    textToClipboard(getActivity(),Cache.getCacheAddress());
+                    textToClipboard(getActivity(),address);
                     Toast.makeText(getActivity(),"Copied",Toast.LENGTH_LONG).show();
                 }
             };
@@ -367,7 +376,7 @@ public class DevSettingsFragment extends PreferenceFragment implements Preferenc
             text.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    shareText(getActivity(),"Qr",Cache.getCacheAddress());
+                    shareText(getActivity(),"Qr",address);
                     dialog.dismiss();
                 }
             });

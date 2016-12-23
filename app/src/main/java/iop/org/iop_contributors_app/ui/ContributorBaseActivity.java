@@ -9,7 +9,9 @@ import java.util.List;
 import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.furszy_sdk.android.adapter.FermatListItemListeners;
 import iop.org.iop_contributors_app.furszy_sdk.android.nav_view.NavMenuItem;
+import iop.org.iop_contributors_app.furszy_sdk.android.nav_view.NavViewAdapter;
 import iop.org.iop_contributors_app.ui.base.BaseActivity;
+import iop.org.iop_contributors_app.ui.base.NavViewHelper;
 
 /**
  * Created by mati on 21/12/16.
@@ -59,9 +61,9 @@ public abstract class ContributorBaseActivity extends BaseActivity {
     }
 
     @Override
-    protected void onNavViewCreated() {
-        super.onNavViewCreated();
-        setNavMenuListener(listener);
+    protected void onNavViewCreated(NavViewHelper navViewHelper) {
+        navViewHelper.setNavViewAdapter(new NavViewAdapter(this,loadNavMenuItems()));
+        navViewHelper.setNavMenuListener(listener);
     }
 
     protected List<NavMenuItem> loadNavMenuItems() {

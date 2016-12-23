@@ -13,8 +13,11 @@ import com.squareup.picasso.Picasso;
 import java.lang.ref.WeakReference;
 import java.util.List;
 
+import iop.org.iop_contributors_app.furszy_sdk.android.adapter.FermatAdapterImproved;
 import iop.org.iop_contributors_app.furszy_sdk.android.adapter.FermatListItemListeners;
+import iop.org.iop_contributors_app.furszy_sdk.android.adapter.FermatViewHolder;
 import iop.org.iop_contributors_app.furszy_sdk.android.nav_view.NavData;
+import iop.org.iop_contributors_app.furszy_sdk.android.nav_view.NavMenuHolder;
 import iop.org.iop_contributors_app.furszy_sdk.android.nav_view.NavMenuItem;
 import iop.org.iop_contributors_app.furszy_sdk.android.nav_view.NavViewAdapter;
 
@@ -34,7 +37,7 @@ public class NavViewHelper {
     private WeakReference<View> headerView;
     private WeakReference<RecyclerView> navViewRecyclerView;
     private RecyclerView.LayoutManager layoutManager;
-    private NavViewAdapter navViewAdapter;
+    private FermatAdapterImproved<NavMenuItem,? extends FermatViewHolder> navViewAdapter;
     private List<NavMenuItem> itemsList;
 
     private FermatListItemListeners<NavMenuItem> navMenuListener;
@@ -63,8 +66,12 @@ public class NavViewHelper {
         layoutManager = new LinearLayoutManager(context.get(),LinearLayoutManager.VERTICAL,false);
         navViewRecyclerView.setLayoutManager(layoutManager);
 
+    }
 
-        navViewAdapter = new NavViewAdapter(context.get(),itemsList);
+    public void initAdapter(){
+        // por ahora va esto..
+        if (navViewAdapter==null)
+            navViewAdapter = new NavViewAdapter(context.get(),itemsList);
         navViewAdapter.setFermatListEventListener(new FermatListItemListeners<NavMenuItem>() {
             @Override
             public void onItemClickListener(NavMenuItem data, int position) {
@@ -87,7 +94,7 @@ public class NavViewHelper {
             }
         });
 
-        navViewRecyclerView.setAdapter(navViewAdapter);
+        navViewRecyclerView.get().setAdapter(navViewAdapter);
     }
 
     private void saveNavSelection(int position) {
@@ -104,6 +111,10 @@ public class NavViewHelper {
 
     public void setNavViewBackgroundColor(int navViewBackgroundColor) {
         this.navigationView.get().setBackgroundColor(navViewBackgroundColor);
+    }
+
+    public void setNavViewAdapter(FermatAdapterImproved<NavMenuItem,? extends FermatViewHolder> adapter){
+        this.navViewAdapter = adapter;
     }
 
     public void onDestroy() {

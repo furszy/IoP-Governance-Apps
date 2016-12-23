@@ -42,5 +42,10 @@ public interface ContextWrapper {
 
     void showDialog(String id);
 
+    void showDialog(String showBlockchainOffDialog, String dialogText);
+
     String[] fileList();
+
+
+
 }

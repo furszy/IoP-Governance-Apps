@@ -62,7 +62,7 @@
     <string name="report_issue_dialog_mail_intent_failed">Sending report failed.</string>
 
     <!-- Create proposal -->
-    <string name="create_proposal_help_start_block">Blocks until the contract start his execution</string>
+    <string name="create_proposal_help_start_block">Blocks until the contract starts his execution</string>
     <string name="create_proposal_help_end_block">Total contract blocks</string>
     <string name="create_proposal_help_block_reward">Reward for each block</string>
     <string name="create_proposal_help_beneficiaries">Address wich will receive the block reward</string>

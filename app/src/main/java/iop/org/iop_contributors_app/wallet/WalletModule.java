@@ -25,7 +25,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import iop.org.iop_contributors_app.ApplicationController;
@@ -34,6 +36,8 @@ import iop.org.iop_contributors_app.Profile;
 import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.ServerWrapper;
 import iop.org.iop_contributors_app.core.iop_sdk.blockchain.explorer.TransactionFinder;
+import iop.org.iop_contributors_app.core.iop_sdk.crypto.Crypto;
+import iop.org.iop_contributors_app.core.iop_sdk.crypto.CryptoBytes;
 import iop.org.iop_contributors_app.core.iop_sdk.forum.CantCreateTopicException;
 import iop.org.iop_contributors_app.core.iop_sdk.governance.NotConnectedPeersException;
 import iop.org.iop_contributors_app.core.iop_sdk.governance.propose.Proposal;
@@ -53,6 +57,7 @@ import iop.org.iop_contributors_app.configurations.WalletPreferencesConfiguratio
 import iop.org.iop_contributors_app.ui.base.BaseActivity;
 import iop.org.iop_contributors_app.ui.dialogs.DialogBuilder;
 import iop.org.iop_contributors_app.ui.voting.db.VotesDao;
+import iop.org.iop_contributors_app.ui.voting.util.VoteWrapper;
 import iop.org.iop_contributors_app.utils.exceptions.NotValidParametersException;
 import iop.org.iop_contributors_app.wallet.db.CantGetProposalException;
 import iop.org.iop_contributors_app.wallet.db.CantSaveProposalException;
@@ -61,6 +66,8 @@ import iop.org.iop_contributors_app.wallet.db.CantUpdateProposalException;
 import iop.org.iop_contributors_app.wallet.db.ProposalsDao;
 import iop.org.iop_contributors_app.wallet.exceptions.CantSendProposalException;
 import iop.org.iop_contributors_app.wallet.exceptions.InsuficientBalanceException;
+
+import static iop.org.iop_contributors_app.wallet.WalletConstants.SHOW_BLOCKCHAIN_OFF_DIALOG;
 
 /**
  * Created by mati on 12/11/16.
@@ -96,6 +103,7 @@ public class WalletModule implements ContextWrapper{
     private ProposalsDao proposalsDao;
 
     private VotesDao votesDao;
+
 
 
     public WalletModule(ApplicationController context, WalletPreferencesConfiguration configuration, ForumConfigurations forumConfigurations) {
@@ -188,15 +196,34 @@ public class WalletModule implements ContextWrapper{
 
     @Override
     public void showDialog(String id) {
-        final StringBuilder message = new StringBuilder();
-        message.append(context.getString(R.string.restore_wallet_dialog_success));
-        message.append("\n\n");
-        message.append(context.getString(R.string.restore_wallet_dialog_success_replay));
+        showDialog(id,null);
+    }
+    @Override
+    public void showDialog(String id, String dialogText){
+        if (id.equals(WalletConstants.SHOW_RESTORE_SUCCED_DIALOG)){
+            showRestoreSuccedDialog();
+        }else if (id.equals(SHOW_BLOCKCHAIN_OFF_DIALOG)){
+            showBlockchainOff(dialogText);
+        }
+    }
+
+    private void showRestoreSuccedDialog(){
+        String message = context.getString(R.string.restore_wallet_dialog_success) +
+                "\n\n" +
+                context.getString(R.string.restore_wallet_dialog_success_replay);
 
         Intent intent = new Intent(BaseActivity.ACTION_NOTIFICATION);
         intent.putExtra(IntentsConstants.INTENT_BROADCAST_TYPE,IntentsConstants.INTENT_DIALOG);
         intent.putExtra(IntentsConstants.INTENTE_BROADCAST_DIALOG_TYPE,IntentsConstants.RESTORE_SUCCED_DIALOG);
-        intent.putExtra(IntentsConstants.INTENTE_EXTRA_MESSAGE,message.toString());
+        intent.putExtra(IntentsConstants.INTENTE_EXTRA_MESSAGE, message);
+        context.sendLocalBroadcast(intent);
+    }
+
+    private void showBlockchainOff(String dialogText){
+        Intent intent = new Intent(BaseActivity.ACTION_NOTIFICATION);
+        intent.putExtra(IntentsConstants.INTENT_BROADCAST_TYPE,IntentsConstants.INTENT_DIALOG);
+        intent.putExtra(IntentsConstants.INTENTE_BROADCAST_DIALOG_TYPE,IntentsConstants.COMMON_ERROR_DIALOG);
+        intent.putExtra(IntentsConstants.INTENTE_EXTRA_MESSAGE, dialogText);
         context.sendLocalBroadcast(intent);
     }
 
@@ -388,8 +415,12 @@ public class WalletModule implements ContextWrapper{
         return proposalsDao.listProposals();
     }
 
-    public String getNewAddress() {
-        String address = walletManager.getWallet().freshReceiveAddress().toBase58();;
+    public String getReceiveAddress() {
+        String address = configuration.getReceiveAddress();
+        if (address==null){
+            address = walletManager.getWallet().freshReceiveAddress().toBase58();
+            configuration.saveReceiveAddress(address);
+        }
         LOG.info("Fresh new address: "+address);
         return address;
     }
@@ -707,5 +738,31 @@ public class WalletModule implements ContextWrapper{
 
     public boolean checkIfVoteExist(Vote vote) {
         return votesDao.exist(vote);
+    }
+
+    public boolean isProposalTransactionMine(Transaction transaction) {
+       return ProposalTransactionBuilder.isProposal(transaction);
+    }
+
+    public List<VoteWrapper> listMyVotes() {
+        List<VoteWrapper> wrappers = new ArrayList<>();
+        List<Vote> myVotes = votesDao.listVotes();
+        Map<String,Vote> voteByProposalHash = new HashMap<>();
+        List<String> transactionHashes = new ArrayList<>();
+        for (Vote myVote : myVotes) {
+            voteByProposalHash.put(myVote.getGenesisHashHex(),null);
+            transactionHashes.add(myVote.getGenesisHashHex());
+        }
+        List<Proposal> proposals = proposalsDao.listProposals(transactionHashes);
+        for (Proposal proposal : proposals) {
+            // todo: esto es totalmente mejorable si le pongo un hex en vez del byte array que tiene.
+            wrappers.add(new VoteWrapper(
+                    voteByProposalHash.get(CryptoBytes.toHexString(proposal.getBlockchainHash())),
+                    proposal
+
+            ));
+        }
+
+        return wrappers;
     }
 }

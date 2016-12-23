@@ -374,7 +374,7 @@ public class ProfileActivity extends ContributorBaseActivity implements View.OnC
     private void buildDialog(){
         DialogBuilder dialogBuilder = new DialogBuilder(ProfileActivity.this);
         dialogBuilder.setTitle("Great!");
-        dialogBuilder.setMessage("Register completed, please check your email to verify the account");
+        dialogBuilder.setMessage("Register completed");//, please check your email to verify the account
         dialogBuilder.singleDismissButton(new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {

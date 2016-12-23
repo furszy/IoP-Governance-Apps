@@ -18,7 +18,6 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.NotificationCompat;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -38,25 +37,17 @@ import com.squareup.picasso.Picasso;
 import org.bitcoinj.core.Context;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import iop.org.iop_contributors_app.ApplicationController;
 import iop.org.iop_contributors_app.R;
-import iop.org.iop_contributors_app.furszy_sdk.android.nav_view.NavData;
 import iop.org.iop_contributors_app.furszy_sdk.android.nav_view.NavMenuItem;
-import iop.org.iop_contributors_app.furszy_sdk.android.nav_view.NavViewAdapter;
 import iop.org.iop_contributors_app.intents.DialogIntentsBuilder;
 import iop.org.iop_contributors_app.intents.constants.IntentsConstants;
 import iop.org.iop_contributors_app.services.BlockchainServiceImpl;
-import iop.org.iop_contributors_app.ui.CreateProposalActivity;
-import iop.org.iop_contributors_app.ui.ForumActivity;
-import iop.org.iop_contributors_app.ui.MainActivity;
 import iop.org.iop_contributors_app.ui.ProfileActivity;
-import iop.org.iop_contributors_app.ui.ProposalsActivity;
-import iop.org.iop_contributors_app.ui.SettingsActivity;
 import iop.org.iop_contributors_app.furszy_sdk.android.adapter.FermatListItemListeners;
 import iop.org.iop_contributors_app.ui.dialogs.wallet.BackupDialog;
 import iop.org.iop_contributors_app.ui.dialogs.wallet.RestoreDialogFragment2;
@@ -238,12 +229,14 @@ public abstract class BaseActivity extends AppCompatActivity {
                 (RecyclerView) navigationView.findViewById(R.id.recycler_nav_view)
         );
         // init navView.
-        navViewHelper.setItemsList(loadNavMenuItems());
+//        navViewHelper.setItemsList(loadNavMenuItems());
         navViewHelper.setHeaderView(headerView);
         navViewHelper.init();
 
         // Method to initialize navView in childs
-        onNavViewCreated();
+        onNavViewCreated(navViewHelper);
+        // init data
+        navViewHelper.initAdapter();
 
         // todo: pasar esto al navViewHelper, no lo aún ya que es lo mismo en las apps voting y en contributors
         imgQr = (ImageView) navigationView.findViewById(R.id.img_qr);
@@ -272,7 +265,7 @@ public abstract class BaseActivity extends AppCompatActivity {
                     // qr
                     Bitmap qrBitmap = Cache.getQrLittleBitmapCache();
                     if (qrBitmap==null){
-                        qrBitmap = encodeAsBitmap(module.getNewAddress(),imgQr.getWidth(),imgQr.getHeight(),WHITE,Color.parseColor("#1A1A1A"));
+                        qrBitmap = encodeAsBitmap(module.getReceiveAddress(),imgQr.getWidth(),imgQr.getHeight(),WHITE,Color.parseColor("#1A1A1A"));
                         Cache.setQrLittleBitmapCache(qrBitmap);
                     }
                 } catch (WriterException e) {
@@ -301,7 +294,7 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     /***************************** Nav View region  ************************************/
 
-    protected void onNavViewCreated(){
+    protected void onNavViewCreated(NavViewHelper navViewHelper){
 
     }
 
@@ -373,7 +366,8 @@ public abstract class BaseActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        navViewHelper.onDestroy();
+        if (navViewHelper!=null)
+            navViewHelper.onDestroy();
     }
 
     private void showQrDialog(Activity activity){
@@ -396,11 +390,7 @@ public abstract class BaseActivity extends AppCompatActivity {
 
             ImageView image = (ImageView) dialog.findViewById(R.id.img_qr);
 
-            String address = Cache.getCacheAddress();
-            if (address==null) {
-                address = module.getNewAddress();
-                Cache.setCacheAddress(address);
-            }
+            final String address = module.getReceiveAddress();
             // qr
             Bitmap qrBitmap = Cache.getQrBigBitmapCache();
             if (qrBitmap == null) {
@@ -419,7 +409,7 @@ public abstract class BaseActivity extends AppCompatActivity {
             View.OnClickListener clickListener = new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    textToClipboard(Cache.getCacheAddress());
+                    textToClipboard(address);
                     Toast.makeText(BaseActivity.this,"Copied",Toast.LENGTH_LONG).show();
                 }
             };
@@ -429,7 +419,7 @@ public abstract class BaseActivity extends AppCompatActivity {
             text.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    shareText(BaseActivity.this,"Qr",Cache.getCacheAddress());
+                    shareText(BaseActivity.this,"Qr",address);
                     dialog.dismiss();
                 }
             });
@@ -554,7 +544,7 @@ public abstract class BaseActivity extends AppCompatActivity {
                                                     .setContentTitle("Proposal broadcast succed!")
                                                     .setContentText(intent.getStringExtra("title"));
 
-                                    notificationManager.notify(0, mBuilder.build());
+                                    notificationManager.notify(3, mBuilder.build());
                                 }
                             }
 

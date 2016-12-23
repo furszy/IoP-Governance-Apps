@@ -69,6 +69,7 @@ import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.CO
 import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INSUFICIENTS_FUNDS_DIALOG;
 import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENTE_BROADCAST_DIALOG_TYPE;
 import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_ON_COIN_RECEIVED;
+import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_ON_COIN_RECEIVED_IS_TRANSACTION_MINE;
 import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_TYPE;
 import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_TRANSACTION_SUCCED;
 import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_VOTE_TRANSACTION_SUCCED;
@@ -281,17 +282,27 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
         @Override
         public void onCoinsReceived(Wallet wallet, Transaction transaction, Coin coin, Coin coin1) {
 
+            //todo: acá falta una validación para saber si la transaccion es mia.
+
+            boolean isTransactionMine = walletModule.isProposalTransactionMine(transaction);
+
             Intent intent = new Intent(ACTION_NOTIFICATION);
-            intent.putExtra(INTENT_BROADCAST_TYPE,INTENT_DATA+INTENT_NOTIFICATION);
+            intent.putExtra(INTENT_BROADCAST_TYPE, INTENT_DATA + INTENT_NOTIFICATION);
             intent.putExtra(INTENT_BROADCAST_DATA_TYPE, INTENT_BROADCAST_DATA_ON_COIN_RECEIVED);
+            intent.putExtra(INTENT_BROADCAST_DATA_ON_COIN_RECEIVED_IS_TRANSACTION_MINE,isTransactionMine);
 
-            android.support.v4.app.NotificationCompat.Builder mBuilder =
-                    new NotificationCompat.Builder(getApplicationContext())
-                            .setSmallIcon(R.drawable.ic__launcher)
-                            .setContentTitle("IoPs received!")
-                            .setContentText("Transaction received for a value of "+coin1.toFriendlyString());
+            localBroadcast.sendBroadcast(intent);
 
-            nm.notify(1,mBuilder.build());
+            if (!isTransactionMine) {
+                android.support.v4.app.NotificationCompat.Builder mBuilder =
+                        new NotificationCompat.Builder(getApplicationContext())
+                                .setSmallIcon(R.drawable.ic__launcher)
+                                .setContentTitle("IoPs received!")
+                                .setContentText("Transaction received for a value of " + coin1.toFriendlyString());
+
+                nm.notify(1, mBuilder.build());
+
+            }
         }
     };
 

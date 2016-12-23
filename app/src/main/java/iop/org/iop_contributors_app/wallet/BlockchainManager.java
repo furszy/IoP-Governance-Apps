@@ -37,6 +37,7 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -47,6 +48,8 @@ import iop.org.iop_contributors_app.services.BlockchainState;
 import iop.org.iop_contributors_app.configurations.WalletPreferencesConfiguration;
 import iop.org.iop_contributors_app.wallet.util.RegtestUtil;
 
+import static iop.org.iop_contributors_app.wallet.WalletConstants.SHOW_BLOCKCHAIN_OFF_DIALOG;
+
 
 /**
  * Created by mati on 12/11/16.
@@ -55,6 +58,9 @@ import iop.org.iop_contributors_app.wallet.util.RegtestUtil;
 public class BlockchainManager {
 
     private static final Logger LOG = LoggerFactory.getLogger(BlockchainManager.class);
+
+    public static final int BLOCKCHAIN_STATE_OFF = 10;
+    public static final int BLOCKCHAIN_STATE_ON = 11;
 
     // system
     private ContextWrapper context;
@@ -305,12 +311,25 @@ public class BlockchainManager {
 
             LOG.debug("releasing wakelock");
             wakeLock.release();
+
+            notifyBlockchainStateOff(impediments);
         }
 
         //todo: falta hacer el tema de la memoria, hoy en día si se queda sin memoria no dice nada..
         //todo: ver si conviene esto..
 //        broadcastBlockchainState();
 
+    }
+
+    private void notifyBlockchainStateOff(Set<BlockchainState.Impediment> impediments) {
+        String dialogText = "Blockchain impediment: ";
+        int i = 0;
+        for (BlockchainState.Impediment impediment : impediments) {
+            dialogText+=impediment.toString();
+            if (i!=0) dialogText+=" , ";
+            i++;
+        }
+        context.showDialog(SHOW_BLOCKCHAIN_OFF_DIALOG,dialogText);
     }
 
 

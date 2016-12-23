@@ -2,11 +2,15 @@ package iop.org.iop_contributors_app.core.iop_sdk.governance.propose;
 
 import com.google.protobuf.ByteString;
 
+import org.apache.commons.codec.DecoderException;
 import org.bitcoinj.core.Sha256Hash;
+import org.bitcoinj.core.Transaction;
+import org.bitcoinj.core.TransactionOutput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,6 +45,7 @@ public class Proposal implements Serializable {
 
     public static final int BLOCK_REWARD_MAX_VALUE = 10000000;
     public static final double START_BLOCK_MAX_VALUE = Math.pow((double) 2, (double) 24);
+
 
     /**
      * Proposal states

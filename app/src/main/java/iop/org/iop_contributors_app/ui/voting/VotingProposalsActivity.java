@@ -9,13 +9,11 @@ import android.view.ViewGroup;
 
 import java.util.List;
 
-import iop.org.iop_contributors_app.ApplicationController;
 import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.core.iop_sdk.governance.propose.Proposal;
-import iop.org.iop_contributors_app.ui.base.BaseActivity;
-import iop.org.iop_contributors_app.ui.voting.ui.components.VotingProposalsAdapter;
+import iop.org.iop_contributors_app.ui.voting.base.VotingBaseActivity;
+import iop.org.iop_contributors_app.ui.voting.ui.components.proposals.VotingProposalsAdapter;
 import iop.org.iop_contributors_app.ui.voting.ui.dialogs.VoteDialog;
-import iop.org.iop_contributors_app.wallet.WalletModule;
 
 /**
  * Created by mati on 17/11/16.

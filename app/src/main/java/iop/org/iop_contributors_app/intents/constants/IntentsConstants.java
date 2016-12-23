@@ -72,8 +72,9 @@ public class IntentsConstants {
 
     public static final String INTENT_BROADCAST_DATA_TRANSACTION_SUCCED = BaseActivity.class.getPackage().toString() + "_broadcast_transaction_succed";
     public static final String INTENT_BROADCAST_DATA_VOTE_TRANSACTION_SUCCED = BaseActivity.class.getPackage().toString() + "_broadcast_vote_transaction_succed";
-    public static final String INTENT_BROADCAST_DATA_ON_COIN_RECEIVED = BaseActivity.class.getPackage().toString() + "_broadcast_coin_received";
     public static final String INTENT_BROADCAST_DATA_ON_PROPOSAL_TRANSACTION_RECEIVED = BaseActivity.class.getPackage().toString() + "_broadcast_proposal_transaction_received";
 
+    public static final String INTENT_BROADCAST_DATA_ON_COIN_RECEIVED = BaseActivity.class.getPackage().toString() + "_broadcast_coin_received";
+    public static final String INTENT_BROADCAST_DATA_ON_COIN_RECEIVED_IS_TRANSACTION_MINE = BaseActivity.class.getPackage().toString()+"_bradcast_coin_received_is_transaction_mine";
 
 }

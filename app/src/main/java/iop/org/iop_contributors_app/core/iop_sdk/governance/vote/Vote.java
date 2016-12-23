@@ -3,6 +3,8 @@ package iop.org.iop_contributors_app.core.iop_sdk.governance.vote;
 import java.io.Serializable;
 import java.util.Arrays;
 
+import iop.org.iop_contributors_app.core.iop_sdk.crypto.CryptoBytes;
+
 /**
  * Created by mati on 21/12/16.
  */
@@ -17,8 +19,8 @@ public class Vote implements Serializable {
         YES
     }
 
-    /** contract wich the vote is pointing */
-    private byte[] genesisHash;
+    /** contract wich the vote is pointing hex */
+    private String genesisHashHex;
     /** Vote -> yes/no */
     private VoteType vote;
     /** freeze outputs -> is the amount of votes that the user is giving as yes or no */
@@ -27,10 +29,18 @@ public class Vote implements Serializable {
     private String lockedOutputHashHex;
     private int lockedOutputIndex;
 
-    public Vote(byte[] genesisHash, VoteType vote, long votingPower) {
-        this.genesisHash = genesisHash;
+    public Vote(String genesisHash, VoteType vote, long votingPower) {
+        this.genesisHashHex = genesisHash;
         this.vote = vote;
         this.votingPower = votingPower;
+    }
+
+    public Vote(String genesisHashHex, VoteType vote, long votingPower, String lockedOutputHashHex, int lockedOutputIndex) {
+        this.genesisHashHex = genesisHashHex;
+        this.vote = vote;
+        this.votingPower = votingPower;
+        this.lockedOutputHashHex = lockedOutputHashHex;
+        this.lockedOutputIndex = lockedOutputIndex;
     }
 
     /**
@@ -42,7 +52,12 @@ public class Vote implements Serializable {
     }
 
     public byte[] getGenesisHash() {
-        return genesisHash;
+        return CryptoBytes.fromHexToBytes(genesisHashHex);
+    }
+
+
+    public String getGenesisHashHex() {
+        return genesisHashHex;
     }
 
     public VoteType getVote() {
@@ -56,11 +71,12 @@ public class Vote implements Serializable {
     @Override
     public String toString() {
         return "Vote{" +
-                "genesisHash=" + Arrays.toString(genesisHash) +
+                "genesisHash=" + genesisHashHex +
                 ", vote=" + vote +
                 ", votingPower=" + votingPower +
                 '}';
     }
+
 
     public void setLockedOutputHashHex(String lockedOutputHashHex) {
         this.lockedOutputHashHex = lockedOutputHashHex;

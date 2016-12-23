@@ -30,7 +30,9 @@ public class WalletConstants {
 
     /** User-agent to use for network access. */
     public static final String USER_AGENT = ApplicationController.getInstance().getPackageName()+"_AGENT";
+    // dialogs
     public static final String SHOW_RESTORE_SUCCED_DIALOG = "restore_succed";
+    public static final String SHOW_BLOCKCHAIN_OFF_DIALOG = "blockchain_off";
 
     // report mail
     public static final String REPORT_EMAIL = "matias.furszyfer@fermat.org";

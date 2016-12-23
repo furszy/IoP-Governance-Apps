@@ -11,14 +11,14 @@ import iop.org.iop_contributors_app.core.iop_sdk.crypto.CryptoBytes;
 
 public class Vote implements Serializable {
 
-
-
     public enum VoteType{
         NO,
         NEUTRAL,
         YES
     }
 
+    /** Application id */
+    private long voteId;
     /** contract wich the vote is pointing hex */
     private String genesisHashHex;
     /** Vote -> yes/no */
@@ -35,7 +35,8 @@ public class Vote implements Serializable {
         this.votingPower = votingPower;
     }
 
-    public Vote(String genesisHashHex, VoteType vote, long votingPower, String lockedOutputHashHex, int lockedOutputIndex) {
+    public Vote(long voteId,String genesisHashHex, VoteType vote, long votingPower, String lockedOutputHashHex, int lockedOutputIndex) {
+        this.voteId = voteId;
         this.genesisHashHex = genesisHashHex;
         this.vote = vote;
         this.votingPower = votingPower;
@@ -58,6 +59,10 @@ public class Vote implements Serializable {
 
     public String getGenesisHashHex() {
         return genesisHashHex;
+    }
+
+    public void setVoteId(long voteId) {
+        this.voteId = voteId;
     }
 
     public VoteType getVote() {
@@ -92,5 +97,9 @@ public class Vote implements Serializable {
 
     public int getLockedOutputIndex() {
         return lockedOutputIndex;
+    }
+
+    public long getVoteId() {
+        return voteId;
     }
 }

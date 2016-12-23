@@ -22,12 +22,12 @@ public class VotesDao {
     /**
      * Lockeo outputs
      * // todo: esto está hecho de una forma que solo deje pasar los que no existen, cuando tenga ganas tengo que hacerlo bien..
-     * @param genesisHash
+     * @param parentVoteTransactionHash
      * @param index
      * @return
      */
-    public boolean isLockedOutput(String genesisHash, long index) {
-        return handler.getVote(genesisHash)!=null;
+    public boolean isLockedOutput(String parentVoteTransactionHash, long index) {
+        return handler.isLockedOutput(parentVoteTransactionHash,index);
     }
 
     /**
@@ -37,15 +37,22 @@ public class VotesDao {
      * @return
      */
     public boolean exist(Vote vote) {
-        return handler.getVote(vote.getGenesisHashHex())!=null;
+        return handler.exist(vote.getGenesisHashHex());
     }
 
-    public boolean lockOutput(String lockedOutputHex, int lockedOutputIndex) {
-        return false;
+    public boolean lockOutput(long voteId,String lockedOutputHex, int lockedOutputIndex) {
+        return handler.updateVote(voteId,lockedOutputHex,lockedOutputIndex);
     }
 
-    public void addVote(Vote vote){
-        handler.addVote(vote);
+    /**
+     *
+     * @param vote
+     * @return  vote ID
+     */
+    public long addVote(Vote vote){
+        long voteId = handler.addVote(vote);
+        vote.setVoteId(voteId);
+        return voteId;
     }
 
     /**

@@ -69,7 +69,7 @@ public class VotesDatabaseHandler extends SQLiteOpenHelper {
 
     private ContentValues buildContentValues(Vote vote){
         ContentValues contentValues = new ContentValues();
-        contentValues.put(KEY_GENESIS_HASH,vote.getGenesisHash());
+        contentValues.put(KEY_GENESIS_HASH,vote.getGenesisHashHex());
         contentValues.put(KEY_VOTE_TYPE,vote.getVote().toString());
         contentValues.put(KEY_VOTING_POWER,vote.getVotingPower());
         contentValues.put(KEY_LOCKED_OUTPUT_HASH,vote.getLockedOutputHex());
@@ -89,13 +89,14 @@ public class VotesDatabaseHandler extends SQLiteOpenHelper {
     }
 
     private Vote buildVote(Cursor cursor) {
+        long id = cursor.getLong(KEY_POS_ID);
         String genesisHash = cursor.getString(KEY_POS_GENESIS_HASH);
         Vote.VoteType voteType = Vote.VoteType.valueOf(cursor.getString(KEY_POS_VOTE_TYPE));
         long votingPower = cursor.getLong(KEY_POS_VOTING_POWER);
         String lockedOutputHash = cursor.getString(KEY_POS_LOCKED_OUTPUT_HASH);
         int lockedOutputIndex = cursor.getInt(KEY_POS_LOCKED_OUTPUT_INDEX);
 
-        return new Vote(genesisHash,voteType,votingPower,lockedOutputHash,lockedOutputIndex);
+        return new Vote(id,genesisHash,voteType,votingPower,lockedOutputHash,lockedOutputIndex);
     }
 
 
@@ -104,14 +105,15 @@ public class VotesDatabaseHandler extends SQLiteOpenHelper {
      */
 
     // Adding new contact
-    public void addVote(Vote vote) {
+    public long addVote(Vote vote) {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = buildContentValues(vote);
 
         // Inserting Row
-        db.insert(TABLE_VOTES, null, values);
+        long id = db.insert(TABLE_VOTES, null, values);
         db.close(); // Closing database connection
+        return id;
     }
 
     // Getting single contact
@@ -126,6 +128,31 @@ public class VotesDatabaseHandler extends SQLiteOpenHelper {
         Vote contact = buildVote(cursor);
         // return contact
         return contact;
+    }
+
+    public boolean exist(String genesisHashHex) {
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        Cursor cursor = db.query(TABLE_VOTES,allColumns(), KEY_GENESIS_HASH + "=?",
+                new String[] { genesisHashHex }, null, null, null, null);
+        if (cursor != null)
+            cursor.moveToFirst();
+        boolean exist = cursor.getCount()==1;
+        cursor.close();
+        // return contact
+        return exist;
+    }
+
+    public boolean isLockedOutput(String parentVoteTransactionHash, long index) {
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        Cursor cursor = db.query(TABLE_VOTES,allColumns(), KEY_LOCKED_OUTPUT_HASH + "=?",
+                new String[] { parentVoteTransactionHash }, null, null, null, null);
+        if (cursor != null)
+            cursor.moveToFirst();
+        boolean exist = cursor.getCount()>0;
+        cursor.close();
+        return exist;
     }
 
 
@@ -169,6 +196,18 @@ public class VotesDatabaseHandler extends SQLiteOpenHelper {
 //                new String[] { String.valueOf(contact.getID()) });
 //        db.close();
 //    }
+
+    public boolean updateVote(long voteId,String lockedOutputHex, int lockedOutputIndex) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(KEY_LOCKED_OUTPUT_HASH,lockedOutputHex);
+        contentValues.put(KEY_LOCKED_OUTPUT_INDEX,lockedOutputIndex);
+        // updating row
+        int resp = db.update(TABLE_VOTES, contentValues, KEY_ID + " = ?",
+                new String[] { String.valueOf(voteId) });
+        db.close();
+        return resp==1;
+    }
 
 
     // Getting contacts Count

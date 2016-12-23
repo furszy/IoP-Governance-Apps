@@ -470,7 +470,7 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
             cursor.moveToFirst();
 
         cursor.close();
-        db.close();
+        //db.close();
         return cursor.getCount()>0;
     }
 

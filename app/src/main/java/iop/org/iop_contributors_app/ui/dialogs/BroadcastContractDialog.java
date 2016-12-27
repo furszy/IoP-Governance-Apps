@@ -21,6 +21,7 @@ public class BroadcastContractDialog extends DialogFragment {
     private Proposal proposal;
     private CancelLister cancelListener;
 
+    private boolean actionCompleted;
 
     public static BroadcastContractDialog newinstance(WalletModule module, Proposal proposal) {
         BroadcastContractDialog broadcastContractDialog = new BroadcastContractDialog();
@@ -46,6 +47,7 @@ public class BroadcastContractDialog extends DialogFragment {
             @Override
             public void onClick(View v) {
                 handleSend();
+                actionCompleted = true;
                 dismiss();
             }
         });
@@ -53,7 +55,7 @@ public class BroadcastContractDialog extends DialogFragment {
         txt_cancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                cancelListener.cancel();
+                actionCompleted = false;
                 dismiss();
             }
         });
@@ -70,7 +72,7 @@ public class BroadcastContractDialog extends DialogFragment {
     @Override
     public void onDismiss(DialogInterface dialog) {
         super.onDismiss(dialog);
-        cancelListener.cancel();
+        cancelListener.cancel(actionCompleted);
     }
 
     public void setProposal(Proposal proposal) {

@@ -308,8 +308,11 @@ public class ProposalSummaryActivity extends ContributorBaseActivity implements 
         preparateLoading("Proposal broadcasted!", R.drawable.icon_done);
         BroadcastContractDialog.newinstance(module,proposal).setCancelListener(new CancelLister() {
             @Override
-            public void cancel() {
-                hideDoneLoading();
+            public void cancel(boolean isActionCompleted) {
+                if (!isActionCompleted) {
+                    hideDoneLoading();
+                    lockBroadcast.set(false);
+                }
             }
         }).show(getSupportFragmentManager(),"broadcastContractDialog");
     }

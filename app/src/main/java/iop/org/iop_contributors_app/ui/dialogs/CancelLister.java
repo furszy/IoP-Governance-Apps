@@ -5,6 +5,6 @@ package iop.org.iop_contributors_app.ui.dialogs;
  */
 public interface CancelLister {
 
-    void cancel();
+    void cancel(boolean isActionCompleted);
 
 }

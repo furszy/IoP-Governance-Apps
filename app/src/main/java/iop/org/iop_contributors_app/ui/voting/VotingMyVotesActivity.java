@@ -1,6 +1,9 @@
 package iop.org.iop_contributors_app.ui.voting;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -11,18 +14,21 @@ import java.util.List;
 
 import iop.org.iop_contributors_app.ApplicationController;
 import iop.org.iop_contributors_app.R;
-import iop.org.iop_contributors_app.core.iop_sdk.governance.propose.Proposal;
+import iop_sdk.governance.propose.Proposal;
+import iop.org.furszy_lib.adapter.FermatListItemListeners;
 import iop.org.iop_contributors_app.ui.voting.base.VotingBaseActivity;
 import iop.org.iop_contributors_app.ui.voting.ui.components.my_votes.MyVotesAdapter;
 import iop.org.iop_contributors_app.ui.voting.ui.dialogs.VoteDialog;
 import iop.org.iop_contributors_app.ui.voting.util.VoteWrapper;
-import iop.org.iop_contributors_app.wallet.WalletModule;
+import iop.org.iop_contributors_app.module.WalletModule;
+
+import static iop.org.iop_contributors_app.ui.voting.VotingVoteSummary.INTENT_VOTE_WRAPPER;
 
 /**
  * Created by mati on 17/11/16.
  */
 
-public class VotingMyVotesActivity extends VotingBaseActivity {
+public class VotingMyVotesActivity extends VotingBaseActivity implements FermatListItemListeners<VoteWrapper> {
 
 
     private WalletModule module;
@@ -67,6 +73,7 @@ public class VotingMyVotesActivity extends VotingBaseActivity {
         // todo: adapter
         adapter = new MyVotesAdapter(this,module);
         recyclerView.setAdapter(adapter);
+        adapter.setFermatListEventListener(this);
 
         container_empty_screen.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -153,4 +160,24 @@ public class VotingMyVotesActivity extends VotingBaseActivity {
     }
 
 
+    @Override
+    public void onItemClickListener(VoteWrapper data, int position) {
+//        Intent intent = new Intent(this,VotingVoteSummary.class);
+//        startActivity(intent);
+
+        Intent intent = new Intent(this,VotingVoteSummary.class);
+        intent.putExtra(INTENT_VOTE_WRAPPER,data);
+        String transitionName = getString(R.string.transition_card);
+        ActivityOptionsCompat options =
+                ActivityOptionsCompat.makeSceneTransitionAnimation(this,
+                        recyclerView.getChildAt(position),//albumCoverImageView,   // The view which starts the transition
+                        transitionName    // The transitionName of the view we’re transitioning to
+                );
+        ActivityCompat.startActivity(this, intent, options.toBundle());
+    }
+
+    @Override
+    public void onLongItemClickListener(VoteWrapper data, int position) {
+
+    }
 }

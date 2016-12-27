@@ -1,12 +1,10 @@
 package iop.org.iop_contributors_app.ui.voting.ui.components.my_votes;
 
 import android.view.View;
-import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.TextView;
 
 import iop.org.iop_contributors_app.R;
-import iop.org.iop_contributors_app.furszy_sdk.android.adapter.FermatViewHolder;
+import iop.org.furszy_lib.adapter.FermatViewHolder;
 
 /**
  * Created by mati on 23/12/16.

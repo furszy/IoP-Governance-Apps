@@ -9,9 +9,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import iop.org.iop_contributors_app.core.iop_sdk.blockchain.explorer.TransactionStorage;
+import iop_sdk.blockchain.explorer.TransactionStorage;
 
-import static iop.org.iop_contributors_app.core.iop_sdk.blockchain.explorer.TxUtils.serializeData;
+import static iop_sdk.blockchain.explorer.TxUtils.serializeData;
+
 
 /**
  * Created by mati on 18/12/16.

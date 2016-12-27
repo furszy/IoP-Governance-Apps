@@ -3,7 +3,6 @@ package iop.org.iop_contributors_app.ui.settings;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.ViewGroup;
 
@@ -11,8 +10,7 @@ import iop.org.iop_contributors_app.ApplicationController;
 import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.ui.base.BaseActivity;
 import iop.org.iop_contributors_app.ui.settings.fragments.DevSettingsFragment;
-import iop.org.iop_contributors_app.ui.settings.fragments.SettingsFragment;
-import iop.org.iop_contributors_app.wallet.WalletModule;
+import iop.org.iop_contributors_app.module.WalletModule;
 
 /**
  * Created by mati on 09/12/16.

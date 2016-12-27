@@ -50,8 +50,8 @@ import com.google.common.base.Charsets;
 import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.providers.FileAttachmentProvider;
 import iop.org.iop_contributors_app.utils.CrashReporter;
-import iop.org.iop_contributors_app.utils.Io;
-import iop.org.iop_contributors_app.wallet.WalletConstants;
+import iop_sdk.global.utils.Io;
+import org.iop.WalletConstants;
 
 
 /**

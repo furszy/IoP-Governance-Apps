@@ -48,7 +48,6 @@ import com.google.common.base.Strings;
 
 import android.app.ActivityManager;
 import android.app.admin.DevicePolicyManager;
-import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -56,8 +55,8 @@ import android.content.res.Resources;
 import android.os.Build;
 
 import iop.org.iop_contributors_app.ApplicationController;
-import iop.org.iop_contributors_app.wallet.WalletConfiguration;
-import iop.org.iop_contributors_app.wallet.WalletConstants;
+
+import org.iop.WalletConstants;
 
 /**
  * @author Andreas Schildbach

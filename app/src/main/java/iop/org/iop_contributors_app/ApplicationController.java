@@ -2,13 +2,10 @@ package iop.org.iop_contributors_app;
 
 import android.app.ActivityManager;
 import android.app.Application;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
@@ -27,18 +24,16 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.rolling.RollingFileAppender;
 import ch.qos.logback.core.rolling.TimeBasedRollingPolicy;
 import iop.org.iop_contributors_app.configurations.DefaultForumConfiguration;
-import iop.org.iop_contributors_app.configurations.ProfileServerConfigurations;
-import iop.org.iop_contributors_app.core.iop_sdk.forum.ForumConfigurations;
-import iop.org.iop_contributors_app.profile_server.ModuleProfileServer;
 
 import iop.org.iop_contributors_app.services.BlockchainServiceImpl;
 import iop.org.iop_contributors_app.configurations.WalletPreferencesConfiguration;
 import iop.org.iop_contributors_app.ui.voting.VotingStartActivity;
 import iop.org.iop_contributors_app.utils.CrashReporter;
-import iop.org.iop_contributors_app.wallet.BlockchainManager;
-import iop.org.iop_contributors_app.wallet.WalletConstants;
-import iop.org.iop_contributors_app.wallet.WalletManager;
-import iop.org.iop_contributors_app.wallet.WalletModule;
+import iop_sdk.wallet.BlockchainManager;
+import org.iop.WalletConstants;
+import iop_sdk.wallet.WalletManager;
+import iop.org.iop_contributors_app.module.WalletModule;
+import iop_sdk.forum.ForumConfigurations;
 
 /**
  * Created by mati on 07/11/16.
@@ -53,7 +48,7 @@ public class ApplicationController extends Application {
 
     // profile server
     //private ModuleProfileServer profileServerService;
-    //private ProfileServerConfigurations profileServerPref;
+    //private ProfileServerConfigurationsImp profileServerPref;
     // wallet
     private WalletModule module;
     private WalletPreferencesConfiguration walletConfigurations;
@@ -100,7 +95,7 @@ public class ApplicationController extends Application {
 
         // initialize preferences
         walletConfigurations = new WalletPreferencesConfiguration(getSharedPreferences(WalletPreferencesConfiguration.PREFS_NAME,0));
-        //profileServerPref = new ProfileServerConfigurations(this,getSharedPreferences(ProfileServerConfigurations.PREFS_NAME,0));
+        //profileServerPref = new ProfileServerConfigurationsImp(this,getSharedPreferences(ProfileServerConfigurationsImp.PREFS_NAME,0));
         forumConfigurations = new DefaultForumConfiguration(getSharedPreferences(DefaultForumConfiguration.PREFS_NAME,0),getFilesDir().getAbsolutePath());
 
         // Crash reporter
@@ -133,8 +128,8 @@ public class ApplicationController extends Application {
 //
 //            // We need an Editor object to make preference changes.
 //            // All objects are from android.context.Context
-//            SharedPreferences settings = getSharedPreferences(ProfileServerConfigurations.PREFS_NAME, 0);
-//            profileServerPref = new ProfileServerConfigurations(this,settings);
+//            SharedPreferences settings = getSharedPreferences(ProfileServerConfigurationsImp.PREFS_NAME, 0);
+//            profileServerPref = new ProfileServerConfigurationsImp(this,settings);
 //
 //            startProfileServerService();
 //
@@ -260,7 +255,7 @@ public class ApplicationController extends Application {
         return module.getBlockchainManager();
     }
 
-//    public ProfileServerConfigurations getProfileServerPreferences() {
+//    public ProfileServerConfigurationsImp getProfileServerPreferences() {
 //        return profileServerPref;
 //    }
 

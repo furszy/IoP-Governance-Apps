@@ -4,11 +4,9 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 
-import org.bitcoinj.wallet.Wallet;
-
 import iop.org.iop_contributors_app.ui.base.BaseActivity;
 import iop.org.iop_contributors_app.ui.dialogs.wallet.InsuficientFundsDialog;
-import iop.org.iop_contributors_app.wallet.WalletModule;
+import iop.org.iop_contributors_app.module.WalletModule;
 
 /**
  * Created by mati on 21/12/16.

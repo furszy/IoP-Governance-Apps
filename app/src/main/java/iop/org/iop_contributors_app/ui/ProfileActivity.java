@@ -38,14 +38,12 @@ import java.util.regex.Pattern;
 import de.hdodenhof.circleimageview.CircleImageView;
 import iop.org.iop_contributors_app.ApplicationController;
 import iop.org.iop_contributors_app.R;
-import iop.org.iop_contributors_app.core.iop_sdk.forum.InvalidUserParametersException;
-import iop.org.iop_contributors_app.core.iop_sdk.forum.flarum.FlarumClientInvalidDataException;
-import iop.org.iop_contributors_app.core.iop_sdk.forum.ForumProfile;
-import iop.org.iop_contributors_app.ui.base.BaseActivity;
 import iop.org.iop_contributors_app.ui.dialogs.DialogBuilder;
-import iop.org.iop_contributors_app.wallet.WalletModule;
+import iop.org.iop_contributors_app.module.WalletModule;
+import iop_sdk.forum.ForumProfile;
+import iop_sdk.forum.InvalidUserParametersException;
 
-import static iop.org.iop_contributors_app.core.iop_sdk.utils.StringUtils.cleanString;
+import static iop_sdk.governance.utils.StringUtils.cleanString;
 
 /**
  * Created by mati on 07/11/16.
@@ -404,9 +402,9 @@ public class ProfileActivity extends ContributorBaseActivity implements View.OnC
 
 
 //        Bundle bundle = new Bundle();
-//        bundle.putByteArray(ProfileServerConfigurations.PREFS_USER_VERSION,version);
-//        bundle.putString(ProfileServerConfigurations.PREFS_USER_NAME,name);
-//        bundle.putByteArray(ProfileServerConfigurations.PREFS_USER_IMAGE,img);
+//        bundle.putByteArray(ProfileServerConfigurationsImp.PREFS_USER_VERSION,version);
+//        bundle.putString(ProfileServerConfigurationsImp.PREFS_USER_NAME,name);
+//        bundle.putByteArray(ProfileServerConfigurationsImp.PREFS_USER_IMAGE,img);
 //
 //        sendWorkToProfileService(bundle);
 

@@ -11,10 +11,8 @@ import org.libsodium.jni.encoders.Hex;
 import java.math.BigInteger;
 import java.util.Arrays;
 
-import iop.org.iop_contributors_app.core.iop_sdk.blockchain.OpReturnOutputTransaction;
-import iop.org.iop_contributors_app.core.iop_sdk.crypto.CryptoBytes;
-
-import static iop.org.iop_contributors_app.core.iop_sdk.utils.ArraysUtils.numericTypeToByteArray;
+import iop_sdk.blockchain.OpReturnOutputTransaction;
+import iop_sdk.crypto.CryptoBytes;
 
 /**
  * Created by mati on 18/11/16.

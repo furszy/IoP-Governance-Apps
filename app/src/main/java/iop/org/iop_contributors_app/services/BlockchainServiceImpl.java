@@ -45,24 +45,26 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import iop.org.iop_contributors_app.ApplicationController;
 import iop.org.iop_contributors_app.R;
-import iop.org.iop_contributors_app.ServerWrapper;
 import iop.org.iop_contributors_app.configurations.WalletPreferencesConfiguration;
-import iop.org.iop_contributors_app.core.iop_sdk.blockchain.explorer.TransactionFinder;
-import iop.org.iop_contributors_app.core.iop_sdk.blockchain.explorer.TransactionFinderListener;
-import iop.org.iop_contributors_app.core.iop_sdk.governance.NotConnectedPeersException;
-import iop.org.iop_contributors_app.core.iop_sdk.governance.propose.Proposal;
-import iop.org.iop_contributors_app.core.iop_sdk.governance.vote.Vote;
+
+import iop_sdk.blockchain.NotConnectedPeersException;
+import iop_sdk.governance.propose.Proposal;
 import iop.org.iop_contributors_app.ui.CreateProposalActivity;
 import iop.org.iop_contributors_app.ui.base.BaseActivity;
-import iop.org.iop_contributors_app.wallet.BlockchainManager;
-import iop.org.iop_contributors_app.wallet.BlockchainManagerListener;
-import iop.org.iop_contributors_app.wallet.CantSendVoteException;
-import iop.org.iop_contributors_app.wallet.InvalidProposalException;
-import iop.org.iop_contributors_app.wallet.db.CantSaveProposalException;
-import iop.org.iop_contributors_app.wallet.exceptions.CantSendProposalException;
-import iop.org.iop_contributors_app.wallet.WalletConstants;
-import iop.org.iop_contributors_app.wallet.WalletModule;
-import iop.org.iop_contributors_app.wallet.exceptions.InsuficientBalanceException;
+import iop_sdk.wallet.BlockchainManager;
+import iop_sdk.wallet.BlockchainManagerListener;
+import iop.org.iop_contributors_app.module.exceptions.CantSendVoteException;
+import iop.org.iop_contributors_app.module.exceptions.InvalidProposalException;
+import iop.org.iop_contributors_app.module.db.CantSaveProposalException;
+import iop.org.iop_contributors_app.module.exceptions.CantSendProposalException;
+import org.iop.WalletConstants;
+import iop.org.iop_contributors_app.module.WalletModule;
+import iop_sdk.wallet.exceptions.InsuficientBalanceException;
+import iop_sdk.blockchain.explorer.TransactionFinder;
+import iop_sdk.blockchain.explorer.TransactionFinderListener;
+import iop_sdk.forum.wrapper.ServerWrapper;
+import iop_sdk.governance.vote.Vote;
+import iop_sdk.wallet.utils.BlockchainState;
 
 import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.CANT_SAVE_PROPOSAL_DIALOG;
 import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.COMMON_ERROR_DIALOG;
@@ -83,8 +85,9 @@ import static iop.org.iop_contributors_app.ui.CreateProposalActivity.INTENT_EXTR
 
 
 import static iop.org.iop_contributors_app.ui.base.BaseActivity.ACTION_NOTIFICATION;
-import static iop.org.iop_contributors_app.wallet.WalletConstants.BLOCKCHAIN_STATE_BROADCAST_THROTTLE_MS;
-import static iop.org.iop_contributors_app.wallet.WalletConstants.CONTEXT;
+import static org.iop.WalletConstants.BLOCKCHAIN_STATE_BROADCAST_THROTTLE_MS;
+import static org.iop.WalletConstants.CONTEXT;
+import static org.iop.WalletConstants.SHOW_BLOCKCHAIN_OFF_DIALOG;
 
 /**
  * Created by mati on 11/11/16.
@@ -285,6 +288,7 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
             //todo: acá falta una validación para saber si la transaccion es mia.
 
             boolean isTransactionMine = walletModule.isProposalTransactionMine(transaction);
+            int depthInBlocks = transaction.getConfidence().getDepthInBlocks();
 
             Intent intent = new Intent(ACTION_NOTIFICATION);
             intent.putExtra(INTENT_BROADCAST_TYPE, INTENT_DATA + INTENT_NOTIFICATION);
@@ -293,7 +297,7 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
 
             localBroadcast.sendBroadcast(intent);
 
-            if (!isTransactionMine) {
+            if (!isTransactionMine ){//&& depthInBlocks>1) {
                 android.support.v4.app.NotificationCompat.Builder mBuilder =
                         new NotificationCompat.Builder(getApplicationContext())
                                 .setSmallIcon(R.drawable.ic__launcher)
@@ -301,10 +305,19 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
                                 .setContentText("Transaction received for a value of " + coin1.toFriendlyString());
 
                 nm.notify(1, mBuilder.build());
+            } else {
+                android.support.v4.app.NotificationCompat.Builder mBuilder =
+                        new NotificationCompat.Builder(getApplicationContext())
+                                .setSmallIcon(R.drawable.ic__launcher)
+                                .setContentTitle("IoPs received!")
+                                .setContentText("Transaction received for a value of " + coin1.toFriendlyString())
+                                .setSubText("This transaction is not confirmed yet, will be confirmed in the next 10 minutes");
 
+                nm.notify(5, mBuilder.build());
             }
         }
     };
+
 
     private TransactionFinderListener transactionFinderListener = new TransactionFinderListener() {
         @Override
@@ -562,44 +575,82 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
 
         org.bitcoinj.core.Context.propagate(WalletConstants.CONTEXT);
 
-        if (!isChecking.getAndSet(true)) {
+        try {
 
-            if (application.isVotingApp()) {
-                // obtain proposal contracts to filter
-                final ServerWrapper.RequestProposalsResponse requestProposalsResponse = walletModule.requestProposals(blockchainManager.getChainHeadHeight());
-                final List<String> txHashes = requestProposalsResponse.getTxHashes();
+            if (!isChecking.getAndSet(true)) {
+
+                List<String> txHashes = null;
+                ServerWrapper.RequestProposalsResponse requestProposalsResponse= null;
+
+                if (application.isVotingApp()) {
+                    // obtain proposal contracts to filter
+                    requestProposalsResponse = walletModule.requestProposals(blockchainManager.getChainHeadHeight());
+                    if (requestProposalsResponse != null) {
+                        txHashes = requestProposalsResponse.getTxHashes();
+                    }
+                }
+
+                final List<String> finalTxHashes = txHashes;
+                final ServerWrapper.RequestProposalsResponse finalRequestProposalsResponse = requestProposalsResponse;
                 blockchainManager.addBlockchainManagerListener(new BlockchainManagerListener() {
                     @Override
                     public void peerGroupInitialized(PeerGroup peerGroup) {
-                        // new thing
-                        transactionFinder = walletModule.getAndCreateFinder(peerGroup);
-                        transactionFinder.addTransactionFinderListener(transactionFinderListener);
-                        transactionFinder.setLastBestChainHash(requestProposalsResponse.getBestChainHash());
-                        for (String txHash : txHashes) {
-                            transactionFinder.addTx(txHash);
-                            //todo: falta agregar el output de lockeo en el finder como hice abajo..
-                        }
+                        if (application.isVotingApp()) {
+                            // new thing
+                            transactionFinder = walletModule.getAndCreateFinder(peerGroup);
+                            transactionFinder.addTransactionFinderListener(transactionFinderListener);
+                            transactionFinder.setLastBestChainHash(finalRequestProposalsResponse.getBestChainHash());
+                            for (String txHash : finalTxHashes) {
+                                transactionFinder.addTx(txHash);
+                                //todo: falta agregar el output de lockeo en el finder como hice abajo..
+                            }
 //                        transactionFinder.addTx("068af403e4f0935c419fb71ab625fb8364d7565a436c35a997ba6a75c9883b2b");
 //                        transactionFinder.addWatchedOutpoint(Sha256Hash.wrap("068af403e4f0935c419fb71ab625fb8364d7565a436c35a997ba6a75c9883b2b"),0,36);
-                        transactionFinder.startDownload();
+                            transactionFinder.startDownload();
+                        }
+                    }
+
+                    @Override
+                    public void onBlockchainOff(Set<BlockchainState.Impediment> impediments) {
+                        String dialogText = "Blockchain impediment: ";
+                        int i = 0;
+                        for (BlockchainState.Impediment impediment : impediments) {
+                            dialogText += impediment.toString();
+                            if (i != 0) dialogText += " , ";
+                            i++;
+                        }
+                        walletModule.showDialog(SHOW_BLOCKCHAIN_OFF_DIALOG, dialogText);
+                    }
+
+                    @Override
+                    public void checkStart() {
+                        LOG.debug("acquiring wakelock");
+                        wakeLock.acquire();
+                    }
+
+                    @Override
+                    public void checkEnd() {
+                        LOG.debug("releasing wakelock");
+                        wakeLock.release();
                     }
                 });
-            }
 
-            blockchainManager.check(
-                    impediments,
-                    wakeLock,
-                    peerConnectivityListener,
-                    peerConnectivityListener,
-                    blockchainDownloadListener);
+                blockchainManager.check(
+                        impediments,
+                        peerConnectivityListener,
+                        peerConnectivityListener,
+                        blockchainDownloadListener);
 
-            //todo: ver si conviene esto..
+                //todo: ver si conviene esto..
 //        broadcastBlockchainState();
 
-            isChecking.set(false);
-        }else {
-            LOG.error("algo malo pasa");
-            Log.e(TAG,"algo malo pasa..");
+                isChecking.set(false);
+            } else {
+                LOG.error("algo malo pasa");
+                Log.e(TAG, "algo malo pasa..");
+            }
+        }catch (Exception e){
+            e.printStackTrace();
         }
     }
 

@@ -9,7 +9,7 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import iop.org.iop_contributors_app.R;
-import iop.org.iop_contributors_app.core.iop_sdk.governance.propose.Proposal;
+import iop_sdk.governance.propose.Proposal;
 import iop.org.iop_contributors_app.ui.components.switch_seek_bar.SwitchSeekBar;
 
 /**

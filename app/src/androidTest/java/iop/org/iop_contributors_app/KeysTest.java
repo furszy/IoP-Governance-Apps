@@ -10,7 +10,8 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.util.Arrays;
 
-import iop.org.iop_contributors_app.core.iop_sdk.crypto.KeyEd25519;
+import iop.org.iop_sdk_android.core.crypto.KeyEd25519;
+
 
 /**
  * Created by mati on 09/11/16.

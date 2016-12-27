@@ -10,7 +10,7 @@ import android.view.ViewGroup;
 import java.util.List;
 
 import iop.org.iop_contributors_app.R;
-import iop.org.iop_contributors_app.core.iop_sdk.governance.propose.Proposal;
+import iop_sdk.governance.propose.Proposal;
 import iop.org.iop_contributors_app.ui.voting.base.VotingBaseActivity;
 import iop.org.iop_contributors_app.ui.voting.ui.components.proposals.VotingProposalsAdapter;
 import iop.org.iop_contributors_app.ui.voting.ui.dialogs.VoteDialog;

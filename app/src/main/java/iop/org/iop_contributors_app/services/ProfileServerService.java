@@ -13,9 +13,9 @@
 //import java.util.concurrent.Executors;
 //
 //import iop.org.iop_contributors_app.ApplicationController;
-//import iop.org.iop_contributors_app.HardCodedConstans;
+//import iop_sdk.global.HardCodedConstans;
 //import iop.org.iop_contributors_app.Profile;
-//import iop.org.iop_contributors_app.configurations.ProfileServerConfigurations;
+//import iop.org.iop_contributors_app.configurations.ProfileServerConfigurationsImp;
 //import iop.org.iop_contributors_app.ProfileServerConnectionState;
 //import iop.org.iop_contributors_app.Signer;
 //import iop.org.iop_contributors_app.core.iop_sdk.IoHandler;
@@ -28,7 +28,7 @@
 //import iop.org.iop_contributors_app.profile_server.ProfileServerImp;
 //import iop.org.iop_contributors_app.profile_server.processors.MessageProcessor;
 //import iop.org.iop_contributors_app.profile_server.protocol.IopHomeNodeProto3;
-//import iop.org.iop_contributors_app.wallet.WalletModule;
+//import iop.org.iop_contributors_app.module.WalletModule;
 //
 //import static iop.org.iop_contributors_app.ProfileServerConnectionState.CHECK_IN;
 //import static iop.org.iop_contributors_app.ProfileServerConnectionState.HAS_ROLE_LIST;
@@ -51,7 +51,7 @@
 //    private WalletModule module;
 //
 //    private ProfileServer profileServer;
-//    private ProfileServerConfigurations configurationsPreferences;
+//    private ProfileServerConfigurationsImp configurationsPreferences;
 //
 //    private ProfileServerConnectionState state = NO_SERVER;
 //
@@ -114,7 +114,7 @@
 //            configurationsPreferences.setHost(host);
 //        }
 //        // primary port
-////        ProfileServerConfigurations profileServerConfigurations = new ProfileServerConfigurations(host,primaryPort);
+////        ProfileServerConfigurationsImp profileServerConfigurations = new ProfileServerConfigurationsImp(host,primaryPort);
 ////        profileServerConfigurations.setClPort(clPort);
 ////        profileServerConfigurations.setNonClPort(nonClPort);
 //

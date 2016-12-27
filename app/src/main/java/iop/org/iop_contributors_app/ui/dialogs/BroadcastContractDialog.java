@@ -10,10 +10,10 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import iop.org.iop_contributors_app.R;
-import iop.org.iop_contributors_app.core.iop_sdk.governance.propose.Proposal;
 import iop.org.iop_contributors_app.services.BlockchainService;
 import iop.org.iop_contributors_app.ui.ProposalSummaryActivity;
-import iop.org.iop_contributors_app.wallet.WalletModule;
+import iop.org.iop_contributors_app.module.WalletModule;
+import iop_sdk.governance.propose.Proposal;;
 
 public class BroadcastContractDialog extends DialogFragment {
 

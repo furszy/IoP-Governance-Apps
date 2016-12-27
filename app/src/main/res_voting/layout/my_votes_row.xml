@@ -6,7 +6,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_margin="12dp"
     android:elevation="30dp"
-    app:cardCornerRadius="4dp">
+    app:cardCornerRadius="4dp"
+    android:transitionName="@string/transition_card">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -40,7 +41,8 @@
                     android:layout_height="wrap_content"
                     android:text="Build a better place"
                     android:textColor="#333333"
-                    android:textSize="18sp" />
+                    android:textSize="18sp"
+                    android:lines="1"/>
 
 
 

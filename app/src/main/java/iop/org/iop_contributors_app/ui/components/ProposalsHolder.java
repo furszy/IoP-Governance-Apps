@@ -5,7 +5,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import iop.org.iop_contributors_app.R;
-import iop.org.iop_contributors_app.furszy_sdk.android.adapter.FermatViewHolder;
+import iop.org.furszy_lib.adapter.FermatViewHolder;
 
 /**
  * Created by mati on 17/11/16.

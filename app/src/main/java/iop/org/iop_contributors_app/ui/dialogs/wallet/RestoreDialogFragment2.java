@@ -3,10 +3,8 @@ package iop.org.iop_contributors_app.ui.dialogs.wallet;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.text.format.DateUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,10 +15,15 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.apache.commons.codec.Charsets;
 import org.bitcoinj.wallet.Wallet;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileFilter;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
@@ -28,14 +31,14 @@ import java.util.List;
 
 import iop.org.iop_contributors_app.ApplicationController;
 import iop.org.iop_contributors_app.R;
-import iop.org.iop_contributors_app.ui.dialogs.Crypto;
+import iop_sdk.crypto.Crypto;
 import iop.org.iop_contributors_app.ui.dialogs.DialogBuilder;
 import iop.org.iop_contributors_app.ui.dialogs.FileAdapter;
 import iop.org.iop_contributors_app.ui.dialogs.ShowPasswordCheckListener;
-import iop.org.iop_contributors_app.ui.dialogs.WalletUtils;
-import iop.org.iop_contributors_app.wallet.CantRestoreEncryptedWallet;
-import iop.org.iop_contributors_app.wallet.WalletConstants;
-import iop.org.iop_contributors_app.wallet.WalletModule;
+import iop_sdk.wallet.utils.WalletUtils;
+import iop.org.iop_contributors_app.module.exceptions.CantRestoreEncryptedWallet;
+import org.iop.WalletConstants;
+import iop.org.iop_contributors_app.module.WalletModule;
 
 /**
  * Created by mati on 06/12/16.
@@ -76,7 +79,7 @@ public class RestoreDialogFragment2 extends DialogFragment {
 
                 if (WalletUtils.BACKUP_FILE_FILTER.accept(file))
                     module.restoreWalletFromProtobuf(file);
-                else if (WalletUtils.KEYS_FILE_FILTER.accept(file))
+                else if (KEYS_FILE_FILTER.accept(file))
                     module.restorePrivateKeysFromBase58(file);
                 else if (Crypto.OPENSSL_FILE_FILTER.accept(file)) {
                     try {
@@ -226,4 +229,40 @@ public class RestoreDialogFragment2 extends DialogFragment {
     public void onCancel(DialogInterface dialog) {
         passwordView.setText(null); // get rid of it asap
     }
+
+    public static final FileFilter KEYS_FILE_FILTER = new FileFilter() {
+
+
+        @Override
+        public boolean accept(final File file)
+        {
+            BufferedReader reader = null;
+
+            try
+            {
+                reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), Charsets.UTF_8));
+                WalletUtils.readKeys(reader, WalletConstants.NETWORK_PARAMETERS,WalletConstants.BACKUP_MAX_CHARS);
+
+                return true;
+            }
+            catch (final IOException x)
+            {
+                return false;
+            }
+            finally
+            {
+                if (reader != null)
+                {
+                    try
+                    {
+                        reader.close();
+                    }
+                    catch (final IOException x)
+                    {
+                        // swallow
+                    }
+                }
+            }
+        }
+    };
 }

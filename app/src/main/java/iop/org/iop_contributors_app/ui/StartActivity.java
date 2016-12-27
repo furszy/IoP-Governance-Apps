@@ -31,10 +31,10 @@
 //import iop.org.iop_contributors_app.core.iop_sdk.forum.InvalidUserParametersException;
 //import iop.org.iop_contributors_app.ui.dialogs.DialogBuilder;
 //import iop.org.iop_contributors_app.ui.settings.DevActivity;
-//import iop.org.iop_contributors_app.wallet.WalletModule;
+//import iop.org.iop_contributors_app.module.WalletModule;
 //
 //import static android.content.pm.PackageManager.PERMISSION_GRANTED;
-//import static iop.org.iop_contributors_app.core.iop_sdk.utils.StringUtils.cleanString;
+//import static iop_sdk.governance.utils.StringUtils.cleanString;
 //
 ///**
 // * Created by mati on 28/11/16.

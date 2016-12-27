@@ -8,7 +8,7 @@ import android.content.Intent;
 import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.intents.constants.IntentsConstants;
 import iop.org.iop_contributors_app.ui.dialogs.DialogBuilder;
-import iop.org.iop_contributors_app.wallet.WalletManager;
+import iop_sdk.wallet.WalletManager;
 
 /**
  * Created by mati on 08/12/16.

@@ -29,11 +29,9 @@ import java.util.concurrent.Executors;
 
 import iop.org.iop_contributors_app.ApplicationController;
 import iop.org.iop_contributors_app.R;
-import iop.org.iop_contributors_app.services.BlockchainService;
-import iop.org.iop_contributors_app.ui.ProposalSummaryActivity;
-import iop.org.iop_contributors_app.wallet.CantSendTransactionException;
-import iop.org.iop_contributors_app.wallet.WalletConstants;
-import iop.org.iop_contributors_app.wallet.WalletModule;
+import iop.org.iop_contributors_app.module.exceptions.CantSendTransactionException;
+import org.iop.WalletConstants;
+import iop.org.iop_contributors_app.module.WalletModule;
 
 /**
  * Created by mati on 05/12/16.

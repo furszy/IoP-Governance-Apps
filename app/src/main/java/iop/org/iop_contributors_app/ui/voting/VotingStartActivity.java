@@ -1,7 +1,6 @@
 package iop.org.iop_contributors_app.ui.voting;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
@@ -30,17 +29,16 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import iop.org.iop_contributors_app.ApplicationController;
-import iop.org.iop_contributors_app.ConnectionRefusedException;
 import iop.org.iop_contributors_app.R;
-import iop.org.iop_contributors_app.core.iop_sdk.forum.ForumProfile;
-import iop.org.iop_contributors_app.core.iop_sdk.forum.InvalidUserParametersException;
-import iop.org.iop_contributors_app.ui.MainActivity;
 import iop.org.iop_contributors_app.ui.ProfileActivity;
 import iop.org.iop_contributors_app.ui.dialogs.DialogBuilder;
 import iop.org.iop_contributors_app.ui.settings.DevActivity;
-import iop.org.iop_contributors_app.wallet.WalletModule;
+import iop.org.iop_contributors_app.module.WalletModule;
+import iop_sdk.forum.ForumProfile;
+import iop_sdk.forum.InvalidUserParametersException;
+import iop_sdk.global.exceptions.ConnectionRefusedException;
 
-import static iop.org.iop_contributors_app.core.iop_sdk.utils.StringUtils.cleanString;
+import static iop_sdk.governance.utils.StringUtils.cleanString;
 
 public class VotingStartActivity extends AppCompatActivity {
 

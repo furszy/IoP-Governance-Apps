@@ -21,7 +21,7 @@ import java.io.File;
 
 import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.ui.dialogs.DialogBuilder;
-import iop.org.iop_contributors_app.wallet.WalletConstants;
+import org.iop.WalletConstants;
 
 public class ArchiveBackupDialogFragment extends DialogFragment
 {

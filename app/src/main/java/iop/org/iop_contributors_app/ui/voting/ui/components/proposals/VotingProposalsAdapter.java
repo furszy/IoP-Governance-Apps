@@ -4,15 +4,15 @@ import android.content.Intent;
 import android.view.View;
 
 import iop.org.iop_contributors_app.R;
-import iop.org.iop_contributors_app.core.iop_sdk.governance.propose.Proposal;
+import iop_sdk.governance.propose.Proposal;
 import iop.org.iop_contributors_app.ui.CreateProposalActivity;
 import iop.org.iop_contributors_app.ui.ForumActivity;
-import iop.org.iop_contributors_app.furszy_sdk.android.adapter.FermatAdapterImproved;
+import iop.org.furszy_lib.adapter.FermatAdapterImproved;
 import iop.org.iop_contributors_app.ui.voting.VotingProposalActivity;
 import iop.org.iop_contributors_app.ui.voting.VotingProposalsActivity;
-import iop.org.iop_contributors_app.wallet.WalletModule;
+import iop.org.iop_contributors_app.module.WalletModule;
 
-import static iop.org.iop_contributors_app.core.iop_sdk.blockchain.utils.CoinUtils.coinToString;
+import static iop_sdk.blockchain.utils.CoinUtils.coinToString;
 import static iop.org.iop_contributors_app.ui.ProposalSummaryActivity.INTENT_DATA_PROPOSAL;
 
 /**

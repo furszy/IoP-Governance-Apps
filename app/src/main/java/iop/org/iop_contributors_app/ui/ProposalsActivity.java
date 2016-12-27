@@ -11,11 +11,10 @@ import java.util.List;
 
 import iop.org.iop_contributors_app.ApplicationController;
 import iop.org.iop_contributors_app.R;
-import iop.org.iop_contributors_app.core.iop_sdk.governance.propose.Proposal;
-import iop.org.iop_contributors_app.furszy_sdk.android.mine.AnimationUtils;
-import iop.org.iop_contributors_app.ui.base.BaseActivity;
+import iop_sdk.governance.propose.Proposal;
+import iop.org.furszy_lib.utils.AnimationUtils;
 import iop.org.iop_contributors_app.ui.components.ProposalsAdapter;
-import iop.org.iop_contributors_app.wallet.WalletModule;
+import iop.org.iop_contributors_app.module.WalletModule;
 
 /**
  * Created by mati on 17/11/16.

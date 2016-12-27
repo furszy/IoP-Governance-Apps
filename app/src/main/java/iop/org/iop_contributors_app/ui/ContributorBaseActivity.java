@@ -2,16 +2,21 @@ package iop.org.iop_contributors_app.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import iop.org.iop_contributors_app.R;
-import iop.org.iop_contributors_app.furszy_sdk.android.adapter.FermatListItemListeners;
-import iop.org.iop_contributors_app.furszy_sdk.android.nav_view.NavMenuItem;
-import iop.org.iop_contributors_app.furszy_sdk.android.nav_view.NavViewAdapter;
+import iop.org.furszy_lib.adapter.FermatListItemListeners;
+import iop.org.furszy_lib.nav_view.NavMenuItem;
+import iop.org.iop_contributors_app.ui.components.NavViewAdapter;
 import iop.org.iop_contributors_app.ui.base.BaseActivity;
-import iop.org.iop_contributors_app.ui.base.NavViewHelper;
+import iop.org.furszy_lib.base.NavViewHelper;
+import iop.org.iop_contributors_app.ui.dialogs.wallet.BackupDialog;
+import iop.org.iop_contributors_app.ui.dialogs.wallet.RestoreDialogFragment2;
 
 /**
  * Created by mati on 21/12/16.
@@ -74,6 +79,40 @@ public abstract class ContributorBaseActivity extends BaseActivity {
         items.add(new NavMenuItem(MENU_DRAWER_CREATE_PROPOSAL,false,"Create Proposal",R.drawable.icon_createcontributioncontract_off_drawer));
         items.add(new NavMenuItem(MENU_DRAWER_SETTINGS,false,"Settings",R.drawable.icon_settings_off));
         return items;
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+        if (hasOptionMenu()) {
+
+            MenuInflater inflater = getMenuInflater();
+            inflater.inflate(R.menu.menu, menu);
+        }
+
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+
+            case R.id.action_backup:
+                BackupDialog backupDialog = BackupDialog.factory(this);
+                backupDialog.show(getFragmentManager(),"backup_dialog");
+                return true;
+
+            case R.id.action_restore:
+                RestoreDialogFragment2 restoreDialogFragment = RestoreDialogFragment2.newInstance();
+                restoreDialogFragment.show(getFragmentManager(),"restore_dialog");
+                return true;
+
+            default:
+                // If we got here, the user's action was not recognized.
+                // Invoke the superclass to handle it.
+                return super.onOptionsItemSelected(item);
+
+        }
     }
 
 

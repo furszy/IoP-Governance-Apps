@@ -3,9 +3,10 @@ package iop.org.iop_contributors_app.utils;
 import android.content.Context;
 import android.content.Intent;
 
-import iop.org.iop_contributors_app.core.iop_sdk.governance.propose.Proposal;
+
 import iop.org.iop_contributors_app.ui.ForumActivity;
-import iop.org.iop_contributors_app.wallet.WalletModule;
+import iop.org.iop_contributors_app.module.WalletModule;
+import iop_sdk.governance.propose.Proposal;;
 
 /**
  * Created by mati on 21/12/16.

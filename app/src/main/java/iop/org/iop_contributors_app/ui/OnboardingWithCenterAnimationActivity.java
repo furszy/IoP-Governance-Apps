@@ -2,7 +2,6 @@ package iop.org.iop_contributors_app.ui;
 
 import android.Manifest;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
@@ -32,20 +31,20 @@ import android.widget.Toast;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import iop.org.iop_contributors_app.ApplicationController;
-import iop.org.iop_contributors_app.ConnectionRefusedException;
+
 import iop.org.iop_contributors_app.R;
-import iop.org.iop_contributors_app.core.iop_sdk.forum.ForumProfile;
-import iop.org.iop_contributors_app.core.iop_sdk.forum.InvalidUserParametersException;
-import iop.org.iop_contributors_app.ui.components.AsteriskPasswordTransformationMethod;
+import iop.org.furszy_lib.AsteriskPasswordTransformationMethod;
 import iop.org.iop_contributors_app.ui.dialogs.DialogBuilder;
 import iop.org.iop_contributors_app.ui.settings.DevActivity;
-import iop.org.iop_contributors_app.wallet.WalletModule;
+import iop.org.iop_contributors_app.module.WalletModule;
+import iop_sdk.forum.ForumProfile;
+import iop_sdk.forum.InvalidUserParametersException;
+import iop_sdk.global.exceptions.ConnectionRefusedException;
 
-import static iop.org.iop_contributors_app.core.iop_sdk.utils.StringUtils.cleanString;
+import static iop_sdk.governance.utils.StringUtils.cleanString;
 
 public class OnboardingWithCenterAnimationActivity extends AppCompatActivity {
 

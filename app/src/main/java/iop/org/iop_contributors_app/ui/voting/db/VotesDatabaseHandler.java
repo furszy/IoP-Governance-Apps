@@ -10,7 +10,8 @@ import android.database.sqlite.SQLiteOpenHelper;
 import java.util.ArrayList;
 import java.util.List;
 
-import iop.org.iop_contributors_app.core.iop_sdk.governance.vote.Vote;
+import iop_sdk.governance.vote.Vote;
+
 
 /**
  * Created by mati on 21/12/16.

@@ -7,9 +7,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import iop.org.iop_contributors_app.core.iop_sdk.forum.ForumConfigurations;
-import iop.org.iop_contributors_app.core.iop_sdk.forum.ForumProfile;
-import iop.org.iop_contributors_app.core.iop_sdk.forum.discourge.com.wareninja.opensource.discourse.DiscouseApiConstants;
+import iop_sdk.forum.ForumConfigurations;
+import iop_sdk.forum.ForumProfile;
+import iop_sdk.forum.discourge.com.wareninja.opensource.discourse.DiscouseApiConstants;
+
 
 /**
  * Created by mati on 22/11/16.

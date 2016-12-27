@@ -5,8 +5,8 @@ import org.bitcoinj.core.AddressFormatException;
 
 import java.util.Map;
 
-import iop.org.iop_contributors_app.core.iop_sdk.governance.propose.Proposal;
-import iop.org.iop_contributors_app.wallet.WalletConstants;
+import iop_sdk.governance.propose.Proposal;
+import org.iop.WalletConstants;
 
 /**
  * Created by mati on 03/12/16.

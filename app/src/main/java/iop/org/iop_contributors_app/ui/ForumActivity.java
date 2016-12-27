@@ -19,8 +19,6 @@ import android.webkit.WebView;
 import android.widget.ProgressBar;
 
 import iop.org.iop_contributors_app.R;
-import iop.org.iop_contributors_app.core.iop_sdk.forum.discourge.com.wareninja.opensource.discourse.DiscouseApiConstants;
-import iop.org.iop_contributors_app.ui.base.BaseActivity;
 
 import static iop.org.iop_contributors_app.ui.ProposalSummaryActivity.INTENT_DATA_PROPOSAL;
 

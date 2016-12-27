@@ -1,11 +1,8 @@
 package iop.org.iop_contributors_app.ui;
 
 import android.app.AlertDialog;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.Html;
@@ -28,17 +25,15 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import iop.org.iop_contributors_app.R;
-import iop.org.iop_contributors_app.core.iop_sdk.governance.propose.Proposal;
-import iop.org.iop_contributors_app.furszy_sdk.android.mine.SizeUtils;
-import iop.org.iop_contributors_app.ui.base.BaseActivity;
+import iop_sdk.governance.propose.Proposal;
+import iop.org.furszy_lib.utils.SizeUtils;
 import iop.org.iop_contributors_app.ui.dialogs.BroadcastContractDialog;
 import iop.org.iop_contributors_app.ui.dialogs.CancelLister;
 import iop.org.iop_contributors_app.ui.dialogs.SimpleDialogs;
-import iop.org.iop_contributors_app.ui.dialogs.wallet.InsuficientFundsDialog;
-import iop.org.iop_contributors_app.wallet.db.CantGetProposalException;
+import iop.org.iop_contributors_app.module.db.CantGetProposalException;
 
-import static iop.org.iop_contributors_app.core.iop_sdk.blockchain.utils.CoinUtils.coinToString;
-import static iop.org.iop_contributors_app.core.iop_sdk.utils.TextUtils.transformToHtmlWithColor;
+import static iop_sdk.blockchain.utils.CoinUtils.coinToString;
+import static iop_sdk.governance.utils.TextUtils.transformToHtmlWithColor;
 import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.CANT_SAVE_PROPOSAL_DIALOG;
 import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.COMMON_ERROR_DIALOG;
 import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INSUFICIENTS_FUNDS_DIALOG;

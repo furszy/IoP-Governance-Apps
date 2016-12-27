@@ -7,7 +7,6 @@ import android.view.Menu;
 import android.view.ViewGroup;
 
 import iop.org.iop_contributors_app.R;
-import iop.org.iop_contributors_app.ui.base.BaseActivity;
 import iop.org.iop_contributors_app.ui.settings.fragments.SettingsFragment;
 
 /**

@@ -44,18 +44,18 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import iop.org.iop_contributors_app.R;
-import iop.org.iop_contributors_app.core.iop_sdk.blockchain.OpReturnOutputTransaction;
-import iop.org.iop_contributors_app.core.iop_sdk.governance.propose.Proposal;
+import iop_sdk.governance.propose.Proposal;
 import iop.org.iop_contributors_app.utils.Cache;
-import iop.org.iop_contributors_app.wallet.InvalidAddressException;
-import iop.org.iop_contributors_app.wallet.WalletConstants;
-import iop.org.iop_contributors_app.wallet.WalletModule;
-import iop.org.iop_contributors_app.wallet.exceptions.InsuficientBalanceException;
+import iop.org.iop_contributors_app.module.exceptions.InvalidAddressException;
+import org.iop.WalletConstants;
+import iop.org.iop_contributors_app.module.WalletModule;
+import iop_sdk.wallet.exceptions.InsuficientBalanceException;
+import iop_sdk.blockchain.OpReturnOutputTransaction;
 
 import static android.graphics.Color.WHITE;
-import static iop.org.iop_contributors_app.core.iop_sdk.utils.ArraysUtils.numericTypeToByteArray;
-import static iop.org.iop_contributors_app.furszy_sdk.android.mine.QrUtils.encodeAsBitmap;
-import static iop.org.iop_contributors_app.furszy_sdk.android.mine.SizeUtils.convertDpToPx;
+import static iop_sdk.governance.utils.ArraysUtils.numericTypeToByteArray;
+import static iop.org.furszy_lib.utils.QrUtils.encodeAsBitmap;
+import static iop.org.furszy_lib.utils.SizeUtils.convertDpToPx;
 
 /**
  * Created by mati on 09/12/16.

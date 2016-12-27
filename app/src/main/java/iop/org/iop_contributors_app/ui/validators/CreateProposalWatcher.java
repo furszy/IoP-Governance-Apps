@@ -6,15 +6,15 @@ import android.view.View;
 
 import java.util.Map;
 
-import static iop.org.iop_contributors_app.core.iop_sdk.governance.ProposalForum.FIELD_ADDRESS;
-import static iop.org.iop_contributors_app.core.iop_sdk.governance.ProposalForum.FIELD_BLOCK_REWARD;
-import static iop.org.iop_contributors_app.core.iop_sdk.governance.ProposalForum.FIELD_BODY;
-import static iop.org.iop_contributors_app.core.iop_sdk.governance.ProposalForum.FIELD_CATEGORY;
-import static iop.org.iop_contributors_app.core.iop_sdk.governance.ProposalForum.FIELD_END_BLOCK;
-import static iop.org.iop_contributors_app.core.iop_sdk.governance.ProposalForum.FIELD_START_BLOCK;
-import static iop.org.iop_contributors_app.core.iop_sdk.governance.ProposalForum.FIELD_SUBTITLE;
-import static iop.org.iop_contributors_app.core.iop_sdk.governance.ProposalForum.FIELD_TITLE;
-import static iop.org.iop_contributors_app.core.iop_sdk.governance.ProposalForum.FIELD_VALUE;
+import static iop_sdk.governance.ProposalForum.FIELD_ADDRESS;
+import static iop_sdk.governance.ProposalForum.FIELD_BLOCK_REWARD;
+import static iop_sdk.governance.ProposalForum.FIELD_BODY;
+import static iop_sdk.governance.ProposalForum.FIELD_CATEGORY;
+import static iop_sdk.governance.ProposalForum.FIELD_END_BLOCK;
+import static iop_sdk.governance.ProposalForum.FIELD_START_BLOCK;
+import static iop_sdk.governance.ProposalForum.FIELD_SUBTITLE;
+import static iop_sdk.governance.ProposalForum.FIELD_TITLE;
+import static iop_sdk.governance.ProposalForum.FIELD_VALUE;
 
 
 /**

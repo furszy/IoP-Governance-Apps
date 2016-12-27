@@ -1,6 +1,5 @@
 package iop.org.iop_contributors_app.ui.settings.fragments;
 
-import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
@@ -15,7 +14,6 @@ import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import java.io.IOException;
 
@@ -27,10 +25,8 @@ import iop.org.iop_contributors_app.ui.dialogs.ReportIssueDialogBuilder;
 import iop.org.iop_contributors_app.ui.settings.DevActivity;
 import iop.org.iop_contributors_app.ui.settings.IoPBalanceActivity;
 import iop.org.iop_contributors_app.utils.CrashReporter;
-import iop.org.iop_contributors_app.wallet.WalletConstants;
-import iop.org.iop_contributors_app.wallet.WalletModule;
-
-import static android.widget.Toast.*;
+import org.iop.WalletConstants;
+import iop.org.iop_contributors_app.module.WalletModule;
 
 /**
  * Created by mati on 22/11/16.

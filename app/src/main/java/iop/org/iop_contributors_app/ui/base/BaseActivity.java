@@ -21,9 +21,6 @@ import android.support.v7.app.NotificationCompat;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -31,7 +28,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.zxing.WriterException;
 import com.squareup.picasso.Picasso;
 
 import org.bitcoinj.core.Context;
@@ -41,19 +37,18 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import iop.org.furszy_lib.base.NavViewHelper;
 import iop.org.iop_contributors_app.ApplicationController;
 import iop.org.iop_contributors_app.R;
-import iop.org.iop_contributors_app.furszy_sdk.android.nav_view.NavMenuItem;
+import iop.org.furszy_lib.nav_view.NavMenuItem;
 import iop.org.iop_contributors_app.intents.DialogIntentsBuilder;
 import iop.org.iop_contributors_app.intents.constants.IntentsConstants;
 import iop.org.iop_contributors_app.services.BlockchainServiceImpl;
 import iop.org.iop_contributors_app.ui.ProfileActivity;
-import iop.org.iop_contributors_app.furszy_sdk.android.adapter.FermatListItemListeners;
-import iop.org.iop_contributors_app.ui.dialogs.wallet.BackupDialog;
-import iop.org.iop_contributors_app.ui.dialogs.wallet.RestoreDialogFragment2;
+import iop.org.furszy_lib.adapter.FermatListItemListeners;
 import iop.org.iop_contributors_app.utils.Cache;
-import iop.org.iop_contributors_app.wallet.WalletConstants;
-import iop.org.iop_contributors_app.wallet.WalletModule;
+import org.iop.WalletConstants;
+import iop.org.iop_contributors_app.module.WalletModule;
 
 import static android.graphics.Color.WHITE;
 import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENTE_BROADCAST_DIALOG_TYPE;
@@ -63,8 +58,8 @@ import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.IN
 import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENT_DIALOG;
 import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENT_NOTIFICATION;
 import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.RESTORE_SUCCED_DIALOG;
-import static iop.org.iop_contributors_app.furszy_sdk.android.mine.QrUtils.encodeAsBitmap;
-import static iop.org.iop_contributors_app.furszy_sdk.android.mine.SizeUtils.convertDpToPx;
+import static iop.org.furszy_lib.utils.QrUtils.encodeAsBitmap;
+import static iop.org.furszy_lib.utils.SizeUtils.convertDpToPx;
 
 /**
  * Created by mati on 07/11/16.
@@ -125,40 +120,6 @@ public abstract class BaseActivity extends AppCompatActivity {
 
         }catch (Exception e){
             e.printStackTrace();
-        }
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-
-        if (hasOptionMenu()) {
-
-            MenuInflater inflater = getMenuInflater();
-            inflater.inflate(R.menu.menu, menu);
-        }
-
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-
-            case R.id.action_backup:
-                BackupDialog backupDialog = BackupDialog.factory(this);
-                backupDialog.show(getFragmentManager(),"backup_dialog");
-                return true;
-
-            case R.id.action_restore:
-                RestoreDialogFragment2 restoreDialogFragment = RestoreDialogFragment2.newInstance();
-                restoreDialogFragment.show(getFragmentManager(),"restore_dialog");
-                return true;
-
-            default:
-                // If we got here, the user's action was not recognized.
-                // Invoke the superclass to handle it.
-                return super.onOptionsItemSelected(item);
-
         }
     }
 
@@ -240,6 +201,10 @@ public abstract class BaseActivity extends AppCompatActivity {
 
         // todo: pasar esto al navViewHelper, no lo aún ya que es lo mismo en las apps voting y en contributors
         imgQr = (ImageView) navigationView.findViewById(R.id.img_qr);
+        int appColor = appColor();
+        if (appColor!=-1){
+            ((TextView)navigationView.findViewById(R.id.txt_increase_voting_power)).setTextColor(appColor);
+        }
         txt_available_balance = (TextView) headerView.findViewById(R.id.txt_available_balance);
         txt_lock_balance = (TextView) headerView.findViewById(R.id.txt_lock_balance);
         txt_drawer_name = (TextView) headerView.findViewById(R.id.txt_drawer_name);
@@ -268,7 +233,7 @@ public abstract class BaseActivity extends AppCompatActivity {
                         qrBitmap = encodeAsBitmap(module.getReceiveAddress(),imgQr.getWidth(),imgQr.getHeight(),WHITE,Color.parseColor("#1A1A1A"));
                         Cache.setQrLittleBitmapCache(qrBitmap);
                     }
-                } catch (WriterException e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
 
@@ -285,8 +250,10 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     private void updateBalances(){
         try {
-            txt_available_balance.setText(module.getAvailableBalanceStr() + " IoPs");
-            txt_lock_balance.setText(module.getLockedBalance() + " IoPs");
+            if (hasDrawer()) {
+                txt_available_balance.setText(module.getAvailableBalanceStr() + " IoPs");
+                txt_lock_balance.setText(module.getLockedBalance() + " IoPs");
+            }
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -315,6 +282,14 @@ public abstract class BaseActivity extends AppCompatActivity {
     }
 
     /***************************** end Nav View region  ************************************/
+
+    /**
+     * Method to change the app base color
+     * @return
+     */
+    protected int appColor(){
+        return -1;
+    }
 
 
     protected void sendWorkToProfileService(Bundle data){
@@ -428,9 +403,7 @@ public abstract class BaseActivity extends AppCompatActivity {
 
             dialog.show();
 
-        } catch (WriterException e) {
-            e.printStackTrace();
-        }catch ( Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

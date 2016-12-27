@@ -1,15 +1,13 @@
 package iop.org.iop_contributors_app.services;
 
-import android.app.Service;
-import android.content.Context;
-import android.content.Intent;
-import android.os.IBinder;
 import android.support.annotation.Nullable;
 
 import org.bitcoinj.core.Peer;
 import org.bitcoinj.core.StoredBlock;
 
 import java.util.List;
+
+import iop_sdk.wallet.utils.BlockchainState;
 
 /**
  * Created by mati on 11/11/16.

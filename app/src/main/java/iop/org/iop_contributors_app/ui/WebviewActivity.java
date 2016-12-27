@@ -20,7 +20,7 @@ import java.util.Map;
 
 import iop.org.iop_contributors_app.ApplicationController;
 import iop.org.iop_contributors_app.R;
-import iop.org.iop_contributors_app.wallet.WalletModule;
+import iop.org.iop_contributors_app.module.WalletModule;
 
 
 public class WebviewActivity extends Activity {

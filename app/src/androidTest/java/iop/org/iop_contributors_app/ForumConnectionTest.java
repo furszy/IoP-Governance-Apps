@@ -44,16 +44,11 @@ import java.util.Map;
 
 import javax.net.ssl.SSLContext;
 
-import iop.org.iop_contributors_app.configurations.DefaultForumConfiguration;
-import iop.org.iop_contributors_app.core.iop_sdk.forum.ForumClientDiscourseImp;
-import iop.org.iop_contributors_app.core.iop_sdk.forum.ForumConfigurations;
-import iop.org.iop_contributors_app.core.iop_sdk.forum.discourge.com.wareninja.opensource.discourse.DiscourseApiClient;
-import iop.org.iop_contributors_app.core.iop_sdk.forum.discourge.com.wareninja.opensource.discourse.DiscouseApiConstants;
-import iop.org.iop_contributors_app.core.iop_sdk.forum.discourge.com.wareninja.opensource.discourse.utils.RequestParameter;
-import iop.org.iop_contributors_app.core.iop_sdk.forum.discourge.com.wareninja.opensource.discourse.utils.ResponseListener;
-import iop.org.iop_contributors_app.core.iop_sdk.forum.discourge.com.wareninja.opensource.discourse.utils.ResponseMeta;
-import iop.org.iop_contributors_app.core.iop_sdk.forum.discourge.com.wareninja.opensource.discourse.utils.ResponseModel;
-import iop.org.iop_contributors_app.wallet.db.CantUpdateProposalException;
+import iop_sdk.forum.discourge.com.wareninja.opensource.discourse.DiscourseApiClient;
+import iop_sdk.forum.discourge.com.wareninja.opensource.discourse.DiscouseApiConstants;
+import iop_sdk.forum.discourge.com.wareninja.opensource.discourse.utils.ResponseListener;
+import iop_sdk.forum.discourge.com.wareninja.opensource.discourse.utils.ResponseMeta;
+import iop_sdk.forum.discourge.com.wareninja.opensource.discourse.utils.ResponseModel;
 
 /**
  * Created by mati on 21/11/16.
@@ -191,8 +186,6 @@ public class ForumConnectionTest {
             httpPut.setEntity(requestEntity);
 //            httpPut.setHeader("Content-type", "application/json");
             httpPut.setHeader("Content-type", "application/x-www-form-urlencoded");
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
         } catch (Exception e){
             e.printStackTrace();
         }

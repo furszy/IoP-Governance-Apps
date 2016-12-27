@@ -28,10 +28,10 @@ import java.util.TimeZone;
 import iop.org.iop_contributors_app.ApplicationController;
 import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.ui.dialogs.DialogBuilder;
-import iop.org.iop_contributors_app.ui.dialogs.Iso8601Format;
+import iop_sdk.wallet.utils.Iso8601Format;
 import iop.org.iop_contributors_app.ui.dialogs.ShowPasswordCheckListener;
-import iop.org.iop_contributors_app.wallet.WalletConstants;
-import iop.org.iop_contributors_app.wallet.WalletModule;
+import org.iop.WalletConstants;
+import iop.org.iop_contributors_app.module.WalletModule;
 
 import static com.google.common.base.Preconditions.checkState;
 

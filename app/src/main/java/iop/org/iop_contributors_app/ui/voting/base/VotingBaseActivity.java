@@ -2,20 +2,26 @@ package iop.org.iop_contributors_app.ui.voting.base;
 
 import android.content.Intent;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import iop.org.iop_contributors_app.R;
-import iop.org.iop_contributors_app.furszy_sdk.android.adapter.FermatListItemListeners;
-import iop.org.iop_contributors_app.furszy_sdk.android.nav_view.NavMenuItem;
+import iop.org.furszy_lib.adapter.FermatListItemListeners;
+import iop.org.furszy_lib.nav_view.NavMenuItem;
 import iop.org.iop_contributors_app.ui.CreateProposalActivity;
 import iop.org.iop_contributors_app.ui.ForumActivity;
-import iop.org.iop_contributors_app.ui.ProposalsActivity;
 import iop.org.iop_contributors_app.ui.SettingsActivity;
 import iop.org.iop_contributors_app.ui.base.BaseActivity;
-import iop.org.iop_contributors_app.ui.base.NavViewHelper;
+import iop.org.furszy_lib.base.NavViewHelper;
+import iop.org.iop_contributors_app.ui.dialogs.wallet.BackupDialog;
+import iop.org.iop_contributors_app.ui.dialogs.wallet.RestoreDialogFragment2;
+import iop.org.iop_contributors_app.ui.voting.VotingMyVotesActivity;
 
 /**
  * Created by mati on 21/12/16.
@@ -46,7 +52,7 @@ public abstract class VotingBaseActivity extends BaseActivity {
                     intent = new Intent(VotingBaseActivity.this, CreateProposalActivity.class);
                     break;
                 case MENU_DRAWER_PROPOSALS:
-                    intent = new Intent(VotingBaseActivity.this, ProposalsActivity.class);
+                    intent = new Intent(VotingBaseActivity.this, VotingMyVotesActivity.class);
                     break;
                 case MENU_DRAWER_SETTINGS:
                     intent = new Intent(VotingBaseActivity.this, SettingsActivity.class);
@@ -66,7 +72,7 @@ public abstract class VotingBaseActivity extends BaseActivity {
 
     protected void onNavViewCreated(NavViewHelper navViewHelper){
         navViewHelper.setNavViewAdapter(new VotingNavViewAdapter(this,loadNavMenuItems()));
-        navViewHelper.setHeaderViewBackground(R.drawable.img_test);
+        navViewHelper.setHeaderViewBackground(R.drawable.banner);
         navViewHelper.setNavMenuListener(listener);
         navViewHelper.setNavViewBackgroundColor(Color.WHITE);
     }
@@ -75,14 +81,54 @@ public abstract class VotingBaseActivity extends BaseActivity {
     protected List<NavMenuItem> loadNavMenuItems() {
         List<NavMenuItem> items = new ArrayList<>();
 //        items.add(new NavMenuItem(MENU_DRAWER_HOME,true,"Home",R.drawable.icon_home_on));
-        items.add(new NavMenuItem(MENU_DRAWER_CREATE_PROPOSAL,false,"Vote",R.drawable.ic_votes_drawer));
-        items.add(new NavMenuItem(MENU_DRAWER_FORUM,false,"Forum",R.drawable.icon_forum_off));
-        items.add(new NavMenuItem(MENU_DRAWER_PROPOSALS,true,"My Votes", R.drawable.icon_mycontracts_off_drawer));
-        items.add(new NavMenuItem(MENU_DRAWER_SETTINGS,false,"Settings",R.drawable.icon_settings_off));
+        items.add(new NavMenuItem(MENU_DRAWER_CREATE_PROPOSAL,false,"Home",R.drawable.ic_home_drawer,R.drawable.on_ic_home_drawer));
+        items.add(new NavMenuItem(MENU_DRAWER_FORUM,false,"Forum",R.drawable.ic_forum_drawer,R.drawable.on_ic_forum_drawer));
+        items.add(new NavMenuItem(MENU_DRAWER_PROPOSALS,true,"My Votes", R.drawable.ic_votes_drawer,R.drawable.on_ic_votes_drawer));
+        items.add(new NavMenuItem(MENU_DRAWER_SETTINGS,false,"Settings",R.drawable.ic_settings_drawer,R.drawable.on_ic_settings_drawer));
         return items;
     }
 
 
+    protected int appColor(){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            return getResources().getColor(R.color.purple,null);
+        }else
+            return getResources().getColor(R.color.purple);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+        if (hasOptionMenu()) {
+
+            MenuInflater inflater = getMenuInflater();
+            inflater.inflate(R.menu.menu, menu);
+        }
+
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+
+            case R.id.action_backup:
+                BackupDialog backupDialog = BackupDialog.factory(this);
+                backupDialog.show(getFragmentManager(),"backup_dialog");
+                return true;
+
+            case R.id.action_restore:
+                RestoreDialogFragment2 restoreDialogFragment = RestoreDialogFragment2.newInstance();
+                restoreDialogFragment.show(getFragmentManager(),"restore_dialog");
+                return true;
+
+            default:
+                // If we got here, the user's action was not recognized.
+                // Invoke the superclass to handle it.
+                return super.onOptionsItemSelected(item);
+
+        }
+    }
 
 
 }

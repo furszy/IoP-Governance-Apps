@@ -15,19 +15,19 @@ import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import iop.org.iop_contributors_app.R;
-import iop.org.iop_contributors_app.core.iop_sdk.crypto.CryptoBytes;
-import iop.org.iop_contributors_app.core.iop_sdk.governance.propose.Proposal;
-import iop.org.iop_contributors_app.core.iop_sdk.governance.vote.Vote;
-import iop.org.iop_contributors_app.core.iop_sdk.utils.IoPCalculator;
+import iop_sdk.governance.propose.Proposal;
+import iop_sdk.governance.utils.IoPCalculator;
 import iop.org.iop_contributors_app.ui.components.switch_seek_bar.SwitchSeekBar;
 import iop.org.iop_contributors_app.ui.dialogs.SimpleDialogs;
 import iop.org.iop_contributors_app.ui.voting.base.VotingBaseActivity;
 import iop.org.iop_contributors_app.ui.voting.ui.dialogs.BroadcastVoteDialog;
 import iop.org.iop_contributors_app.ui.voting.ui.dialogs.CancelLister;
 import iop.org.iop_contributors_app.utils.ForumUtils;
-import iop.org.iop_contributors_app.wallet.db.CantGetProposalException;
+import iop.org.iop_contributors_app.module.db.CantGetProposalException;
+import iop_sdk.crypto.CryptoBytes;
+import iop_sdk.governance.vote.Vote;
 
-import static iop.org.iop_contributors_app.core.iop_sdk.blockchain.utils.CoinUtils.coinToString;
+import static iop_sdk.blockchain.utils.CoinUtils.coinToString;
 import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.COMMON_ERROR_DIALOG;
 import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INSUFICIENTS_FUNDS_DIALOG;
 import static iop.org.iop_contributors_app.intents.constants.IntentsConstants.INTENTE_BROADCAST_DIALOG_TYPE;

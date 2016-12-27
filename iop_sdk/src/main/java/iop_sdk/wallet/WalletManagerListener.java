@@ -1,0 +1,11 @@
+package iop_sdk.wallet;
+
+/**
+ * Created by mati on 26/12/16.
+ */
+
+public interface WalletManagerListener {
+
+    void onWalletRestored();
+
+}

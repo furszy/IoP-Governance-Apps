@@ -1,13 +1,18 @@
 package iop.org.iop_contributors_app.ui.voting;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewPropertyAnimatorCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -31,9 +36,12 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import iop.org.furszy_lib.AsteriskPasswordTransformationMethod;
 import iop.org.furszy_lib.dialogs.DialogBuilder;
 import iop.org.iop_contributors_app.R;
+import iop.org.iop_contributors_app.ui.OnboardingWithCenterAnimationActivity;
 import iop.org.iop_contributors_app.ui.ProfileActivity;
+import iop.org.iop_contributors_app.ui.ProposalsActivity;
 import iop.org.iop_contributors_app.ui.settings.DevActivity;
 import iop_sdk.forum.ForumProfile;
 import iop_sdk.forum.InvalidUserParametersException;
@@ -43,6 +51,8 @@ import static iop_sdk.governance.utils.StringUtils.cleanString;
 
 public class VotingStartActivity extends AppCompatActivity {
 
+    private static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 1000;
+
     public static final int STARTUP_DELAY = 300;
     public static final int ANIM_ITEM_DURATION = 1000;
     public static final int ITEM_DELAY = 300;
@@ -51,6 +61,7 @@ public class VotingStartActivity extends AppCompatActivity {
 
     private static final String TAG = "StartActivity";
 
+    private AppController application;
     private WalletModule module;
 
     private EditText txt_name;
@@ -74,7 +85,10 @@ public class VotingStartActivity extends AppCompatActivity {
                 View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
         super.onCreate(savedInstanceState);
 
-        module = ((AppController)getApplication()).getModule();
+        checkPermissions();
+
+        application = (AppController) getApplication();
+        module = application.getModule();
 
         if (module.isForumRegistered()) {
             startActivity(new Intent(this, VotingProposalsActivity.class));
@@ -135,14 +149,15 @@ public class VotingStartActivity extends AppCompatActivity {
                                     loginUser(username, password);
                                 } else
                                     Log.e(TAG, "IsRegistered true, error!!");
-                            } else
-                                Toast.makeText(VotingStartActivity.this, "Error password is invalid", Toast.LENGTH_LONG).show();
+                            } else {
+                                Toast.makeText(v.getContext(), "Error password is invalid", Toast.LENGTH_LONG).show();
+                                progressBar.setVisibility(View.INVISIBLE);
+                            }
 
                         } else {
-                            Toast.makeText(VotingStartActivity.this, "Username invalid, please add your nickname", Toast.LENGTH_LONG).show();
+                            Toast.makeText(v.getContext(), "Username invalid, please add your nickname", Toast.LENGTH_LONG).show();
+                            progressBar.setVisibility(View.INVISIBLE);
                         }
-                        // invisible progress bar
-                        progressBar.setVisibility(View.INVISIBLE);
                     }else
                         Toast.makeText(v.getContext(),"No internet connection available\nplease retry again later",Toast.LENGTH_LONG).show();
                 } catch (Exception e) {
@@ -165,9 +180,12 @@ public class VotingStartActivity extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable s) {
+                if (s.toString().equals("")){isPasswordCorrect=false; return;}
                 checkPassword(s.toString());
             }
         });
+
+        txt_password.setTransformationMethod(new AsteriskPasswordTransformationMethod());
 
         txt_name.addTextChangedListener(new TextWatcher() {
             @Override
@@ -246,7 +264,7 @@ public class VotingStartActivity extends AppCompatActivity {
 
     private boolean checkPassword(String password) {
         boolean ret = false;
-        if (password.length()>=8){
+        if (password.length()>=10){
             isPasswordCorrect = true;
             check_password.setVisibility(View.VISIBLE);
             check_password.setImageResource(R.drawable.ic_check_profile);
@@ -282,7 +300,7 @@ public class VotingStartActivity extends AppCompatActivity {
             execute(new Runnable() {
                 @Override
                 public void run() {
-                    Log.d(TAG,"loginUser");
+                    Log.d(TAG, "loginUser");
                     try {
                         if (module.connectToForum(username, password)) {
 
@@ -297,7 +315,7 @@ public class VotingStartActivity extends AppCompatActivity {
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    Toast.makeText(VotingStartActivity.this, "Error connection to the forum", Toast.LENGTH_LONG).show();
+                                    Toast.makeText(VotingStartActivity.this, "Fail connection to the forum", Toast.LENGTH_LONG).show();
                                     progressBar.setVisibility(View.GONE);
                                 }
                             });
@@ -310,7 +328,8 @@ public class VotingStartActivity extends AppCompatActivity {
                                 progressBar.setVisibility(View.GONE);
                             }
                         });
-                    } catch (final Exception e){
+                    }catch (final ConnectionRefusedException e) {
+                        e.printStackTrace();
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
@@ -318,7 +337,7 @@ public class VotingStartActivity extends AppCompatActivity {
                                 progressBar.setVisibility(View.GONE);
                             }
                         });
-                    } catch (final ConnectionRefusedException e) {
+                    }catch (final Exception e){
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
@@ -335,7 +354,7 @@ public class VotingStartActivity extends AppCompatActivity {
     }
 
     private void goHome(){
-        Intent intent = new Intent(this,VotingProposalsActivity.class);
+        Intent intent = new Intent(this,ProposalsActivity.class);
         startActivity(intent);
     }
 
@@ -366,7 +385,69 @@ public class VotingStartActivity extends AppCompatActivity {
         DialogBuilder dialogBuilder = new DialogBuilder(this);
         dialogBuilder.setTitle("Error");
         dialogBuilder.setMessage(message);
-
         dialogBuilder.show();
+    }
+
+
+    private void checkPermissions() {
+        // Assume thisActivity is the current activity
+        if (Build.VERSION.SDK_INT > 22) {
+
+            int permissionCheck = ContextCompat.checkSelfPermission(this,
+                    Manifest.permission.READ_EXTERNAL_STORAGE);
+
+            // Here, thisActivity is the current activity
+            if (ContextCompat.checkSelfPermission(this,
+                    Manifest.permission.READ_EXTERNAL_STORAGE)
+                    != PackageManager.PERMISSION_GRANTED) {
+
+                // Should we show an explanation?
+                if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                        Manifest.permission.READ_CONTACTS)) {
+
+                    // Show an expanation to the user *asynchronously* -- don't block
+                    // this thread waiting for the user's response! After the user
+                    // sees the explanation, try again to request the permission.
+
+                } else {
+
+                    // No explanation needed, we can request the permission.
+
+                    ActivityCompat.requestPermissions(this,
+                            new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                            MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE);
+
+                    // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
+                    // app-defined int constant. The callback method gets the
+                    // result of the request.
+                }
+            }
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case 1: {
+
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    // permission was granted, yay! Do the
+                    // contacts-related task you need to do.
+                } else {
+
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                    Toast.makeText(this, "Permission denied to read your External storage", Toast.LENGTH_SHORT).show();
+                }
+                return;
+            }
+
+            // other 'case' lines to check for other
+            // permissions this app might request
+        }
     }
 }

@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.ViewGroup;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -88,6 +89,11 @@ public abstract class VotingBaseActivity extends BaseActivity {
         return items;
     }
 
+    @Override
+    protected void onCreateView(ViewGroup container, Bundle savedInstance) {
+        container.setBackgroundColor(Color.WHITE);
+        super.onCreateView(container, savedInstance);
+    }
 
     protected int appColor(){
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {

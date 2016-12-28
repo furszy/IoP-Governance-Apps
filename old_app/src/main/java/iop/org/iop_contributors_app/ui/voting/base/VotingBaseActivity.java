@@ -91,7 +91,7 @@ public abstract class VotingBaseActivity extends BaseActivity {
 
     @Override
     protected void onCreateView(ViewGroup container, Bundle savedInstance) {
-        container.setBackgroundColor(Color.WHITE);
+//        container.setBackgroundColor(Color.WHITE);
         super.onCreateView(container, savedInstance);
     }
 

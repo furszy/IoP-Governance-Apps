@@ -41,7 +41,6 @@ import iop.org.furszy_lib.dialogs.DialogBuilder;
 import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.ui.OnboardingWithCenterAnimationActivity;
 import iop.org.iop_contributors_app.ui.ProfileActivity;
-import iop.org.iop_contributors_app.ui.ProposalsActivity;
 import iop.org.iop_contributors_app.ui.settings.DevActivity;
 import iop_sdk.forum.ForumProfile;
 import iop_sdk.forum.InvalidUserParametersException;
@@ -354,7 +353,7 @@ public class VotingStartActivity extends AppCompatActivity {
     }
 
     private void goHome(){
-        Intent intent = new Intent(this,ProposalsActivity.class);
+        Intent intent = new Intent(this,VotingProposalsActivity.class);
         startActivity(intent);
     }
 

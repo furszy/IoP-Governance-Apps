@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
 import iop_sdk.blockchain.explorer.TransactionStorage;
 
 import static iop_sdk.blockchain.explorer.TxUtils.serializeData;

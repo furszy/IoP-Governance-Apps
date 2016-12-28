@@ -47,6 +47,8 @@ public interface WalletPreferenceConfigurations {
 
     long getPeerDiscoveryTimeoutMs();
 
+    void remove();
+
 
     /****** END PREFERENCE CONSTANTS   ******/
 

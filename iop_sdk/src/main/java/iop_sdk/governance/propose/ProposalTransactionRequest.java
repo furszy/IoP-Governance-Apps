@@ -22,12 +22,11 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-
 import iop_sdk.blockchain.NotConnectedPeersException;
-import iop_sdk.wallet.WalletPreferenceConfigurations;
-import iop_sdk.wallet.exceptions.InsuficientBalanceException;
 import iop_sdk.wallet.BlockchainManager;
 import iop_sdk.wallet.WalletManager;
+import iop_sdk.wallet.WalletPreferenceConfigurations;
+import iop_sdk.wallet.exceptions.InsuficientBalanceException;
 
 ;
 

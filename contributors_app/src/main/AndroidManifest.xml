@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="iop.org.contributors_app">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="21" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+
+    <application
+        android:name=".ApplicationController"
+        android:allowBackup="false"
+        android:icon="@mipmap/ic__launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme"
+        >
+
+
+
+        <activity android:name="iop.org.iop_contributors_app.ui.ForumActivity"/>
+
+        <activity android:name="iop.org.iop_contributors_app.ui.ProfileActivity" />
+        <activity android:name="iop.org.iop_contributors_app.ui.SettingsActivity"
+            android:theme="@style/PreferenceScreen" />
+
+        <activity android:name="iop.org.iop_contributors_app.ui.OnboardingWithCenterAnimationActivity" android:theme="@style/AppTheme.CenterAnimation">
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+        </activity>
+
+        <activity android:name="iop.org.iop_contributors_app.ui.CreateProposalActivity" />
+        <activity android:name="iop.org.iop_contributors_app.ui.ProposalSummaryActivity"/>
+        <activity android:name="iop.org.iop_contributors_app.ui.ProposalsActivity" android:launchMode="singleInstance"/>
+        <activity android:name="iop.org.iop_contributors_app.ui.settings.IoPBalanceActivity"/>
+        <activity android:name="iop.org.iop_contributors_app.ui.settings.DevActivity" android:theme="@style/PreferenceScreen"/>
+
+        <service android:name="iop.org.iop_contributors_app.services.BlockchainServiceImpl"/>
+
+    </application>
+
+</manifest>

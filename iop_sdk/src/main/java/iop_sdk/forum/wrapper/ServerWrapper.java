@@ -79,7 +79,7 @@ public class ServerWrapper {
         try {
 
             BasicHttpParams basicHttpParams = new BasicHttpParams();
-            HttpConnectionParams.setSoTimeout(basicHttpParams, (int) TimeUnit.MINUTES.toMillis(1));
+            HttpConnectionParams.setSoTimeout(basicHttpParams, (int) TimeUnit.MINUTES.toMillis(2));
             HttpClient client = new DefaultHttpClient(basicHttpParams);
             HttpPost httpPost = new HttpPost(url);
             //httpPost.setHeader("Content-type", "application/vnd.api+json");

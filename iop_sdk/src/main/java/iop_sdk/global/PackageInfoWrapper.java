@@ -7,4 +7,6 @@ package iop_sdk.global;
 public interface PackageInfoWrapper {
 
     String getVersionName();
+
+    Object getPackageInfo();
 }

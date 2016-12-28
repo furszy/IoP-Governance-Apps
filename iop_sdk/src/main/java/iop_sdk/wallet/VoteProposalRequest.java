@@ -22,10 +22,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import iop_sdk.blockchain.NotConnectedPeersException;
-import iop_sdk.governance.vote.VotesDao;
-import iop_sdk.wallet.exceptions.InsuficientBalanceException;
 import iop_sdk.governance.vote.Vote;
 import iop_sdk.governance.vote.VoteTransactionBuilder;
+import iop_sdk.governance.vote.VotesDao;
+import iop_sdk.wallet.exceptions.InsuficientBalanceException;
 
 /**
  * Created by mati on 21/12/16.

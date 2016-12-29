@@ -48,7 +48,7 @@ public class VotingVoteSummary extends VotingBaseActivity implements View.OnClic
     private TextView txt_start_block;
     private TextView txt_end_block;
     private TextView txt_total_amount;
-    private TextView txt_go_forum;
+    private TextView txt_go_cancel;
     private TextView txt_go_vote;
     private View card_bottom_border;
 
@@ -115,7 +115,7 @@ public class VotingVoteSummary extends VotingBaseActivity implements View.OnClic
         txt_start_block = (TextView) root.findViewById(R.id.txt_start_block);
         txt_end_block = (TextView) root.findViewById(R.id.txt_end_block);
         txt_total_amount = (TextView) root.findViewById(R.id.txt_total_amount);
-        txt_go_forum = (TextView) root.findViewById(R.id.txt_go_forum);
+        txt_go_cancel = (TextView) root.findViewById(R.id.txt_go_cancel);
         txt_go_vote = (TextView) root.findViewById(R.id.txt_go_vote);
         card_bottom_border = root.findViewById(R.id.card_bottom_border);
 
@@ -128,7 +128,7 @@ public class VotingVoteSummary extends VotingBaseActivity implements View.OnClic
 
         btn_minus_voting.setOnClickListener(this);
         btn_plus_voting.setOnClickListener(this);
-        txt_go_forum.setOnClickListener(this);
+        txt_go_cancel.setOnClickListener(this);
         txt_go_vote.setOnClickListener(this);
 
 //        root.findViewById(R.id.txt_change_vote).setOnClickListener(new View.OnClickListener() {

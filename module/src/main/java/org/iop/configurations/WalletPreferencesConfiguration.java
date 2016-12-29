@@ -38,15 +38,15 @@ public class WalletPreferencesConfiguration extends Configurations implements Wa
         return prefs.getBoolean(PREFS_KEY_CONNECTIVITY_NOTIFICATION, false);
     }
 
-    public int getBestChainHeightEver()
-    {
+    public int getBestChainHeightEver() {
         return prefs.getInt(PREFS_KEY_BEST_CHAIN_HEIGHT_EVER, 0);
     }
 
-    public void maybeIncrementBestChainHeightEver(final int bestChainHeightEver)
-    {
+    public int maybeIncrementBestChainHeightEver(final int bestChainHeightEver) {
         if (bestChainHeightEver > getBestChainHeightEver())
             prefs.edit().putInt(PREFS_KEY_BEST_CHAIN_HEIGHT_EVER, bestChainHeightEver).apply();
+        //todo: ver esto..
+        return 0;
     }
 
     public void saveNode(String host){

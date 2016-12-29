@@ -90,7 +90,7 @@ public class VotingProposalActivity extends VotingBaseActivity implements View.O
 
     @Override
     protected void onCreateView(ViewGroup container, Bundle savedInstance) {
-        super.onCreateView(container, savedInstance);
+        super.onCreateView(container,savedInstance);
 
         if (getIntent().getExtras().containsKey(INTENT_DATA_PROPOSAL)) {
             proposal = (Proposal) getIntent().getSerializableExtra(INTENT_DATA_PROPOSAL);

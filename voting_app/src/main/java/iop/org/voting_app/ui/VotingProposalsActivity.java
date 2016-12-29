@@ -44,6 +44,8 @@ public class VotingProposalsActivity extends VotingBaseActivity {
     @Override
     protected void onCreateView(ViewGroup container, Bundle savedInstance) {
 
+        super.onCreateView(container,savedInstance);
+
         root = getLayoutInflater().inflate(R.layout.proposals_voting_main,container);
 
         swipeRefreshLayout = (SwipeRefreshLayout) root.findViewById(R.id.swipeRefreshLayout);

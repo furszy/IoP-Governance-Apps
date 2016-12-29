@@ -2,6 +2,7 @@ package iop.org.voting_app.base;
 
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
@@ -92,6 +93,8 @@ public abstract class VotingBaseActivity extends BaseActivity {
     @Override
     protected void onCreateView(ViewGroup container, Bundle savedInstance) {
 //        container.setBackgroundColor(Color.WHITE);
+        toolbar.setBackgroundColor(Color.parseColor("#171519"));
+        container.setBackgroundColor(Color.WHITE);
         super.onCreateView(container, savedInstance);
     }
 

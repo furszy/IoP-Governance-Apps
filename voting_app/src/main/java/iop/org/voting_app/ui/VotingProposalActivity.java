@@ -1,4 +1,4 @@
-package iop.org.iop_contributors_app.ui.voting;
+package iop.org.voting_app.ui;
 
 import android.os.Bundle;
 import android.util.Log;
@@ -19,9 +19,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.ui.components.switch_seek_bar.SwitchSeekBar;
 import iop.org.iop_contributors_app.ui.dialogs.SimpleDialogs;
-import iop.org.iop_contributors_app.ui.voting.base.VotingBaseActivity;
-import iop.org.iop_contributors_app.ui.voting.ui.dialogs.BroadcastVoteDialog;
-import iop.org.iop_contributors_app.ui.voting.ui.dialogs.CancelLister;
+import iop.org.voting_app.base.VotingBaseActivity;
+import iop.org.voting_app.ui.dialogs.BroadcastVoteDialog;
+import iop.org.voting_app.ui.dialogs.CancelLister;
 import iop.org.iop_contributors_app.utils.ForumUtils;
 import iop_sdk.crypto.CryptoBytes;
 import iop_sdk.governance.propose.Proposal;

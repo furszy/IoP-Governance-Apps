@@ -4,7 +4,7 @@
 
     <PreferenceCategory android:title="Profile">
 
-        <Preference android:key="id_profile" android:title="Remove user" />
+        <Preference android:key="id_profile" android:title="Sign out" />
 
     </PreferenceCategory>
 

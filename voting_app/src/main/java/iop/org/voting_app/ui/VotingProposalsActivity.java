@@ -1,4 +1,4 @@
-package iop.org.iop_contributors_app.ui.voting;
+package iop.org.voting_app.ui;
 
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -11,9 +11,9 @@ import android.view.ViewGroup;
 import java.util.List;
 
 import iop.org.iop_contributors_app.R;
-import iop.org.iop_contributors_app.ui.voting.base.VotingBaseActivity;
-import iop.org.iop_contributors_app.ui.voting.ui.components.proposals.VotingProposalsAdapter;
-import iop.org.iop_contributors_app.ui.voting.ui.dialogs.VoteDialog;
+import iop.org.voting_app.base.VotingBaseActivity;
+import iop.org.voting_app.ui.components.proposals.VotingProposalsAdapter;
+import iop.org.voting_app.ui.dialogs.VoteDialog;
 import iop_sdk.governance.propose.Proposal;
 
 /**

@@ -1,4 +1,4 @@
-package iop.org.iop_contributors_app.ui.voting.base;
+package iop.org.voting_app.base;
 
 import android.content.Intent;
 import android.graphics.Color;
@@ -18,11 +18,11 @@ import iop.org.furszy_lib.nav_view.NavMenuItem;
 import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.ui.CreateProposalActivity;
 import iop.org.iop_contributors_app.ui.ForumActivity;
-import iop.org.iop_contributors_app.ui.SettingsActivity;
 import iop.org.iop_contributors_app.ui.base.BaseActivity;
 import iop.org.iop_contributors_app.ui.dialogs.wallet.BackupDialog;
 import iop.org.iop_contributors_app.ui.dialogs.wallet.RestoreDialogFragment2;
-import iop.org.iop_contributors_app.ui.voting.VotingMyVotesActivity;
+import iop.org.voting_app.ui.VotingMyVotesActivity;
+import iop.org.voting_app.SettingsActivity;
 
 /**
  * Created by mati on 21/12/16.

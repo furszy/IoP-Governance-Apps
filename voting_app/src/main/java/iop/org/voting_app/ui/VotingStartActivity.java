@@ -1,4 +1,4 @@
-package iop.org.iop_contributors_app.ui.voting;
+package iop.org.voting_app.ui;
 
 import android.Manifest;
 import android.content.Context;
@@ -39,7 +39,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import iop.org.furszy_lib.AsteriskPasswordTransformationMethod;
 import iop.org.furszy_lib.dialogs.DialogBuilder;
 import iop.org.iop_contributors_app.R;
-import iop.org.iop_contributors_app.ui.OnboardingWithCenterAnimationActivity;
 import iop.org.iop_contributors_app.ui.ProfileActivity;
 import iop.org.iop_contributors_app.ui.settings.DevActivity;
 import iop_sdk.forum.ForumProfile;

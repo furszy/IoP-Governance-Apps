@@ -1,4 +1,4 @@
-package iop.org.iop_contributors_app.ui.voting;
+package iop.org.voting_app.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -14,13 +14,11 @@ import java.util.List;
 
 import iop.org.furszy_lib.adapter.FermatListItemListeners;
 import iop.org.iop_contributors_app.R;
-import iop.org.iop_contributors_app.ui.voting.base.VotingBaseActivity;
-import iop.org.iop_contributors_app.ui.voting.ui.components.my_votes.MyVotesAdapter;
-import iop.org.iop_contributors_app.ui.voting.ui.dialogs.VoteDialog;
+import iop.org.voting_app.base.VotingBaseActivity;
+import iop.org.voting_app.ui.components.my_votes.MyVotesAdapter;
+import iop.org.voting_app.ui.dialogs.VoteDialog;
 import iop_sdk.governance.propose.Proposal;
 import iop_sdk.governance.vote.VoteWrapper;
-
-import static iop.org.iop_contributors_app.ui.voting.VotingVoteSummary.INTENT_VOTE_WRAPPER;
 
 /**
  * Created by mati on 17/11/16.
@@ -161,7 +159,7 @@ public class VotingMyVotesActivity extends VotingBaseActivity implements FermatL
 //        startActivity(intent);
 
         Intent intent = new Intent(this,VotingVoteSummary.class);
-        intent.putExtra(INTENT_VOTE_WRAPPER,data);
+        intent.putExtra(VotingVoteSummary.INTENT_VOTE_WRAPPER,data);
         String transitionName = getString(R.string.transition_card);
         ActivityOptionsCompat options =
                 ActivityOptionsCompat.makeSceneTransitionAnimation(this,

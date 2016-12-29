@@ -136,11 +136,13 @@ public class BlockchainManager {
     }
 
     public void removeDisconnectedEventListener(PeerDisconnectedEventListener listener){
-        peerGroup.removeDisconnectedEventListener(listener);
+        if (peerGroup!=null)
+            peerGroup.removeDisconnectedEventListener(listener);
     }
 
     public void removeConnectivityListener(PeerConnectedEventListener listener){
-        peerGroup.removeConnectedEventListener(listener);
+        if (peerGroup!=null)
+            peerGroup.removeConnectedEventListener(listener);
     }
 
     public void addBlockchainManagerListener(BlockchainManagerListener listener){

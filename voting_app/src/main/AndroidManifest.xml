@@ -21,23 +21,23 @@
         <activity android:name="iop.org.iop_contributors_app.ui.ForumActivity"/>
 
         <activity android:name="iop.org.iop_contributors_app.ui.ProfileActivity" />
-        <activity android:name="iop.org.iop_contributors_app.ui.SettingsActivity"
+        <activity android:name=".SettingsActivity"
             android:theme="@style/PreferenceScreen" />
 
         <activity android:name="iop.org.iop_contributors_app.ui.settings.IoPBalanceActivity"/>
         <activity android:name="iop.org.iop_contributors_app.ui.settings.DevActivity" android:theme="@style/PreferenceScreen"/>
         <service android:name="iop.org.iop_contributors_app.services.BlockchainServiceImpl"/>
 
-        <activity android:name="iop.org.iop_contributors_app.ui.voting.VotingStartActivity" android:theme="@style/AppTheme.VotingCenterAnimation">
+        <activity android:name=".ui.VotingStartActivity" android:theme="@style/AppTheme.VotingCenterAnimation">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <activity android:name="iop.org.iop_contributors_app.ui.voting.VotingProposalsActivity"/>
-        <activity android:name="iop.org.iop_contributors_app.ui.voting.VotingProposalActivity"/>
-        <activity android:name="iop.org.iop_contributors_app.ui.voting.VotingMyVotesActivity"/>
-        <activity android:name="iop.org.iop_contributors_app.ui.voting.VotingVoteSummary"/>
+        <activity android:name=".ui.VotingProposalsActivity"/>
+        <activity android:name=".ui.VotingProposalActivity"/>
+        <activity android:name=".ui.VotingMyVotesActivity"/>
+        <activity android:name=".ui.VotingVoteSummary"/>
 
 
     </application>

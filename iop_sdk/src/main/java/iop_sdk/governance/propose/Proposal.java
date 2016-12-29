@@ -72,7 +72,7 @@ public class Proposal implements Serializable {
     private ProposalState state = ProposalState.DRAFT;
     private byte[] blockchainHash;
     // IoPIP -> IoP improvement proposal
-    private short version = 0x1000;
+    private short version =  0x0100;
     private String title;
     private String subTitle;
     private String category;

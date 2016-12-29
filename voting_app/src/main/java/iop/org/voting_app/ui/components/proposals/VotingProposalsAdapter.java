@@ -1,4 +1,4 @@
-package iop.org.iop_contributors_app.ui.voting.ui.components.proposals;
+package iop.org.voting_app.ui.components.proposals;
 
 import android.content.Intent;
 import android.view.View;
@@ -9,8 +9,8 @@ import org.iop.WalletModule;
 import iop.org.furszy_lib.adapter.FermatAdapterImproved;
 import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.ui.ForumActivity;
-import iop.org.iop_contributors_app.ui.voting.VotingProposalActivity;
-import iop.org.iop_contributors_app.ui.voting.VotingProposalsActivity;
+import iop.org.voting_app.ui.VotingProposalActivity;
+import iop.org.voting_app.ui.VotingProposalsActivity;
 import iop_sdk.governance.propose.Proposal;
 
 import static iop.org.iop_contributors_app.ui.ProposalSummaryActivity.INTENT_DATA_PROPOSAL;

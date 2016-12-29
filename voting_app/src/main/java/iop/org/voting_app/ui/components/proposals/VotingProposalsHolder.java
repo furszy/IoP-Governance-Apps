@@ -1,4 +1,4 @@
-package iop.org.iop_contributors_app.ui.voting.ui.components.proposals;
+package iop.org.voting_app.ui.components.proposals;
 
 import android.view.View;
 import android.widget.Button;

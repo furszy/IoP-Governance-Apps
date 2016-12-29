@@ -40,8 +40,6 @@ import iop.org.iop_contributors_app.services.BlockchainService;
 import iop.org.iop_contributors_app.services.BlockchainServiceImpl;
 import iop.org.iop_contributors_app.services.ServicesCodes;
 import iop.org.iop_contributors_app.ui.base.BaseActivity;
-import iop.org.iop_contributors_app.ui.voting.VotingStartActivity;
-import iop.org.iop_contributors_app.ui.voting.db.VotesDaoImp;
 import iop.org.iop_contributors_app.utils.AppUtils;
 import iop.org.iop_contributors_app.utils.CrashReporter;
 import iop.org.iop_sdk_android.core.wrappers.PackageInfoAndroid;
@@ -134,11 +132,7 @@ public class ApplicationController extends Application implements AppController 
         Log.d(TAG,"initializing module");
         org.bitcoinj.core.Context.enableStrictMode();
         org.bitcoinj.core.Context.propagate(WalletConstants.CONTEXT);
-        if (isVotingApp()){
-            module = new WalletModule(this,walletConfigurations,forumConfigurations,new VotesDaoImp(this));
-        }else {
-            module = new WalletModule(this, walletConfigurations, forumConfigurations);
-        }
+        module = new WalletModule(this, walletConfigurations, forumConfigurations);
         module.start();
 
         startBlockchainService();
@@ -262,7 +256,7 @@ public class ApplicationController extends Application implements AppController 
     }
 
     public boolean isVotingApp(){
-        return APP_TYPE.contains(VotingStartActivity.class.getName());
+        return false;
     }
 
 

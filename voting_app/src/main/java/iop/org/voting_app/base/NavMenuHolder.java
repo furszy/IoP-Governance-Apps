@@ -1,4 +1,4 @@
-package iop.org.iop_contributors_app.ui.voting.base;
+package iop.org.voting_app.base;
 
 import android.view.View;
 import android.widget.ImageView;

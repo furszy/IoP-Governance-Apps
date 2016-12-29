@@ -1,4 +1,4 @@
-package iop.org.iop_contributors_app.ui.voting.db;
+package iop.org.voting_app.db;
 
 import android.content.Context;
 

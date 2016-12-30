@@ -34,7 +34,11 @@ public class MyVotesAdapter extends FermatAdapterImproved<VoteWrapper,MyVotesHol
 
     @Override
     protected void bindHolder(MyVotesHolder holder, VoteWrapper data, int position) {
-        holder.txt_title.setText(data.getProposal().getTitle());
+        String title = data.getProposal().getTitle();
+        if (title.length()>20){
+            title = title.substring(0,30)+"...";
+        }
+        holder.txt_title.setText(title);
         holder.txt_forum_id.setText(String.valueOf(data.getProposal().getForumId()));
         holder.txt_sub_title.setText(data.getProposal().getSubTitle());
         holder.txt_categories.setText(data.getProposal().getCategory());

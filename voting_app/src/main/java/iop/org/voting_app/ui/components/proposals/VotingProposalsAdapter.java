@@ -8,7 +8,7 @@ import org.iop.WalletModule;
 
 import iop.org.furszy_lib.adapter.FermatAdapterImproved;
 import iop.org.iop_contributors_app.R;
-import iop.org.iop_contributors_app.ui.ForumActivity;
+import iop.org.voting_app.ui.ForumActivity;
 import iop.org.voting_app.ui.VotingProposalActivity;
 import iop.org.voting_app.ui.VotingProposalsActivity;
 import iop_sdk.governance.propose.Proposal;

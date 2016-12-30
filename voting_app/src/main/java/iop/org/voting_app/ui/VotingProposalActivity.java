@@ -1,6 +1,8 @@
 package iop.org.voting_app.ui;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +16,7 @@ import android.widget.Toast;
 import org.iop.db.CantGetProposalException;
 
 import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import iop.org.iop_contributors_app.R;
@@ -87,6 +90,8 @@ public class VotingProposalActivity extends VotingBaseActivity implements View.O
     private TextView txt_done;
 
     private AtomicBoolean lockBroadcast = new AtomicBoolean(false);
+
+    private Handler handler = new Handler();
 
     @Override
     protected void onCreateView(ViewGroup container, Bundle savedInstance) {
@@ -177,6 +182,13 @@ public class VotingProposalActivity extends VotingBaseActivity implements View.O
                 if (Arrays.equals(vote.getGenesisHash(),this.vote.getGenesisHash())) {
                     showDoneLoading();
                     lockBroadcast.set(false);
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            startActivity(new Intent(VotingProposalActivity.this,VotingMyVotesActivity.class));
+                            finish();
+                        }
+                    }, TimeUnit.SECONDS.toMillis(3));
                 }
             }
         }else if(bundle.getString(INTENT_BROADCAST_TYPE).equals(INTENT_DIALOG)){

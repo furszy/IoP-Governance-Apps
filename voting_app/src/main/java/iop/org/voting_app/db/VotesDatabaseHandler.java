@@ -146,8 +146,8 @@ public class VotesDatabaseHandler extends SQLiteOpenHelper {
     public boolean isLockedOutput(String parentVoteTransactionHash, long index) {
         SQLiteDatabase db = this.getReadableDatabase();
 
-        Cursor cursor = db.query(TABLE_VOTES,allColumns(), KEY_LOCKED_OUTPUT_HASH + "=?",
-                new String[] { parentVoteTransactionHash }, null, null, null, null);
+        Cursor cursor = db.query(TABLE_VOTES,allColumns(), KEY_LOCKED_OUTPUT_HASH + "=? AND "+KEY_LOCKED_OUTPUT_INDEX+"=?",
+                new String[] { parentVoteTransactionHash, String.valueOf(index)}, null, null, null, null);
         if (cursor != null)
             cursor.moveToFirst();
         boolean exist = cursor.getCount()>0;

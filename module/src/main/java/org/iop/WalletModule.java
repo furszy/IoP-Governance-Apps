@@ -524,6 +524,25 @@ public class WalletModule {
     }
 
     /**
+     * request full tx proposals
+     * @param chainHeadHeight
+     * @return
+     */
+    public ServerWrapper.RequestProposalsResponse requestProposalsFullTx(int chainHeadHeight) {
+        try {
+            // request tx hashes from node
+            ServerWrapper.RequestProposalsResponse requestProposalsResponse = serverWrapper.getVotingProposalsFullTx(0);
+
+            return requestProposalsResponse;
+        } catch (CantGetProposalsFromServer e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
      *
      * @return
      * @throws Exception
@@ -594,29 +613,35 @@ public class WalletModule {
                 }
             }
 
-            proposal.setMine(false);
+            proposalArrive(proposal);
 
-            // forum
-            Proposal forumProposal = forumClient.getProposalFromWrapper(proposal.getForumId());
-
-            if (forumProposal != null) {
-                LOG.info("forumProposal arrive: "+forumProposal);
-                // set parameters
-                forumProposal.setForumId(proposal.getForumId());
-                forumProposal.setStartBlock(proposal.getStartBlock());
-                forumProposal.setEndBlock(proposal.getEndBlock());
-                forumProposal.setBlockReward(proposal.getBlockReward());
-                forumProposal.setBlockchainHash(proposal.getBlockchainHash());
-
-                proposalsDao.saveProposal(forumProposal);
-            } else {
-                LOG.error("txProposalArrive error", tx, "proposal decoded form blokcchain: " + proposal, "Proposal obtained from the forum: " + forumProposal);
-            }
         }catch (CantSaveProposalExistException e) {
             e.printStackTrace();
         } catch (Exception e){
             e.printStackTrace();
         }
+    }
+
+    public Proposal proposalArrive(Proposal proposal) throws CantSaveProposalException, CantSaveProposalExistException {
+        proposal.setMine(false);
+
+        // forum
+        Proposal forumProposal = forumClient.getProposalFromWrapper(proposal.getForumId());
+
+        if (forumProposal != null) {
+            LOG.info("forumProposal arrive: "+forumProposal);
+            // set parameters
+            forumProposal.setForumId(proposal.getForumId());
+            forumProposal.setStartBlock(proposal.getStartBlock());
+            forumProposal.setEndBlock(proposal.getEndBlock());
+            forumProposal.setBlockReward(proposal.getBlockReward());
+            forumProposal.setBlockchainHash(proposal.getBlockchainHash());
+
+            proposalsDao.saveProposal(forumProposal);
+        } else {
+            LOG.error("txProposalArrive error", proposal, "proposal decoded form blokcchain: " + proposal, "Proposal obtained from the forum: " + forumProposal);
+        }
+        return proposal;
     }
 
 
@@ -660,4 +685,6 @@ public class WalletModule {
     public void setTransactionStorage(TransactionStorage transactionStorage) {
         this.transactionStorage = transactionStorage;
     }
+
+
 }

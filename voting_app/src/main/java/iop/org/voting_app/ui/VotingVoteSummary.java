@@ -14,6 +14,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -326,6 +327,19 @@ public class VotingVoteSummary extends VotingBaseActivity implements View.OnClic
         preparateLoading("Vote sent!", R.drawable.icon_done);
 
         long amountIoPToshis = IoPCalculator.iopToIopToshis(votingAmount);
+
+        // todo: Esto está así hasta que vuelva de las vacaciones..
+        if (voteType == Vote.VoteType.NEUTRAL){
+            Toast.makeText(this,"Neutral votes not allowed by now\nplease contact Furszy :)",Toast.LENGTH_LONG).show();
+            hideDoneLoading();
+            return;
+        }
+
+        if (amountIoPToshis==0){
+            Toast.makeText(this,"Zero votes not allowed",Toast.LENGTH_LONG).show();
+            hideDoneLoading();
+            return;
+        }
 
         Vote vote = voteWrapper.getVote();
         vote.setVoteType(voteType);

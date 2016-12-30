@@ -37,12 +37,14 @@ import org.iop.WalletConstants;
 import org.iop.WalletModule;
 import org.iop.configurations.WalletPreferencesConfiguration;
 import org.iop.db.CantSaveProposalException;
+import org.iop.db.CantSaveProposalExistException;
 import org.iop.exceptions.CantSendProposalException;
 import org.iop.exceptions.CantSendVoteException;
 import org.iop.exceptions.InvalidProposalException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -56,6 +58,7 @@ import iop.org.iop_contributors_app.ui.base.BaseActivity;
 import iop_sdk.blockchain.NotConnectedPeersException;
 import iop_sdk.blockchain.explorer.TransactionFinder;
 import iop_sdk.blockchain.explorer.TransactionFinderListener;
+import iop_sdk.crypto.CryptoBytes;
 import iop_sdk.forum.wrapper.ServerWrapper;
 import iop_sdk.governance.propose.Proposal;
 import iop_sdk.governance.vote.Vote;
@@ -75,6 +78,7 @@ import static org.iop.intents.constants.IntentsConstants.INTENTE_BROADCAST_DIALO
 import static org.iop.intents.constants.IntentsConstants.INTENTE_EXTRA_MESSAGE;
 import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_ON_COIN_RECEIVED;
 import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_ON_COIN_RECEIVED_IS_TRANSACTION_MINE;
+import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_PROPOSAL_TRANSACTION_ARRIVED;
 import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_TRANSACTION_SUCCED;
 import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_TYPE;
 import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_VOTE_TRANSACTION_SUCCED;
@@ -264,23 +268,44 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
                 lastMessageTime.set(System.currentTimeMillis());
 
 
-                int bestBlockHeight = conf.maybeIncrementBestChainHeightEver(blockchainManager.getChainHeadHeight());
+                final int bestBlockHeight = conf.maybeIncrementBestChainHeightEver(blockchainManager.getChainHeadHeight());
 
                 if (application.isVotingApp()) {
 
-                    if (bestBlockHeight != -1 && !transactionFinder.getLastBestChainHash().equals(block.getHash().toString())) {
-                        List<String> txHashes = null;
-                        ServerWrapper.RequestProposalsResponse requestProposalsResponse = null;
+                    executorService.submit(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (bestBlockHeight != -1 && !transactionFinder.getLastBestChainHash().equals(block.getHash().toString())) {
+                                List<Proposal> proposals = null;
+                                ServerWrapper.RequestProposalsResponse requestProposalsResponse = null;
 
-                        if (application.isVotingApp()) {
-                            // obtain proposal contracts to filter
-                            requestProposalsResponse = walletModule.requestProposals(blockchainManager.getChainHeadHeight());
-                            if (requestProposalsResponse != null) {
-                                txHashes = requestProposalsResponse.getTxHashes();
-
+                                if (application.isVotingApp()) {
+                                    // obtain proposal contracts to filter
+                                    requestProposalsResponse = walletModule.requestProposalsFullTx(blockchainManager.getChainHeadHeight());
+                                    if (requestProposalsResponse != null) {
+                                        proposals = requestProposalsResponse.getProposals();
+                                        for (Proposal proposal : proposals) {
+                                            try {
+                                                proposal = walletModule.proposalArrive(proposal);
+                                                LOG.info("Proposal saved!");
+                                                // notify state
+                                                broadcastProposalArrived(proposal);
+                                            } catch (CantSaveProposalException e) {
+                                                LOG.info(e.getMessage());
+                                            } catch (CantSaveProposalExistException e) {
+                                                // nothing
+                                                LOG.info("proposal exist! "+ CryptoBytes.toHexString(proposal.getBlockchainHash()));
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
-                    }
+
+
+                    });
+
+
                 }
 
                 // todo: ver esto, lo broadcastea para que todos sepan el estado de la blockchain
@@ -288,8 +313,6 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
             }
         }
     };
-
-
 
 
     private final BroadcastReceiver connectivityReceiver = new BroadcastReceiver() {
@@ -570,6 +593,15 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
         localBroadcast.sendBroadcast(intent);
     }
 
+    private void broadcastProposalArrived(Proposal proposal) {
+        Intent intent = new Intent(BaseActivity.ACTION_NOTIFICATION);
+//        intent.putExtra(I,title);
+        intent.putExtra(INTENT_BROADCAST_TYPE,INTENT_DATA+INTENT_NOTIFICATION);
+        intent.putExtra(INTENT_BROADCAST_DATA_TYPE, INTENT_BROADCAST_DATA_PROPOSAL_TRANSACTION_ARRIVED);
+        intent.putExtra(INTENT_EXTRA_PROPOSAL,proposal);
+        localBroadcast.sendBroadcast(intent);
+    }
+
     @Override
     public void onDestroy() {
         try {
@@ -650,15 +682,16 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
                             // new thing
                             transactionFinder = walletModule.getAndCreateFinder(peerGroup);
                             transactionFinder.addTransactionFinderListener(transactionFinderListener);
-                            if (finalRequestProposalsResponse!=null)
+                            if (finalRequestProposalsResponse!=null) {
                                 transactionFinder.setLastBestChainHash(finalRequestProposalsResponse.getBestChainHash());
-                            for (String txHash : finalTxHashes) {
-                                transactionFinder.addTx(txHash);
-                                //todo: falta agregar el output de lockeo en el finder como hice abajo..
-                            }
+                                for (String txHash : finalTxHashes) {
+                                    transactionFinder.addTx(txHash);
+                                    //todo: falta agregar el output de lockeo en el finder como hice abajo..
+                                }
 //                        transactionFinder.addTx("068af403e4f0935c419fb71ab625fb8364d7565a436c35a997ba6a75c9883b2b");
 //                        transactionFinder.addWatchedOutpoint(Sha256Hash.wrap("068af403e4f0935c419fb71ab625fb8364d7565a436c35a997ba6a75c9883b2b"),0,36);
-                            transactionFinder.startDownload();
+                                transactionFinder.startDownload();
+                            }
                         }
                     }
 

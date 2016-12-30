@@ -28,7 +28,7 @@ public class Vote implements Serializable {
     private long votingPower;
     /** locked values */
     private String lockedOutputHashHex;
-    private int lockedOutputIndex;
+    private int lockedOutputIndex = 0;
 
     public Vote(String genesisHash, VoteType vote, long votingPower) {
         this.genesisHashHex = genesisHash;

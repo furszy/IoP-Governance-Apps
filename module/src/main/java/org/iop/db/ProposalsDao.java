@@ -55,6 +55,7 @@ public class ProposalsDao implements ProposalsContractDao {
         }
     }
 
+
     public List<Proposal> listProposals() {
         return proposalsDatabaseHandler.getAllProposals();
     }

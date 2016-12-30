@@ -176,6 +176,7 @@ public class VotingProposalActivity extends VotingBaseActivity implements View.O
                 Vote vote = (Vote) bundle.getSerializable(INTENT_EXTRA_PROPOSAL_VOTE);
                 if (Arrays.equals(vote.getGenesisHash(),this.vote.getGenesisHash())) {
                     showDoneLoading();
+                    lockBroadcast.set(false);
                 }
             }
         }else if(bundle.getString(INTENT_BROADCAST_TYPE).equals(INTENT_DIALOG)){
@@ -263,6 +264,21 @@ public class VotingProposalActivity extends VotingBaseActivity implements View.O
 
         vote = new Vote(CryptoBytes.toHexString(proposal.getBlockchainHash()),voteType,amountIoPToshis);
 
+        // todo: Esto está así hasta que vuelva de las vacaciones..
+        if (voteType == Vote.VoteType.NEUTRAL){
+            Toast.makeText(this,"Neutral votes not allowed by now\nplease contact Furszy :)",Toast.LENGTH_LONG).show();
+            lockBroadcast.set(false);
+            hideDoneLoading();
+            return;
+        }
+
+        if (amountIoPToshis==0){
+            Toast.makeText(this,"Zero votes not allowed",Toast.LENGTH_LONG).show();
+            lockBroadcast.set(false);
+            hideDoneLoading();
+            return;
+        }
+
         if (checkVote(vote)){
             BroadcastVoteDialog.newinstance(module,vote).setCancelListener(new CancelLister() {
                 @Override
@@ -280,8 +296,9 @@ public class VotingProposalActivity extends VotingBaseActivity implements View.O
                 }
             }).show(getSupportFragmentManager(),"broadcastContractDialog");
         } else {
-            Toast.makeText(this,"Voto ya existe, ver que hago acá",Toast.LENGTH_LONG).show();
+            Toast.makeText(this,"Vote exist, app works great!\nFurszy :)",Toast.LENGTH_LONG).show();
             hideDoneLoading();
+            lockBroadcast.set(false);
         }
 
 

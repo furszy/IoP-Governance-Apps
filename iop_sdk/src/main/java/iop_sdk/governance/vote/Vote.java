@@ -11,6 +11,7 @@ import iop_sdk.crypto.CryptoBytes;
 
 public class Vote implements Serializable {
 
+
     public enum VoteType{
         NO,
         NEUTRAL,
@@ -27,7 +28,7 @@ public class Vote implements Serializable {
     private long votingPower;
     /** locked values */
     private String lockedOutputHashHex;
-    private int lockedOutputIndex;
+    private int lockedOutputIndex = 0;
 
     public Vote(String genesisHash, VoteType vote, long votingPower) {
         this.genesisHashHex = genesisHash;
@@ -64,6 +65,15 @@ public class Vote implements Serializable {
     public void setVoteId(long voteId) {
         this.voteId = voteId;
     }
+
+    public void setVoteType(VoteType voteType) {
+        this.vote = voteType;
+    }
+
+    public void setAmount(long amount) {
+        this.votingPower = amount;
+    }
+
 
     public VoteType getVote() {
         return vote;

@@ -18,7 +18,6 @@ import java.util.regex.Pattern;
 
 import iop_sdk.crypto.CryptoBytes;
 import iop_sdk.global.exceptions.NotValidParametersException;
-import iop_sdk.governance.ProposalForum;
 
 import static iop_sdk.global.utils.Preconditions.checkEquals;
 import static iop_sdk.governance.ProposalForum.TAG_BENEFICIARY_ADDRESS;
@@ -73,7 +72,7 @@ public class Proposal implements Serializable {
     private ProposalState state = ProposalState.DRAFT;
     private byte[] blockchainHash;
     // IoPIP -> IoP improvement proposal
-    private short version = 0x0100;
+    private short version =  0x0100;
     private String title;
     private String subTitle;
     private String category;

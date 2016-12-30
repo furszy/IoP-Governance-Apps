@@ -3,6 +3,7 @@ apply plugin: 'com.android.application'
 android {
     compileSdkVersion 24
     buildToolsVersion "24.0.3"
+    useLibrary 'org.apache.http.legacy'
 
     defaultConfig {
         applicationId "iop.org.voting_app"
@@ -10,15 +11,38 @@ android {
         targetSdkVersion 24
         versionCode 1
         versionName "1.0"
+        multiDexEnabled true
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
     }
+    dexOptions {
+        javaMaxHeapSize "4g"
+        incremental true
+        jumboMode=true
+        preDexLibraries = false
+    }
+
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+    }
+
+    packagingOptions {
+        exclude 'lib/x86_64/darwin/libscrypt.dylib'
+        exclude 'lib/x86_64/freebsd/libscrypt.so'
+        exclude 'lib/x86_64/linux/libscrypt.so'
+        exclude 'com/google/thirdparty/publicsuffix/PublicSuffixPatterns.gwt.xml'
+        exclude 'com/google/thirdparty/publicsuffix/PublicSuffixType.gwt.xml'
+        exclude 'org/bitcoinj/crypto/mnemonic/wordlist/english.txt'
+        exclude 'org/bitcoinj/crypto/cacerts'
+        exclude 'org.bitcoin.production.checkpoints.txt'
+        exclude 'org.bitcoin.test.checkpoints.txt'
+        exclude 'messages.properties'
+        exclude 'META-INF/services/sun.net.spi.nameservice.NameServiceDescriptor'
+        exclude 'META-INF/LICENSE'
     }
 }
 
@@ -29,4 +53,6 @@ dependencies {
     })
     compile 'com.android.support:appcompat-v7:24.2.1'
     testCompile 'junit:junit:4.12'
+
+    compile project(':old_app')
 }

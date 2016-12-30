@@ -3,7 +3,6 @@ package iop_sdk.wallet;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
-import iop_sdk.global.ContextWrapper;
 import org.bitcoinj.core.BlockChain;
 import org.bitcoinj.core.Peer;
 import org.bitcoinj.core.PeerAddress;
@@ -36,6 +35,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import iop_sdk.global.ContextWrapper;
 import iop_sdk.wallet.utils.BlockchainState;
 import iop_sdk.wallet.utils.RegtestUtil;
 
@@ -136,11 +136,13 @@ public class BlockchainManager {
     }
 
     public void removeDisconnectedEventListener(PeerDisconnectedEventListener listener){
-        peerGroup.removeDisconnectedEventListener(listener);
+        if (peerGroup!=null)
+            peerGroup.removeDisconnectedEventListener(listener);
     }
 
     public void removeConnectivityListener(PeerConnectedEventListener listener){
-        peerGroup.removeConnectedEventListener(listener);
+        if (peerGroup!=null)
+            peerGroup.removeConnectedEventListener(listener);
     }
 
     public void addBlockchainManagerListener(BlockchainManagerListener listener){
@@ -216,14 +218,14 @@ public class BlockchainManager {
             if (walletLastBlockSeenHeight != -1 && walletLastBlockSeenHeight != bestChainHeight) {
                 final String message = "wallet/blockchain out of sync: " + walletLastBlockSeenHeight + "/" + bestChainHeight;
                 LOG.error(message);
-//                CrashReporter.saveBackgroundTrace(new RuntimeException(message), application.packageInfo());
+//                CrashReporter.saveBackgroundTrace(new RuntimeException(message), application.packageInfoWrapper());
             }
 
             LOG.info("starting peergroup");
             peerGroup = new PeerGroup(conf.getNetworkParams(), blockChain);
             peerGroup.setDownloadTxDependencies(0); // recursive implementation causes StackOverflowError
             peerGroup.addWallet(wallet);
-            peerGroup.setUserAgent(USER_AGENT, context.packageInfo().getVersionName());
+            peerGroup.setUserAgent(USER_AGENT, context.packageInfoWrapper().getVersionName());
             peerGroup.addConnectedEventListener(peerConnectivityListener);
             peerGroup.addDisconnectedEventListener(peerDisconnectedEventListener);
 

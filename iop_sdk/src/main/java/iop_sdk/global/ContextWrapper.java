@@ -30,7 +30,7 @@ public interface ContextWrapper {
 
     void toast(String text);
 
-    PackageInfoWrapper packageInfo();
+    PackageInfoWrapper packageInfoWrapper();
 
     boolean isMemoryLow();
 

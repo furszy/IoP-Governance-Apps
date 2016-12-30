@@ -20,4 +20,9 @@ public class PackageInfoAndroid implements PackageInfoWrapper {
     public String getVersionName() {
         return packageInfo.versionName;
     }
+
+    @Override
+    public Object getPackageInfo() {
+        return packageInfo;
+    }
 }

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    >
+
+    <PreferenceCategory android:title="Profile">
+
+        <Preference android:key="id_profile" android:title="Sign out" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="Wallet">
+
+        <Preference android:key="id_balance" android:title="Balance" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="Diagnostic">
+
+        <Preference android:key="id_report" android:title="Report issue" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="Dev">
+
+        <Preference android:key="id_dev" android:title="Blockchain" />
+
+    </PreferenceCategory>
+
+    <!--<Preference android:key="id_donate" android:title="Donate"/>-->
+
+    <!--<Preference android:key="id_about" android:title="About"/>-->
+
+</PreferenceScreen>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="iop.org.iop_contributors_app">
+
+
+    <application
+        android:allowBackup="false"
+        >
+
+
+        <!--<activity android:name=".ui.StartActivity" >-->
+            <!--<intent-filter>-->
+                <!--<action android:name="android.intent.action.VIEW" />-->
+                <!--<category android:name="android.intent.category.DEFAULT" />-->
+                <!--<category android:name="android.intent.category.BROWSABLE" />-->
+                <!--<data android:scheme="http"-->
+                    <!--android:host="fermat.community" />-->
+            <!--</intent-filter>-->
+        <!--</activity>-->
+
+
+
+
+
+    </application>
+
+</manifest>

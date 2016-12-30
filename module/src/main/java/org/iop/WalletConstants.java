@@ -2,9 +2,11 @@ package org.iop;
 
 import android.os.Environment;
 import android.text.format.DateUtils;
+
 import org.bitcoinj.core.Context;
 import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.params.RegTestParams;
+
 import java.io.File;
 
 /**
@@ -26,11 +28,13 @@ public class WalletConstants {
     // dialogs
     public static final String SHOW_RESTORE_SUCCED_DIALOG = "restore_succed";
     public static final String SHOW_BLOCKCHAIN_OFF_DIALOG = "blockchain_off";
+    public static final String SHOW_IMPORT_EXPORT_KEYS_DIALOG_FAILURE = "import_export_keys_failure";
 
     // report mail
     public static final String REPORT_EMAIL = "matias.furszyfer@fermat.org";
     /** Subject line for manually reported issues. */
     public static final String REPORT_SUBJECT_ISSUE = "Reported issue";
+
 
     public static final class Files{
 

@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v4.widget.DrawerLayout android:id="@+id/drawer_layout"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    android:background="@color/base_background">
+
+    <android.support.design.widget.CoordinatorLayout
+        android:id="@+id/content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        >
+
+        <android.support.design.widget.AppBarLayout
+            android:id="@+id/appBarLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
+
+            <android.support.v7.widget.Toolbar
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                android:background="#4D4D4D"
+                android:titleTextColor="#ffffff"
+                app:titleTextColor="#ffffff"
+                android:title="Balance"
+                android:fitsSystemWindows="true"
+                app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+                app:layout_scrollFlags="enterAlways|snap" />
+
+            <include layout="@layout/profile_balance_header"
+                android:fitsSystemWindows="true"
+
+                />
+
+        </android.support.design.widget.AppBarLayout>
+
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="250dp"
+            android:orientation="vertical"
+            android:paddingLeft="12dp"
+            android:paddingRight="12dp"
+            >
+
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Danger!"
+                android:gravity="center"
+                android:textSize="18sp"
+                android:textColor="#fff"
+                android:paddingTop="7dp"
+                android:paddingBottom="12dp"/>
+
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="If you send your funds out\nyou will not be able to contribute"
+                android:gravity="center"
+                android:paddingTop="8dp"
+                android:textColor="#aaffffff"
+                android:paddingBottom="20dp"/>
+
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="Recipient"
+                android:textSize="11sp"
+                android:paddingBottom="5dp"
+                android:textColor="@color/text_blue"/>
+
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/edit_address"
+                android:background="#a8ffffff"
+                android:hint="Address"
+                android:paddingTop="5dp"
+                android:paddingBottom="5dp"
+                android:inputType="text"
+                android:paddingLeft="15dp"
+                android:layout_marginBottom="7dp"
+                android:textSize="13sp"/>
+
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="Amount"
+                android:textSize="11sp"
+                android:paddingBottom="5dp"
+                android:textColor="@color/text_blue"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <EditText
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:id="@+id/edit_amount"
+                    android:background="#a8ffffff"
+                    android:hint="0,00"
+                    android:paddingTop="5dp"
+                    android:paddingBottom="5dp"
+                    android:paddingLeft="15dp"
+                    android:inputType="number"
+                    android:textSize="13sp"
+                    android:layout_weight="1"/>
+
+                <Spinner
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:id="@+id/spinner_coin"
+                    android:background="#a8ffffff"
+                    android:entries="@array/coin_array"
+                    android:layout_weight="0.01"></Spinner>
+
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+            <Button
+                android:layout_width="@dimen/standard_btn_widht"
+                android:layout_height="38dp"
+                android:id="@+id/btn_send"
+                android:text="SEND FUNDS"
+                android:textSize="14sp"
+                android:layout_gravity="bottom|end"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentBottom="true"
+                android:layout_marginBottom="16dp"
+                android:layout_marginRight="12dp"
+                android:background="@drawable/create_button"
+                android:textColor="@color/text_blue"/>
+
+        </RelativeLayout>
+
+
+    </android.support.design.widget.CoordinatorLayout>
+
+    <android.support.design.widget.NavigationView
+        android:id="@+id/navigation_view"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:background="@color/base_background"
+        app:headerLayout="@layout/drawer_header"
+        >
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="@dimen/nav_header_height"
+            android:paddingTop="9dp">
+
+
+            <android.support.v7.widget.RecyclerView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/recycler_nav_view">
+
+
+            </android.support.v7.widget.RecyclerView>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:gravity="center"
+                android:orientation="vertical"
+                >
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="show qr"
+                    android:textColor="#77FFFFFF"
+                    android:textSize="11sp"/>
+
+                <ImageView
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:id="@+id/img_qr"
+                    android:src="@drawable/img_test"
+                    android:background="@null"
+                    android:layout_marginBottom="12dp"
+                    />
+
+
+            </LinearLayout>
+
+
+
+        </RelativeLayout>
+
+    </android.support.design.widget.NavigationView>
+
+</android.support.v4.widget.DrawerLayout>

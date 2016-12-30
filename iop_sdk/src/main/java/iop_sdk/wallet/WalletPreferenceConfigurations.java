@@ -12,7 +12,7 @@ public interface WalletPreferenceConfigurations {
 
     int getBestChainHeightEver();
 
-    void maybeIncrementBestChainHeightEver(final int bestChainHeightEver);
+    int maybeIncrementBestChainHeightEver(final int bestChainHeightEver);
 
     void saveNode(String host);
 
@@ -46,6 +46,8 @@ public interface WalletPreferenceConfigurations {
     int getPeerTimeoutMs();
 
     long getPeerDiscoveryTimeoutMs();
+
+    void remove();
 
 
     /****** END PREFERENCE CONSTANTS   ******/

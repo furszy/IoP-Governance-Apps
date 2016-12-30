@@ -18,4 +18,8 @@ public interface TransactionStorage {
     void markOutputSpend(Transaction tx, int index, int lenght);
 
     List<Transaction> getTransactions();
+
+    void saveLastBestChainHash(String lastBestChainHash);
+
+    String getLastBestChainHash();
 }

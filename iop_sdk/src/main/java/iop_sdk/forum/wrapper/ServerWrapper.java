@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 
+import org.apache.commons.codec.DecoderException;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
@@ -18,6 +19,7 @@ import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.spongycastle.util.encoders.Hex;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,10 +30,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import iop_sdk.crypto.CryptoBytes;
 import iop_sdk.forum.InvalidUserParametersException;
 import iop_sdk.forum.discourge.com.wareninja.opensource.discourse.utils.RequestParameter;
 import iop_sdk.forum.discourge.com.wareninja.opensource.discourse.utils.StringRequestParameter;
 import iop_sdk.global.exceptions.ConnectionRefusedException;
+import iop_sdk.governance.propose.Proposal;
+import iop_sdk.governance.propose.ProposalTransactionBuilder;
 
 import static iop_sdk.forum.wrapper.ResponseMessageConstants.BEST_CHAIN_HEIGHT_HASH;
 import static iop_sdk.forum.wrapper.ResponseMessageConstants.USER_ERROR_STR;
@@ -79,7 +84,7 @@ public class ServerWrapper {
         try {
 
             BasicHttpParams basicHttpParams = new BasicHttpParams();
-            HttpConnectionParams.setSoTimeout(basicHttpParams, (int) TimeUnit.MINUTES.toMillis(1));
+            HttpConnectionParams.setSoTimeout(basicHttpParams, (int) TimeUnit.MINUTES.toMillis(2));
             HttpClient client = new DefaultHttpClient(basicHttpParams);
             HttpPost httpPost = new HttpPost(url);
             //httpPost.setHeader("Content-type", "application/vnd.api+json");
@@ -202,11 +207,13 @@ public class ServerWrapper {
         return false;
     }
 
+
     public class RequestProposalsResponse{
 
         int bestChainHeight;
         String bestChainHash;
         List<String> txHashes;
+        List<Proposal> proposals;
 
         public RequestProposalsResponse() {
         }
@@ -221,6 +228,10 @@ public class ServerWrapper {
 
         public String getBestChainHash() {
             return bestChainHash;
+        }
+
+        public List<Proposal> getProposals() {
+            return proposals;
         }
     }
 
@@ -314,6 +325,112 @@ public class ServerWrapper {
         }
         return requestProposalsResponse;
     }
+
+    public RequestProposalsResponse getVotingProposalsFullTx(int blockHeight) throws CantGetProposalsFromServer {
+        String url = this.url+"/requestproposalsfulltx";
+
+        //url = url + "?api_key=" + DiscouseApiConstants.API_KEY + "&api_username=system";
+
+
+        RequestProposalsResponse requestProposalsResponse = new RequestProposalsResponse();
+
+        List<RequestParameter> requestParams = new ArrayList<>();
+        HttpResponse httpResponse = null;
+        String result = null;
+        try {
+
+
+            int i = 0;
+            for (RequestParameter requestParam: requestParams) {
+                url += (i==0 && !url.contains("?"))?"?":"&";
+                url += requestParam.format();
+                i++;
+            }
+
+            LOG.info("getVotingProposals URL: "+url);
+
+            BasicHttpParams basicHttpParams = new BasicHttpParams();
+            HttpConnectionParams.setSoTimeout(basicHttpParams, (int) TimeUnit.MINUTES.toMillis(1));
+            HttpClient client = new DefaultHttpClient(basicHttpParams);
+            HttpGet httpGet = new HttpGet(url);
+            //httpPost.setHeader("Content-type", "application/vnd.api+json");
+            httpGet.addHeader("Accept", "text/html,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5");
+            httpGet.setHeader("Content-type", "application/json");
+
+            // make GET request to the given URL
+            httpResponse = client.execute(httpGet);
+            InputStream inputStream = null;
+            // receive response as inputStream
+            inputStream = httpResponse.getEntity().getContent();
+
+            // convert inputstream to string
+            if (inputStream != null)
+                result = convertInputStreamToString(inputStream);
+
+
+            LOG.info("###########################");
+            LOG.info(result);
+            LOG.info("###########################");
+
+//
+
+
+            if (httpResponse.getStatusLine().getStatusCode()==200){
+                List<Proposal> ret = new ArrayList<>();
+
+                JsonParser jsonParser = new JsonParser();
+                JsonObject jsonObject = jsonParser.parse(result).getAsJsonObject();
+                JsonElement jsonElement = jsonObject.get("transactions");
+                if (jsonElement!=null) {
+                    JsonArray transactions = jsonElement.getAsJsonArray();
+//                JSONObject jsonObject = new JSONObject(result);
+//                JSONArray transactions = jsonObject.getJSONArray("transactions");
+                    for (i = 0; i < transactions.size(); i++) {
+//                        ret.add(transactions.get(i).getAsString());
+
+                        JsonObject tx = transactions.get(i).getAsJsonObject();
+
+                        String txid = tx.get("txid").getAsString();
+
+                        JsonArray outputs = tx.get("vout").getAsJsonArray();
+                        JsonObject opReturnOutput = outputs.get(2).getAsJsonObject();
+                        String opReturnStringHex = opReturnOutput.get("scriptPubKey").getAsJsonObject().get("hex").getAsString().substring(2);
+                        try {
+                            byte[] data = Hex.decode(opReturnStringHex);
+                            byte[] realData = new byte[46];
+                            System.arraycopy(data,1,realData,0,46);
+                            Proposal proposal = ProposalTransactionBuilder.decodeContract(realData);
+                            proposal.setBlockchainHash(CryptoBytes.fromHexToBytes(txid));
+                            ret.add(proposal);
+                        } catch (DecoderException e) {
+                            e.printStackTrace();
+                        } catch (Exception e){
+                            e.printStackTrace();
+                        }
+
+                    }
+                }
+//                requestProposalsResponse.bestChainHeight = ((JsonObject)jsonObject.get("Data")).get("currentheight").getAsInt();
+                requestProposalsResponse.proposals = ret;
+//                requestProposalsResponse.bestChainHash = jsonObject.get(BEST_CHAIN_HEIGHT_HASH).getAsString();
+            }else {
+                throw new CantGetProposalsFromServer("Something fail, server code: "+((httpResponse!=null)?httpResponse.getStatusLine().getStatusCode():"null"));
+            }
+
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        } catch (HttpHostConnectException e){
+            throw new CantGetProposalsFromServer("url: "+url,e);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (JsonParseException e) {
+            e.printStackTrace();
+        } catch (IllegalStateException e){
+            throw new CantGetProposalsFromServer("Something fail, server return: "+result+", status code: "+httpResponse.getStatusLine().getStatusCode());
+        }
+        return requestProposalsResponse;
+    }
+
 
 
     public HttpResponse registerUser(Map<String, String> parameters) throws IOException {

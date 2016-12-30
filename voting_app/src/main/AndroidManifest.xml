@@ -18,14 +18,14 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <activity android:name="iop.org.iop_contributors_app.ui.ForumActivity"/>
+        <activity android:name=".ui.ForumActivity"/>
 
-        <activity android:name="iop.org.iop_contributors_app.ui.ProfileActivity" />
+        <activity android:name=".ui.ProfileActivity" />
         <activity android:name=".SettingsActivity"
             android:theme="@style/PreferenceScreen" />
 
         <activity android:name="iop.org.iop_contributors_app.ui.settings.IoPBalanceActivity"/>
-        <activity android:name="iop.org.iop_contributors_app.ui.settings.DevActivity" android:theme="@style/PreferenceScreen"/>
+        <activity android:name=".ui.DevActivity" android:theme="@style/PreferenceScreen"/>
         <service android:name="iop.org.iop_contributors_app.services.BlockchainServiceImpl"/>
 
         <activity android:name=".ui.VotingStartActivity" android:theme="@style/AppTheme.VotingCenterAnimation">

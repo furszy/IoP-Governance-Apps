@@ -1,6 +1,7 @@
 package iop.org.voting_app.ui;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -14,16 +15,36 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.util.Arrays;
+import java.util.Locale;
+
 import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.ui.components.switch_seek_bar.SwitchSeekBar;
+import iop.org.iop_contributors_app.ui.dialogs.SimpleDialogs;
 import iop.org.voting_app.base.VotingBaseActivity;
 import iop.org.voting_app.ui.dialogs.BroadcastVoteDialog;
 import iop.org.voting_app.ui.dialogs.CancelLister;
+import iop_sdk.governance.propose.ProposalUtil;
 import iop_sdk.governance.utils.IoPCalculator;
 import iop_sdk.governance.vote.Vote;
 import iop_sdk.governance.vote.VoteWrapper;
 
+import static iop.org.iop_contributors_app.services.BlockchainService.INTENT_EXTRA_PROPOSAL_VOTE;
 import static iop_sdk.blockchain.utils.CoinUtils.coinToString;
+import static org.iop.intents.constants.IntentsConstants.COMMON_ERROR_DIALOG;
+import static org.iop.intents.constants.IntentsConstants.INSUFICIENTS_FUNDS_DIALOG;
+import static org.iop.intents.constants.IntentsConstants.INTENTE_BROADCAST_DIALOG_TYPE;
+import static org.iop.intents.constants.IntentsConstants.INTENTE_EXTRA_MESSAGE;
+import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_TYPE;
+import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_VOTE_TRANSACTION_SUCCED;
+import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_TYPE;
+import static org.iop.intents.constants.IntentsConstants.INTENT_DIALOG;
+import static org.iop.intents.constants.IntentsConstants.INVALID_PROPOSAL_DIALOG;
+import static org.iop.intents.constants.IntentsConstants.UNKNOWN_ERROR_DIALOG;
 
 /**
  * Created by mati on 23/12/16.
@@ -31,10 +52,10 @@ import static iop_sdk.blockchain.utils.CoinUtils.coinToString;
 
 public class VotingVoteSummary extends VotingBaseActivity implements View.OnClickListener {
 
-    private static final String LOG = "VotingVoteSummary";
+    private static final String TAG = "VotingVoteSummary";
 
     public static final String INTENT_VOTE_WRAPPER = "vote_wrapper";
-    
+
     private VoteWrapper voteWrapper;
 
     // UI
@@ -45,8 +66,7 @@ public class VotingVoteSummary extends VotingBaseActivity implements View.OnClic
     private TextView txt_sub_title;
     private TextView txt_categories;
     private TextView txt_body;
-    private TextView txt_start_block;
-    private TextView txt_end_block;
+    private TextView txt_end_date;
     private TextView txt_total_amount;
     private TextView txt_go_cancel;
     private TextView txt_go_vote;
@@ -112,8 +132,7 @@ public class VotingVoteSummary extends VotingBaseActivity implements View.OnClic
         txt_sub_title = (TextView) root.findViewById(R.id.txt_sub_title);
         txt_categories = (TextView) root.findViewById(R.id.txt_categories);
         txt_body = (TextView) root.findViewById(R.id.txt_body);
-        txt_start_block = (TextView) root.findViewById(R.id.txt_start_block);
-        txt_end_block = (TextView) root.findViewById(R.id.txt_end_block);
+        txt_end_date = (TextView) root.findViewById(R.id.txt_end_date);
         txt_total_amount = (TextView) root.findViewById(R.id.txt_total_amount);
         txt_go_cancel = (TextView) root.findViewById(R.id.txt_go_cancel);
         txt_go_vote = (TextView) root.findViewById(R.id.txt_go_vote);
@@ -125,6 +144,11 @@ public class VotingVoteSummary extends VotingBaseActivity implements View.OnClic
         txt_vote_quantity = (EditText) root.findViewById(R.id.txt_vote_quantity);
         btn_minus_voting = (Button) root.findViewById(R.id.btn_minus_voting);
         btn_plus_voting = (Button) root.findViewById(R.id.btn_plus_voting);
+
+        container_send = root.findViewById(R.id.container_send);
+        img_done = (ImageView) root.findViewById(R.id.img_done);
+        txt_done = (TextView) root.findViewById(R.id.txt_done);
+        progressBar = (ProgressBar) root.findViewById(R.id.progressBar);
 
         btn_minus_voting.setOnClickListener(this);
         btn_plus_voting.setOnClickListener(this);
@@ -238,11 +262,23 @@ public class VotingVoteSummary extends VotingBaseActivity implements View.OnClic
         txt_sub_title.setText(voteWrapper.getProposal().getSubTitle());
         txt_categories.setText(voteWrapper.getProposal().getCategory());
         txt_body.setText(voteWrapper.getProposal().getBody());
-        txt_start_block.setText(String.valueOf(voteWrapper.getProposal().getStartBlock()));
-        txt_end_block.setText(String.valueOf(voteWrapper.getProposal().getEndBlock()));
+        double minutes = ProposalUtil.getEstimatedTimeToContractExecution(voteWrapper.getProposal());
+        double hours = minutes/60;
+        hours = round(hours,2);
+        txt_end_date.setText(String.valueOf(hours)+" hours");
         txt_total_amount.setText("Reward "+coinToString(voteWrapper.getProposal().getBlockReward())+" IoPs");
 
     }
+
+    public static double round(double value, int places) {
+        if (places < 0) throw new IllegalArgumentException();
+
+        BigDecimal bd = new BigDecimal(value);
+        bd = bd.setScale(places, RoundingMode.HALF_UP);
+        return bd.doubleValue();
+    }
+
+
 
     private void updateVotesAmount(){
         if (voteType== Vote.VoteType.YES)
@@ -255,10 +291,6 @@ public class VotingVoteSummary extends VotingBaseActivity implements View.OnClic
         }
     }
 
-    @Override
-    protected boolean onBroadcastReceive(Bundle data) {
-        return false;
-    }
 
     @Override
     protected boolean hasDrawer() {
@@ -339,4 +371,41 @@ public class VotingVoteSummary extends VotingBaseActivity implements View.OnClic
     private void hideDoneLoading(){
         container_send.setVisibility(View.INVISIBLE);
     }
+
+
+    @Override
+    protected boolean onBroadcastReceive(Bundle bundle) {
+
+        if (bundle.containsKey(INTENT_BROADCAST_DATA_TYPE)){
+            if (bundle.getString(INTENT_BROADCAST_DATA_TYPE).equals(INTENT_BROADCAST_DATA_VOTE_TRANSACTION_SUCCED)) {
+                Vote vote = (Vote) bundle.getSerializable(INTENT_EXTRA_PROPOSAL_VOTE);
+                if (Arrays.equals(vote.getGenesisHash(),this.voteWrapper.getVote().getGenesisHash())) {
+                    showDoneLoading();
+                }
+            }
+        }else if(bundle.getString(INTENT_BROADCAST_TYPE).equals(INTENT_DIALOG)){
+            switch (bundle.getInt(INTENTE_BROADCAST_DIALOG_TYPE,0)){
+                case UNKNOWN_ERROR_DIALOG:
+                    String textToShow = "Uknown error, please send log";
+                    if (bundle.containsKey(INTENTE_EXTRA_MESSAGE)) {
+                        textToShow = bundle.getString(INTENTE_EXTRA_MESSAGE);
+                    }
+                    SimpleDialogs.showErrorDialog(this, "Upss",textToShow );
+                    break;
+                case INSUFICIENTS_FUNDS_DIALOG:
+                    SimpleDialogs.showInsuficientFundsException(this,module);
+                    break;
+                case COMMON_ERROR_DIALOG:
+                    SimpleDialogs.showErrorDialog(this,"Error", bundle.getString(INTENTE_EXTRA_MESSAGE));
+                    break;
+                default:
+                    Log.e(TAG,"BroadcastReceiver fail");
+                    break;
+            }
+            hideDoneLoading();
+        }
+
+        return false;
+    }
+
 }

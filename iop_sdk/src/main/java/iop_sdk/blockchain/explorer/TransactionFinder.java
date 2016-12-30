@@ -32,7 +32,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import iop_sdk.blockchain.explorer.android.TransactionStorageSQlite;
 
 import static iop_sdk.blockchain.explorer.TxUtils.serializeData;
 
@@ -59,7 +58,7 @@ public class TransactionFinder implements PeerFilterProvider, PeerDataEventListe
     private List<byte[]> outpoints;
 
     /** Clase para ir guardando las transacciones (sean tx,inputs,outputs) */
-    private TransactionStorage transactionStorage = new TransactionStorageSQlite();
+    private TransactionStorage transactionStorage;
 
     /** Listeners */
     private List<TransactionFinderListener> listeners;
@@ -67,14 +66,15 @@ public class TransactionFinder implements PeerFilterProvider, PeerDataEventListe
     // todo: deberia guardar esto en algun lado..
     private String lastBestChainHash;
 
-    public TransactionFinder(Context context) {
+    public TransactionFinder(Context context,TransactionStorage finderStorage) {
         this.context = context;
         txHashes = new ArrayList<>();
         outpoints = new ArrayList<>();
+        this.transactionStorage = finderStorage;
     }
 
-    public TransactionFinder(Context context, PeerGroup peerGroup) {
-        this(context);
+    public TransactionFinder(Context context, PeerGroup peerGroup,TransactionStorage finderStorage) {
+        this(context,finderStorage);
         this.peerGroup = peerGroup;
         reusePeers = true;
     }
@@ -151,6 +151,7 @@ public class TransactionFinder implements PeerFilterProvider, PeerDataEventListe
 
     public void setLastBestChainHash(String lastBestChainHash) {
         this.lastBestChainHash = lastBestChainHash;
+        transactionStorage.saveLastBestChainHash(lastBestChainHash);
     }
 
     public void addWatchedOutpoint(String hash, int index, int dataLenght){
@@ -188,6 +189,10 @@ public class TransactionFinder implements PeerFilterProvider, PeerDataEventListe
 
     public List<Transaction> getWatchedTransactions() {
         return transactionStorage.getTransactions();
+    }
+
+    public String getLastBestChainHash(){
+        return transactionStorage.getLastBestChainHash();
     }
 
     // ********************************************** BLOOM FILTER REGION **********************************************

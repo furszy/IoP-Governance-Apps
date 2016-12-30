@@ -33,6 +33,7 @@ import java.util.concurrent.ExecutionException;
 import iop.org.iop_sdk_android.core.profile_server.Profile;
 import iop_sdk.blockchain.NotConnectedPeersException;
 import iop_sdk.blockchain.explorer.TransactionFinder;
+import iop_sdk.blockchain.explorer.TransactionStorage;
 import iop_sdk.crypto.CryptoBytes;
 import iop_sdk.forum.CantCreateTopicException;
 import iop_sdk.forum.CantUpdatePostException;
@@ -96,6 +97,9 @@ public class WalletModule {
 
     private VotesDao votesDaoImp;
 
+    // esto no va a quedar acá..
+    private TransactionStorage transactionStorage;
+
     public WalletModule(android.content.Context context, WalletPreferenceConfigurations configuration, ForumConfigurations forumConfigurations) {
         this.context = (AppController) context;
         this.configuration = configuration;
@@ -107,7 +111,7 @@ public class WalletModule {
         serverWrapper = new ServerWrapper(forumConfigurations.getWrapperUrl());
     }
 
-    public WalletModule(android.content.Context context, WalletPreferenceConfigurations configuration, ForumConfigurations forumConfigurations,VotesDao votesDao) {
+    public WalletModule(android.content.Context context, WalletPreferenceConfigurations configuration, ForumConfigurations forumConfigurations, VotesDao votesDao) {
         this.context = (AppController) context;
         this.configuration = configuration;
         this.forumConfigurations = forumConfigurations;
@@ -497,7 +501,7 @@ public class WalletModule {
 
 
     public TransactionFinder getAndCreateFinder(PeerGroup peerGroup){
-        this.transactionFinder = new TransactionFinder(WalletConstants.CONTEXT,peerGroup);
+        this.transactionFinder = new TransactionFinder(WalletConstants.CONTEXT,peerGroup,transactionStorage);
         return transactionFinder;
     }
 
@@ -630,14 +634,17 @@ public class WalletModule {
         Map<String,Vote> voteByProposalHash = new HashMap<>();
         List<String> transactionHashes = new ArrayList<>();
         for (Vote myVote : myVotes) {
-            voteByProposalHash.put(myVote.getGenesisHashHex(),null);
+            voteByProposalHash.put(myVote.getGenesisHashHex(),myVote);
             transactionHashes.add(myVote.getGenesisHashHex());
         }
         List<Proposal> proposals = proposalsDao.listProposals(transactionHashes);
         for (Proposal proposal : proposals) {
             // todo: esto es totalmente mejorable si le pongo un hex en vez del byte array que tiene.
+            String proposalHash = CryptoBytes.toHexString(proposal.getBlockchainHash());
+            Vote vote = voteByProposalHash.get(proposalHash);
+
             wrappers.add(new VoteWrapper(
-                   voteByProposalHash.get(CryptoBytes.toHexString(proposal.getBlockchainHash())),
+                    vote,
                     proposal
 
             ));
@@ -648,5 +655,9 @@ public class WalletModule {
 
     public ContextWrapper getAppController() {
         return context;
+    }
+
+    public void setTransactionStorage(TransactionStorage transactionStorage) {
+        this.transactionStorage = transactionStorage;
     }
 }

@@ -214,27 +214,82 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
 
             delayHandler.removeCallbacksAndMessages(null);
 
+
+
             final long now = System.currentTimeMillis();
             if (now - lastMessageTime.get() > BLOCKCHAIN_STATE_BROADCAST_THROTTLE_MS)
-                delayHandler.post(runnable);
+                delayHandler.post(new RunnableBlockChecker(block));
             else
-                delayHandler.postDelayed(runnable, BLOCKCHAIN_STATE_BROADCAST_THROTTLE_MS);
+                delayHandler.postDelayed(new RunnableBlockChecker(block), BLOCKCHAIN_STATE_BROADCAST_THROTTLE_MS);
         }
 
-        private final Runnable runnable = new Runnable()
-        {
+//        private final Runnable runnable = new Runnable() {
+//            @Override
+//            public void run()
+//            {
+//                lastMessageTime.set(System.currentTimeMillis());
+//
+//
+//                int bestBlockHeight = conf.maybeIncrementBestChainHeightEver(blockchainManager.getChainHeadHeight());
+//
+//                if (bestBlockHeight!=-1 && !transactionFinder.getLastBestChainHash().equals(block.getHash().toString())){
+//                    List<String> txHashes = null;
+//                    ServerWrapper.RequestProposalsResponse requestProposalsResponse= null;
+//
+//                    if (application.isVotingApp()) {
+//                        // obtain proposal contracts to filter
+//                        requestProposalsResponse = walletModule.requestProposals(blockchainManager.getChainHeadHeight());
+//                        if (requestProposalsResponse != null) {
+//                            txHashes = requestProposalsResponse.getTxHashes();
+//
+//                        }
+//                    }
+//                }
+//                // todo: ver esto, lo broadcastea para que todos sepan el estado de la blockchain
+////                broadcastBlockchainState();
+//            }
+//        };
+
+
+        final class RunnableBlockChecker implements Runnable{
+
+            private Block block;
+
+            public RunnableBlockChecker(Block block) {
+                this.block = block;
+            }
+
             @Override
-            public void run()
-            {
+            public void run() {
                 lastMessageTime.set(System.currentTimeMillis());
 
 
-                conf.maybeIncrementBestChainHeightEver(blockchainManager.getChainHeadHeight());
+                int bestBlockHeight = conf.maybeIncrementBestChainHeightEver(blockchainManager.getChainHeadHeight());
+
+                if (application.isVotingApp()) {
+
+                    if (bestBlockHeight != -1 && !transactionFinder.getLastBestChainHash().equals(block.getHash().toString())) {
+                        List<String> txHashes = null;
+                        ServerWrapper.RequestProposalsResponse requestProposalsResponse = null;
+
+                        if (application.isVotingApp()) {
+                            // obtain proposal contracts to filter
+                            requestProposalsResponse = walletModule.requestProposals(blockchainManager.getChainHeadHeight());
+                            if (requestProposalsResponse != null) {
+                                txHashes = requestProposalsResponse.getTxHashes();
+
+                            }
+                        }
+                    }
+                }
+
                 // todo: ver esto, lo broadcastea para que todos sepan el estado de la blockchain
 //                broadcastBlockchainState();
             }
-        };
+        }
     };
+
+
 
 
     private final BroadcastReceiver connectivityReceiver = new BroadcastReceiver() {
@@ -595,7 +650,8 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
                             // new thing
                             transactionFinder = walletModule.getAndCreateFinder(peerGroup);
                             transactionFinder.addTransactionFinderListener(transactionFinderListener);
-                            transactionFinder.setLastBestChainHash(finalRequestProposalsResponse.getBestChainHash());
+                            if (finalRequestProposalsResponse!=null)
+                                transactionFinder.setLastBestChainHash(finalRequestProposalsResponse.getBestChainHash());
                             for (String txHash : finalTxHashes) {
                                 transactionFinder.addTx(txHash);
                                 //todo: falta agregar el output de lockeo en el finder como hice abajo..

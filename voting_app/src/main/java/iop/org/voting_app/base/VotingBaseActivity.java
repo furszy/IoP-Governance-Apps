@@ -17,13 +17,13 @@ import iop.org.furszy_lib.adapter.FermatListItemListeners;
 import iop.org.furszy_lib.base.NavViewHelper;
 import iop.org.furszy_lib.nav_view.NavMenuItem;
 import iop.org.iop_contributors_app.R;
-import iop.org.iop_contributors_app.ui.CreateProposalActivity;
-import iop.org.iop_contributors_app.ui.ForumActivity;
 import iop.org.iop_contributors_app.ui.base.BaseActivity;
 import iop.org.iop_contributors_app.ui.dialogs.wallet.BackupDialog;
 import iop.org.iop_contributors_app.ui.dialogs.wallet.RestoreDialogFragment2;
-import iop.org.voting_app.ui.VotingMyVotesActivity;
 import iop.org.voting_app.SettingsActivity;
+import iop.org.voting_app.ui.ForumActivity;
+import iop.org.voting_app.ui.VotingMyVotesActivity;
+import iop.org.voting_app.ui.VotingProposalsActivity;
 
 /**
  * Created by mati on 21/12/16.
@@ -51,7 +51,7 @@ public abstract class VotingBaseActivity extends BaseActivity {
                     intent = new Intent(VotingBaseActivity.this, ForumActivity.class);
                     break;
                 case MENU_DRAWER_CREATE_PROPOSAL:
-                    intent = new Intent(VotingBaseActivity.this, CreateProposalActivity.class);
+                    intent = new Intent(VotingBaseActivity.this, VotingProposalsActivity.class);
                     break;
                 case MENU_DRAWER_PROPOSALS:
                     intent = new Intent(VotingBaseActivity.this, VotingMyVotesActivity.class);

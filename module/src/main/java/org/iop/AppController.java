@@ -20,4 +20,6 @@ public interface AppController extends ContextWrapper {
     File getFilesDir();
 
     long getTimeCreateApplication();
+
+    Class<?> getProfileActivity();
 }

@@ -14,6 +14,7 @@ import android.widget.Toast;
 import org.bitcoinj.crypto.LinuxSecureRandom;
 import org.bitcoinj.utils.Threading;
 import org.iop.AppController;
+import org.iop.PrivateStorage;
 import org.iop.WalletConstants;
 import org.iop.WalletModule;
 import org.iop.configurations.DefaultForumConfiguration;
@@ -36,10 +37,12 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.rolling.RollingFileAppender;
 import ch.qos.logback.core.rolling.TimeBasedRollingPolicy;
 import iop.org.furszy_lib.dialogs.DialogBuilder;
+import iop.org.iop_contributors_app.core.iop_sdk.blockchain.explorer.android.TransactionStorageSQlite;
 import iop.org.iop_contributors_app.services.BlockchainService;
 import iop.org.iop_contributors_app.services.BlockchainServiceImpl;
 import iop.org.iop_contributors_app.services.ServicesCodes;
 import iop.org.iop_contributors_app.ui.base.BaseActivity;
+import iop.org.voting_app.ui.ProfileActivity;
 import iop.org.voting_app.ui.VotingStartActivity;
 import iop.org.voting_app.db.VotesDaoImp;
 import iop.org.iop_contributors_app.utils.AppUtils;
@@ -139,6 +142,7 @@ public class ApplicationController extends Application implements AppController 
         }else {
             module = new WalletModule(this, walletConfigurations, forumConfigurations);
         }
+        module.setTransactionStorage(new TransactionStorageSQlite(new PrivateStorage(this)));
         module.start();
 
         startBlockchainService();
@@ -304,6 +308,15 @@ public class ApplicationController extends Application implements AppController 
     @Override
     public long getTimeCreateApplication() {
         return TIME_CREATE_APPLICATION;
+    }
+
+    /**
+     * Hardcoded method, i'm a lazy lazy person..
+     * @return
+     */
+    @Override
+    public Class<?> getProfileActivity() {
+        return ProfileActivity.class;
     }
 
     @Override

@@ -1,4 +1,4 @@
-package iop.org.voting_app;
+package iop.org.voting_app.ui;
 
 import android.app.Fragment;
 import android.app.FragmentManager;
@@ -7,32 +7,34 @@ import android.view.Menu;
 import android.view.ViewGroup;
 
 import iop.org.iop_contributors_app.R;
-import iop.org.voting_app.base.VotingBaseActivity;
-import iop.org.voting_app.ui.fragments.SettingsFragment;
+import iop.org.iop_contributors_app.ui.base.BaseActivity;
+import iop.org.iop_contributors_app.ui.settings.fragments.DevSettingsFragment;
 
 /**
- * Created by mati on 22/11/16.
+ * Created by mati on 09/12/16.
  */
 
-public class SettingsActivity  extends VotingBaseActivity {
+public class DevActivity extends BaseActivity {
 
 
-    private Fragment settingsFragment;
+    private Fragment devSettingsFragment;
+
 
     @Override
     protected boolean hasDrawer() {
-        return true;
+        return false;
     }
 
     @Override
     protected void onCreateView(ViewGroup container, Bundle savedInstance) {
 
+
         setTheme(R.style.PreferenceScreen1);
 
-        settingsFragment = SettingsFragment.newInstance(application,module);
+        devSettingsFragment = DevSettingsFragment.newInstance(module);
         FragmentManager fragmentManager = getFragmentManager();
         fragmentManager.beginTransaction()
-                .add(container.getId(),settingsFragment)
+                .add(container.getId(),devSettingsFragment)
                 .commit();
     }
 
@@ -55,4 +57,5 @@ public class SettingsActivity  extends VotingBaseActivity {
     protected void onDestroy() {
         super.onDestroy();
     }
+
 }

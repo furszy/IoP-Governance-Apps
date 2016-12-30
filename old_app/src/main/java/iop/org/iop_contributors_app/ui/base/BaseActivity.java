@@ -179,7 +179,7 @@ public abstract class BaseActivity extends AppCompatActivity {
         headerView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(BaseActivity.this, ProfileActivity.class));
+                startActivity(new Intent(BaseActivity.this, application.getProfileActivity()));
             }
         });
 

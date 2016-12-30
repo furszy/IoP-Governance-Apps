@@ -43,10 +43,11 @@ public class WalletPreferencesConfiguration extends Configurations implements Wa
     }
 
     public int maybeIncrementBestChainHeightEver(final int bestChainHeightEver) {
-        if (bestChainHeightEver > getBestChainHeightEver())
+        if (bestChainHeightEver > getBestChainHeightEver()) {
             prefs.edit().putInt(PREFS_KEY_BEST_CHAIN_HEIGHT_EVER, bestChainHeightEver).apply();
-        //todo: ver esto..
-        return 0;
+            return bestChainHeightEver;
+        }
+        return -1;
     }
 
     public void saveNode(String host){

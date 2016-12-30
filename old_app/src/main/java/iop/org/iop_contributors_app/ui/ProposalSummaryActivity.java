@@ -209,7 +209,7 @@ public class ProposalSummaryActivity extends ContributorBaseActivity implements 
             if (data.getString(INTENT_BROADCAST_DATA_TYPE).equals(INTENT_BROADCAST_DATA_TRANSACTION_SUCCED)) {
                 lockBroadcast.set(false);
                 showDoneLoading();
-                Toast.makeText(this, "Proposal broadcasted!, publishing in the forum..", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Proposal broadcasted!", Toast.LENGTH_SHORT).show();
             }
         } else if(data.getString(INTENT_BROADCAST_TYPE).equals(INTENT_DIALOG)){
             switch (data.getInt(INTENTE_BROADCAST_DIALOG_TYPE,0)){

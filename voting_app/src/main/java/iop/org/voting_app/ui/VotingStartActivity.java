@@ -81,6 +81,7 @@ public class VotingStartActivity extends AppCompatActivity {
         setTheme(R.style.AppTheme);
         getWindow().getDecorView().setSystemUiVisibility(
                 View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
+
         super.onCreate(savedInstanceState);
 
         checkPermissions();

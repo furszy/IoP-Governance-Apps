@@ -49,6 +49,16 @@ public class ProposalsDao implements ProposalsContractDao {
     public boolean saveProposal(Proposal proposal) throws CantSaveProposalException, CantSaveProposalExistException {
         try {
             if (proposalsDatabaseHandler.exist(proposal.getTitle())) throw new CantSaveProposalExistException("Proposal title already exist");
+            if (proposalsDatabaseHandler.exist(proposal.getForumId())){
+                LOG.info("updating proposal in saveProposal method");
+                boolean ret = proposalsDatabaseHandler.updateProposalByForumId(proposal)==1;
+                if (ret){
+                    return ret;
+                }else {
+                    LOG.error("### Save Proposal fail, updating..");
+                    return ret;
+                }
+            }else
                 return proposalsDatabaseHandler.addProposal(proposal);
         } catch (JsonProcessingException e) {
             throw new CantSaveProposalException(e);
@@ -134,5 +144,12 @@ public class ProposalsDao implements ProposalsContractDao {
 
     public List<Proposal> listProposals(List<String> transactionHashes) {
         return proposalsDatabaseHandler.getAllProposals(transactionHashes);
+    }
+
+    /**
+     * List proposals without title que fueron recogidas de la blockchain
+     */
+    public List<Proposal> listUncheckedProposals() {
+        return proposalsDatabaseHandler.getProposalsEmptyTitle();
     }
 }

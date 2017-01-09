@@ -8,9 +8,11 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import iop.org.iop_contributors_app.R;
+import iop.org.furszy_lib.utils.AnimationUtils;
+import iop.org.voting_app.R;
 import iop.org.voting_app.base.VotingBaseActivity;
 import iop.org.voting_app.ui.components.proposals.VotingProposalsAdapter;
 import iop.org.voting_app.ui.dialogs.VoteDialog;
@@ -65,19 +67,21 @@ public class VotingProposalsActivity extends VotingBaseActivity {
         recyclerView.setLayoutManager(layoutManager);
 
         // specify an adapter (see also next example)
-        adapter = new VotingProposalsAdapter(this,module);
+        adapter = new VotingProposalsAdapter(this,module,null);
         recyclerView.setAdapter(adapter);
 
-        container_empty_screen.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showVoteDialog(null);
-            }
-        });
+//        container_empty_screen.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                showVoteDialog(null);
+//            }
+//        });
 
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
+                // activate refresh
+                swipeRefreshLayout.setRefreshing(true);
                 // Refresh items
                 executor.submit(loadProposals);
             }
@@ -86,12 +90,16 @@ public class VotingProposalsActivity extends VotingBaseActivity {
     }
 
 
-    void onItemsLoadComplete() {
+    void onItemsLoadComplete(boolean result) {
         // Update the adapter and notify data set changed
         // ...
 
         // Stop refresh animation
         swipeRefreshLayout.setRefreshing(false);
+
+        if (proposals.isEmpty()){
+            showEmptyScreen();
+        }
     }
 
     /**
@@ -106,8 +114,16 @@ public class VotingProposalsActivity extends VotingBaseActivity {
     protected boolean onBroadcastReceive(Bundle data) {
         if (data.getString(INTENT_BROADCAST_DATA_TYPE).equals(INTENT_BROADCAST_DATA_PROPOSAL_TRANSACTION_ARRIVED)){
             Proposal proposal = (Proposal) data.get(INTENT_EXTRA_PROPOSAL);
-            proposals.add(proposal);
-            adapter.addItem(proposal);
+            if (proposals==null || proposals.isEmpty()) {
+                adapter.changeDataSet(proposals);
+                hideEmptyScreen();
+            }
+            if (!proposals.contains(proposal)) {
+                //proposals.add(proposal);
+                adapter.addItem(proposal);
+                adapter.notifyDataSetChanged();
+            }
+            return true;
         }
 
         return false;
@@ -116,6 +132,7 @@ public class VotingProposalsActivity extends VotingBaseActivity {
     @Override
     protected void onResume() {
         if (proposals==null){
+
             executor.execute(loadProposals);
         }
         super.onResume();
@@ -140,22 +157,23 @@ public class VotingProposalsActivity extends VotingBaseActivity {
                             adapter.changeDataSet(proposals);
                         } else
                             showEmptyScreen();
-                        onItemsLoadComplete();
+                        onItemsLoadComplete(true);
                     }
                 });
             } catch (Exception e) {
                 e.printStackTrace();
+                onItemsLoadComplete(false);
             }
         }
     };
 
 
     private void showEmptyScreen(){
-        container_empty_screen.setVisibility(View.VISIBLE);
+        AnimationUtils.fadeInView(container_empty_screen,300);
     }
 
     private void hideEmptyScreen(){
-        container_empty_screen.setVisibility(View.INVISIBLE);
+        AnimationUtils.fadeOutView(container_empty_screen,300);
     }
 
 

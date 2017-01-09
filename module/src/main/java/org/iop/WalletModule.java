@@ -448,9 +448,29 @@ public class WalletModule {
     }
 
     public boolean connectToForum(String username,String password) throws InvalidUserParametersException, ConnectionRefusedException {
-        return forumClient.connect(username,password);
+        boolean ret = forumClient.connect(username,password);
+        if (ret){
+            // notify that the user is connected
+            LOG.info("checking uncheked proposals");
+            checkUncheckedProposals();
+        }
+        return ret;
     }
 
+    /**
+     * Chequeo las propuestas que llegaron de la blockchain pero como no estaba logueado el user no fueron validadas con el foro
+     */
+    private void checkUncheckedProposals(){
+        for (Proposal proposal : proposalsDao.listUncheckedProposals()) {
+            try {
+                proposalArrive(proposal);
+            } catch (CantSaveProposalException e) {
+                e.printStackTrace();
+            } catch (CantSaveProposalExistException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
     public void cleanEverything(){
         forumConfigurations.remove();
@@ -603,52 +623,56 @@ public class WalletModule {
      * New tx proposal arrive, this method check the proposal and save it in the database
      * @param tx
      */
-    public void txProposalArrive(Transaction tx) {
+    public Proposal txProposalArrive(Transaction tx) {
         Proposal proposal = null;
         List<TransactionOutput> outputs = tx.getOutputs();
         try {
             // empiezo en 2 porque el 0 es el de lockeo y el 1 es el de changeAddress
-            for (int i = 2; i < outputs.size(); i++) {
-                TransactionOutput transactionOutput = outputs.get(i);
-                try {
-                    proposal = ProposalTransactionBuilder.decodeContract(transactionOutput);
-                    LOG.info("Decoded proposal from blockchain: " + proposal.toStringBlockchain());
-                    break;
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    continue;
-                }
+            TransactionOutput transactionOutput = outputs.get(2);
+            try {
+                proposal = ProposalTransactionBuilder.decodeContract(transactionOutput);
+                LOG.info("Decoded proposal from blockchain: " + proposal.toStringBlockchain());
+            } catch (Exception e) {
+                e.printStackTrace();
             }
 
-            proposalArrive(proposal);
+            proposal = proposalArrive(proposal);
 
         }catch (CantSaveProposalExistException e) {
             e.printStackTrace();
         } catch (Exception e){
             e.printStackTrace();
         }
+        return proposal;
     }
 
     public Proposal proposalArrive(Proposal proposal) throws CantSaveProposalException, CantSaveProposalExistException {
         proposal.setMine(false);
 
-        // forum
-        Proposal forumProposal = forumClient.getProposalFromWrapper(proposal.getForumId());
+        // si el usuario del foro no existe tengo que grabar esto para hacerlo más adelante..
+        if (forumClient.getForumProfile()!=null) {
+            // forum
+            Proposal forumProposal = forumClient.getProposalFromWrapper(proposal.getForumId());
 
-        if (forumProposal != null) {
-            LOG.info("forumProposal arrive: "+forumProposal);
-            // set parameters
-            forumProposal.setForumId(proposal.getForumId());
-            forumProposal.setStartBlock(proposal.getStartBlock());
-            forumProposal.setEndBlock(proposal.getEndBlock());
-            forumProposal.setBlockReward(proposal.getBlockReward());
-            forumProposal.setBlockchainHash(proposal.getBlockchainHash());
+            if (forumProposal != null) {
+                LOG.info("forumProposal arrive: " + forumProposal);
+                // set parameters
+                forumProposal.setForumId(proposal.getForumId());
+                forumProposal.setStartBlock(proposal.getStartBlock());
+                forumProposal.setEndBlock(proposal.getEndBlock());
+                forumProposal.setBlockReward(proposal.getBlockReward());
+                forumProposal.setBlockchainHash(proposal.getBlockchainHash());
 
-            proposalsDao.saveProposal(forumProposal);
-        } else {
-            LOG.error("txProposalArrive error", proposal, "proposal decoded form blokcchain: " + proposal, "Proposal obtained from the forum: " + forumProposal);
+                proposalsDao.saveProposal(forumProposal);
+            } else {
+                LOG.error("txProposalArrive error", proposal, "proposal decoded form blokcchain: " + proposal, "Proposal obtained from the forum: " + forumProposal);
+            }
+            return forumProposal;
+        }else {
+            LOG.info("ProposalArrive, profile not exist, saving to add it later");
+            proposalsDao.saveProposal(proposal);
+            return proposal;
         }
-        return proposal;
     }
 
 
@@ -674,12 +698,13 @@ public class WalletModule {
             // todo: esto es totalmente mejorable si le pongo un hex en vez del byte array que tiene.
             String proposalHash = CryptoBytes.toHexString(proposal.getBlockchainHash());
             Vote vote = voteByProposalHash.get(proposalHash);
+            if (vote!=null) {
+                wrappers.add(new VoteWrapper(
+                        vote,
+                        proposal
 
-            wrappers.add(new VoteWrapper(
-                    vote,
-                    proposal
-
-            ));
+                ));
+            }
         }
 
         return wrappers;

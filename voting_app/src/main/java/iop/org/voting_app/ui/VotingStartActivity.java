@@ -39,7 +39,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import iop.org.furszy_lib.AsteriskPasswordTransformationMethod;
 import iop.org.furszy_lib.dialogs.DialogBuilder;
 import iop.org.iop_contributors_app.R;
-import iop.org.iop_contributors_app.ui.ProfileActivity;
 import iop_sdk.forum.ForumProfile;
 import iop_sdk.forum.InvalidUserParametersException;
 import iop_sdk.global.exceptions.ConnectionRefusedException;

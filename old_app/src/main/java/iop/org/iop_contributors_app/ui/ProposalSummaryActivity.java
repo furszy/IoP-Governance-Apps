@@ -293,6 +293,12 @@ public class ProposalSummaryActivity extends ContributorBaseActivity implements 
 
     private void proposalSent() {
         btn_broadcast_proposal.setText("Cancel");
+        btn_broadcast_proposal.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(v.getContext(),"Great!, good job testing!",Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
 

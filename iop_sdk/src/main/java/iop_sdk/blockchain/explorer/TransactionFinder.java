@@ -261,14 +261,6 @@ public class TransactionFinder implements PeerFilterProvider, PeerDataEventListe
 
                 Sha256Hash hash = hashTransactionEntry.getKey();
                 Transaction tx = hashTransactionEntry.getValue();
-//
-//                System.out.println("##############################");
-//                System.out.println("#############################");
-//                System.out.println("Transactions: " + hash);
-//                System.out.println("Transactions: " + tx);
-//                System.out.println("##############################");
-//                System.out.println("#############################");
-
 
                 if (reusePeers){
                     boolean isTxSaved = false;

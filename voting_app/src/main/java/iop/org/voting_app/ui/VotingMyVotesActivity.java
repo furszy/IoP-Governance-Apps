@@ -13,7 +13,8 @@ import android.view.ViewGroup;
 import java.util.List;
 
 import iop.org.furszy_lib.adapter.FermatListItemListeners;
-import iop.org.iop_contributors_app.R;
+import iop.org.furszy_lib.utils.AnimationUtils;
+import iop.org.voting_app.R;
 import iop.org.voting_app.base.VotingBaseActivity;
 import iop.org.voting_app.ui.components.my_votes.MyVotesAdapter;
 import iop.org.voting_app.ui.dialogs.VoteDialog;
@@ -50,7 +51,7 @@ public class VotingMyVotesActivity extends VotingBaseActivity implements FermatL
 
         super.onCreateView(container,savedInstance);
 
-        root = getLayoutInflater().inflate(R.layout.proposals_voting_main,container);
+        root = getLayoutInflater().inflate(R.layout.my_votes_main,container);
 
         swipeRefreshLayout = (SwipeRefreshLayout) root.findViewById(R.id.swipeRefreshLayout);
         recyclerView = (RecyclerView) root.findViewById(R.id.recycler_proposals);
@@ -69,13 +70,6 @@ public class VotingMyVotesActivity extends VotingBaseActivity implements FermatL
         adapter = new MyVotesAdapter(this,module);
         recyclerView.setAdapter(adapter);
         adapter.setFermatListEventListener(this);
-
-        container_empty_screen.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showVoteDialog(null);
-            }
-        });
 
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -147,11 +141,11 @@ public class VotingMyVotesActivity extends VotingBaseActivity implements FermatL
 
 
     private void showEmptyScreen(){
-        container_empty_screen.setVisibility(View.VISIBLE);
+        AnimationUtils.fadeInView(container_empty_screen,300);
     }
 
     private void hideEmptyScreen(){
-        container_empty_screen.setVisibility(View.INVISIBLE);
+        AnimationUtils.fadeOutView(container_empty_screen,300);
     }
 
 

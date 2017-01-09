@@ -272,11 +272,14 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
 
                 if (application.isVotingApp()) {
 
+                    LOG.info("executing download");
+
                     executorService.submit(new Runnable() {
                         @Override
                         public void run() {
                             try {
                                 if (bestBlockHeight != -1 && !transactionFinder.getLastBestChainHash().equals(block.getHash().toString())) {
+                                    LOG.info("executing download-1");
                                     List<Proposal> proposals = null;
                                     ServerWrapper.RequestProposalsResponse requestProposalsResponse = null;
 
@@ -403,9 +406,18 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
             executorService.submit(new Runnable() {
                 @Override
                 public void run() {
-                    org.bitcoinj.core.Context.propagate(CONTEXT);
-                    // check and save proposal in db
-                    walletModule.txProposalArrive(tx);
+
+                    try {
+                        org.bitcoinj.core.Context.propagate(CONTEXT);
+
+                        broadcastProposalArrived(
+                            // check and save proposal in db
+                                walletModule.txProposalArrive(tx)
+
+                        );
+                    } catch (Exception e){
+                        e.printStackTrace();
+                    }
                 }
             });
 //            Intent intent = new Intent(ACTION_NOTIFICATION);

@@ -29,7 +29,7 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
 
     // All Static variables
     // Database Version
-    private static final int DATABASE_VERSION = 14;
+    private static final int DATABASE_VERSION = 15;
 
     // Database Name
     private static final String DATABASE_NAME = "walletManager";
@@ -37,7 +37,8 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
     // Contacts table name
     private static final String TABLE_PROPOSALS = "proposals";
 
-    // Contacts Table Columns names
+    // Proposals Table Columns names
+    private static final String KEY_PROPOSAL_ID = "id";
     private static final String KEY_PROPOSAL_TITLE = "title";
     private static final String KEY_PROPOSAL_SUBTITLE = "subtitle";
     private static final String KEY_PROPOSAL_CATEGORY = "category";
@@ -59,26 +60,27 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
     private static final String KEY_PROPOSAL_STATE = "prop_state";
     private static final String KEY_PROPOSAL_BLOCKCHAIN_HASH = "blockchain_hash";
 
-    private static final int KEY_PROPOSAL_POS_TITLE =                   0;
-    private static final int KEY_PROPOSAL_POS_SUBTITLE =                1;
-    private static final int KEY_PROPOSAL_POS_CATEGORY =                2;
-    private static final int KEY_PROPOSAL_POS_BODY =                    3;
-    private static final int KEY_PROPOSAL_POS_START_BLOCK =             4;
-    private static final int KEY_PROPOSAL_POS_END_BLOCK =               5;
-    private static final int KEY_PROPOSAL_POS_BLOCK_REWARD =            6;
-    private static final int KEY_PROPOSAL_POS_FORUM_ID =                7;
-    private static final int KEY_PROPOSAL_POS_BENEFICIARIES =           8;
-    private static final int KEY_PROPOSAL_POS_EXTRA_FEE_VALUE =         9;
+    private static final int KEY_PROPOSAL_POS_ID =                      0;
+    private static final int KEY_PROPOSAL_POS_TITLE =                   1;
+    private static final int KEY_PROPOSAL_POS_SUBTITLE =                2;
+    private static final int KEY_PROPOSAL_POS_CATEGORY =                3;
+    private static final int KEY_PROPOSAL_POS_BODY =                    4;
+    private static final int KEY_PROPOSAL_POS_START_BLOCK =             5;
+    private static final int KEY_PROPOSAL_POS_END_BLOCK =               6;
+    private static final int KEY_PROPOSAL_POS_BLOCK_REWARD =            7;
+    private static final int KEY_PROPOSAL_POS_FORUM_ID =                8;
+    private static final int KEY_PROPOSAL_POS_BENEFICIARIES =           9;
+    private static final int KEY_PROPOSAL_POS_EXTRA_FEE_VALUE =         10;
 
-    private static final int KEY_PROPOSAL_POS_IS_MINE =                 10;
-    private static final int KEY_PROPOSAL_POS_IS_SENT =                 11;
-    private static final int KEY_PROPOSAL_POS_LOCKED_OUTPUT_HASH =      12;
-    private static final int KEY_PROPOSAL_POS_LOCKED_OUTPUT_POSITION =  13;
+    private static final int KEY_PROPOSAL_POS_IS_MINE =                 11;
+    private static final int KEY_PROPOSAL_POS_IS_SENT =                 12;
+    private static final int KEY_PROPOSAL_POS_LOCKED_OUTPUT_HASH =      13;
+    private static final int KEY_PROPOSAL_POS_LOCKED_OUTPUT_POSITION =  14;
 
-    private static final int KEY_PROPOSAL_POS_VERSION =                 14;
-    private static final int KEY_PROPOSAL_POS_OWNER_PUBKEY =            15;
-    private static final int KEY_PROPOSAL_POS_PROPOSAL_STATE =          16;
-    private static final int KEY_PROPOSAL_POS_BLOCKCHAIN_HASH =         17;
+    private static final int KEY_PROPOSAL_POS_VERSION =                 15;
+    private static final int KEY_PROPOSAL_POS_OWNER_PUBKEY =            16;
+    private static final int KEY_PROPOSAL_POS_PROPOSAL_STATE =          17;
+    private static final int KEY_PROPOSAL_POS_BLOCKCHAIN_HASH =         18;
 
 
 
@@ -92,8 +94,8 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
         String CREATE_CONTACTS_TABLE = "CREATE TABLE " + TABLE_PROPOSALS +
                 "("
 //                + KEY_PROPOSAL_DATABASE_ID + " LONG PRIMARY KEY,"
-//                + KEY_PROPOSAL_IOP_ID + " LONG,"
-                + KEY_PROPOSAL_TITLE + " TEXT PRIMARY KEY,"
+                + KEY_PROPOSAL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,"
+                + KEY_PROPOSAL_TITLE + " TEXT,"
                 + KEY_PROPOSAL_SUBTITLE + " TEXT,"
                 + KEY_PROPOSAL_CATEGORY + " TEXT,"
                 + KEY_PROPOSAL_BODY + " TEXT,"
@@ -132,6 +134,30 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
         onCreate(db);
     }
 
+    private String[] tableNames(){
+        return new String[]{
+                KEY_PROPOSAL_ID,
+                KEY_PROPOSAL_TITLE,
+                KEY_PROPOSAL_SUBTITLE,
+                KEY_PROPOSAL_CATEGORY,
+                KEY_PROPOSAL_BODY,
+                KEY_PROPOSAL_START_BLOCK,
+                KEY_PROPOSAL_END_BLOCK,
+                KEY_PROPOSAL_BLOCK_REWARD,
+                KEY_PROPOSAL_FORUM_ID,
+                KEY_PROPOSAL_BENEFICIARIES,
+                KEY_PROPOSAL_EXTRA_FEE_VALUE,
+                KEY_PROPOSAL_IS_MINE,
+                KEY_PROPOSAL_IS_SENT,
+                KEY_PROPOSAL_LOCKED_OUTPUT_HASH,
+                KEY_PROPOSAL_LOCKED_OUTPUT_POSITION,
+                KEY_PROPOSAL_VERSION,
+                KEY_PROPOSAL_OWNER_PUBKEY,
+                KEY_PROPOSAL_STATE,
+                KEY_PROPOSAL_BLOCKCHAIN_HASH
+        };
+    }
+
     /**
      * All CRUD(Create, Read, Update, Delete) Operations
      */
@@ -155,25 +181,7 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
         Proposal proposal = null;
         try {
             SQLiteDatabase db = this.getReadableDatabase();
-            Cursor cursor = db.query(TABLE_PROPOSALS, new String[]{
-                            KEY_PROPOSAL_TITLE,
-                            KEY_PROPOSAL_SUBTITLE,
-                            KEY_PROPOSAL_CATEGORY,
-                            KEY_PROPOSAL_BODY,
-                            KEY_PROPOSAL_START_BLOCK,
-                            KEY_PROPOSAL_END_BLOCK,
-                            KEY_PROPOSAL_BLOCK_REWARD,
-                            KEY_PROPOSAL_FORUM_ID,
-                            KEY_PROPOSAL_BENEFICIARIES,
-                            KEY_PROPOSAL_EXTRA_FEE_VALUE,
-                            KEY_PROPOSAL_IS_MINE,
-                            KEY_PROPOSAL_IS_SENT,
-                            KEY_PROPOSAL_LOCKED_OUTPUT_HASH,
-                            KEY_PROPOSAL_LOCKED_OUTPUT_POSITION,
-                            KEY_PROPOSAL_VERSION,
-                            KEY_PROPOSAL_OWNER_PUBKEY,
-                            KEY_PROPOSAL_STATE,
-                            KEY_PROPOSAL_BLOCKCHAIN_HASH}, KEY_PROPOSAL_TITLE + "=?",
+            Cursor cursor = db.query(TABLE_PROPOSALS, tableNames(), KEY_PROPOSAL_TITLE + "=?",
                     new String[]{title}, null, null, null, null);
             if (cursor != null)
                 cursor.moveToFirst();
@@ -197,25 +205,7 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
         Proposal proposal = null;
         try {
             SQLiteDatabase db = this.getReadableDatabase();
-            Cursor cursor = db.query(TABLE_PROPOSALS, new String[]{
-                            KEY_PROPOSAL_TITLE,
-                            KEY_PROPOSAL_SUBTITLE,
-                            KEY_PROPOSAL_CATEGORY,
-                            KEY_PROPOSAL_BODY,
-                            KEY_PROPOSAL_START_BLOCK,
-                            KEY_PROPOSAL_END_BLOCK,
-                            KEY_PROPOSAL_BLOCK_REWARD,
-                            KEY_PROPOSAL_FORUM_ID,
-                            KEY_PROPOSAL_BENEFICIARIES,
-                            KEY_PROPOSAL_EXTRA_FEE_VALUE,
-                            KEY_PROPOSAL_IS_MINE,
-                            KEY_PROPOSAL_IS_SENT,
-                            KEY_PROPOSAL_LOCKED_OUTPUT_HASH,
-                            KEY_PROPOSAL_LOCKED_OUTPUT_POSITION,
-                            KEY_PROPOSAL_VERSION,
-                            KEY_PROPOSAL_OWNER_PUBKEY,
-                            KEY_PROPOSAL_STATE,
-                            KEY_PROPOSAL_BLOCKCHAIN_HASH}, KEY_PROPOSAL_FORUM_ID + "=?",
+            Cursor cursor = db.query(TABLE_PROPOSALS, tableNames(), KEY_PROPOSAL_FORUM_ID + "=?",
                     new String[]{String.valueOf(forumId)}, null, null, null, null);
             if (cursor != null)
                 cursor.moveToFirst();
@@ -266,7 +256,7 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
     }
 
     public List<Proposal> getAllProposals(List<String> transactionHashes) {
-        Log.d(TAG,"getProposal");
+        Log.d(TAG,"getProposals by hash");
         List<Proposal> proposals = new ArrayList<>();
         try {
 
@@ -285,25 +275,42 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
             }
 
             SQLiteDatabase db = this.getReadableDatabase();
-            Cursor cursor = db.query(TABLE_PROPOSALS, new String[]{
-                            KEY_PROPOSAL_TITLE,
-                            KEY_PROPOSAL_SUBTITLE,
-                            KEY_PROPOSAL_CATEGORY,
-                            KEY_PROPOSAL_BODY,
-                            KEY_PROPOSAL_START_BLOCK,
-                            KEY_PROPOSAL_END_BLOCK,
-                            KEY_PROPOSAL_BLOCK_REWARD,
-                            KEY_PROPOSAL_FORUM_ID,
-                            KEY_PROPOSAL_BENEFICIARIES,
-                            KEY_PROPOSAL_EXTRA_FEE_VALUE,
-                            KEY_PROPOSAL_IS_MINE,
-                            KEY_PROPOSAL_IS_SENT,
-                            KEY_PROPOSAL_LOCKED_OUTPUT_HASH,
-                            KEY_PROPOSAL_LOCKED_OUTPUT_POSITION,
-                            KEY_PROPOSAL_VERSION,
-                            KEY_PROPOSAL_OWNER_PUBKEY,
-                            KEY_PROPOSAL_STATE,
-                            KEY_PROPOSAL_BLOCKCHAIN_HASH}, selection.toString(), where, null, null, null, null);
+            Cursor cursor = db.query(TABLE_PROPOSALS, tableNames(), selection.toString(), where, null, null, null, null);
+
+            if (cursor.moveToFirst()) {
+                do {
+                    Proposal proposal = null;
+                    try {
+                        proposal = buildProposal(cursor);
+
+                        // Adding contact to list
+                        proposals.add(proposal);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                } while (cursor.moveToNext());
+            }
+
+            Log.d(TAG,"Proposal list return with: "+proposals.size()+" results");
+
+
+            cursor.close();
+            db.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return proposals;
+    }
+
+
+    public List<Proposal> getProposalsEmptyTitle() {
+        Log.d(TAG,"getProposals with empty title");
+        List<Proposal> proposals = new ArrayList<>();
+        try {
+
+            SQLiteDatabase db = this.getReadableDatabase();
+            Cursor cursor = db.query(TABLE_PROPOSALS, tableNames(), KEY_PROPOSAL_TITLE + "LIKE ? OR "+KEY_PROPOSAL_TITLE + "LIKE ?", new String[]{"","null"}, null, null, null, null);
 
             if (cursor.moveToFirst()) {
                 do {
@@ -340,6 +347,19 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
         try {
             return db.update(TABLE_PROPOSALS, values, KEY_PROPOSAL_TITLE + " = ?",
                     new String[]{proposal.getTitle()});
+        }finally {
+            db.close();
+        }
+    }
+
+    public int updateProposalByForumId(Proposal proposal) throws JsonProcessingException {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = buildContentValues(proposal);
+//        // updating row
+        try {
+            return db.update(TABLE_PROPOSALS, values, KEY_PROPOSAL_FORUM_ID + " = ?",
+                    new String[]{String.valueOf(proposal.getForumId())});
         }finally {
             db.close();
         }
@@ -436,6 +456,11 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
 
     public boolean exist(String title) {
         return checkExistense(new Object[]{title},KEY_PROPOSAL_TITLE);
+    }
+
+
+    public boolean exist(int forumId) {
+        return checkExistense(new Object[]{forumId},KEY_PROPOSAL_FORUM_ID);
     }
 
     public boolean isOutputLocked(String hashHex, long position) {
@@ -627,7 +652,6 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
         }
         return contentValues;
     }
-
 
 
 }

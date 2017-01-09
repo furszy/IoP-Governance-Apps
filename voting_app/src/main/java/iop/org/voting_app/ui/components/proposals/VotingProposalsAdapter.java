@@ -6,6 +6,8 @@ import android.widget.Toast;
 
 import org.iop.WalletModule;
 
+import java.util.List;
+
 import iop.org.furszy_lib.adapter.FermatAdapterImproved;
 import iop.org.iop_contributors_app.R;
 import iop.org.voting_app.ui.ForumActivity;
@@ -24,8 +26,8 @@ public class VotingProposalsAdapter extends FermatAdapterImproved<Proposal,Votin
 
     private WalletModule module;
 
-    public VotingProposalsAdapter(VotingProposalsActivity context, WalletModule module) {
-        super(context);
+    public VotingProposalsAdapter(VotingProposalsActivity context, WalletModule module,List<Proposal> proposalList) {
+        super(context,proposalList);
         this.module = module;
     }
 

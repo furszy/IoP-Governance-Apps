@@ -29,7 +29,7 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
 
     // All Static variables
     // Database Version
-    private static final int DATABASE_VERSION = 15;
+    private static final int DATABASE_VERSION = 16;
 
     // Database Name
     private static final String DATABASE_NAME = "walletManager";
@@ -60,6 +60,9 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
     private static final String KEY_PROPOSAL_STATE = "prop_state";
     private static final String KEY_PROPOSAL_BLOCKCHAIN_HASH = "blockchain_hash";
 
+    private static final String KEY_PROPOSAL_VOTES_YES = "votes_yes";
+    private static final String KEY_PROPOSAL_VOTES_NO = "votes_no";
+
     private static final int KEY_PROPOSAL_POS_ID =                      0;
     private static final int KEY_PROPOSAL_POS_TITLE =                   1;
     private static final int KEY_PROPOSAL_POS_SUBTITLE =                2;
@@ -82,6 +85,8 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
     private static final int KEY_PROPOSAL_POS_PROPOSAL_STATE =          17;
     private static final int KEY_PROPOSAL_POS_BLOCKCHAIN_HASH =         18;
 
+    private static final int KEY_PROPOSAL_POS_VOTES_YES =               19;
+    private static final int KEY_PROPOSAL_POS_VOTES_NO =                20;
 
 
     public ProposalsDatabaseHandler(Context context) {
@@ -112,7 +117,9 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
                 + KEY_PROPOSAL_VERSION + " SHORT,"
                 + KEY_PROPOSAL_OWNER_PUBKEY + " BLOB,"
                 + KEY_PROPOSAL_STATE + " TEXT,"
-                + KEY_PROPOSAL_BLOCKCHAIN_HASH + " TEXT"
+                + KEY_PROPOSAL_BLOCKCHAIN_HASH + " TEXT,"
+                + KEY_PROPOSAL_VOTES_YES + " INTEGER,"
+                + KEY_PROPOSAL_VOTES_NO + " INTEGER"
                 + ")";
         db.execSQL(CREATE_CONTACTS_TABLE);
     }
@@ -154,7 +161,9 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
                 KEY_PROPOSAL_VERSION,
                 KEY_PROPOSAL_OWNER_PUBKEY,
                 KEY_PROPOSAL_STATE,
-                KEY_PROPOSAL_BLOCKCHAIN_HASH
+                KEY_PROPOSAL_BLOCKCHAIN_HASH,
+                KEY_PROPOSAL_VOTES_YES,
+                KEY_PROPOSAL_VOTES_NO
         };
     }
 
@@ -581,6 +590,9 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
         String blockchainHashHex = cursor.getString(KEY_PROPOSAL_POS_BLOCKCHAIN_HASH);
         if (blockchainHashHex!=null) blockchainHash = CryptoBytes.fromHexToBytes(blockchainHashHex);
 
+        int votesYes = cursor.getInt(KEY_PROPOSAL_POS_VOTES_YES);
+        int votesNo = cursor.getInt(KEY_PROPOSAL_POS_VOTES_NO);
+
 
         Proposal proposal = new Proposal(
                 isMine,
@@ -602,6 +614,8 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
                 proposalState
         );
         proposal.setBlockchainHash(blockchainHash);
+        proposal.setVoteYes(votesYes);
+        proposal.setVoteNo(votesNo);
         return proposal;
     }
 
@@ -630,6 +644,8 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
         values.put(KEY_PROPOSAL_OWNER_PUBKEY,proposal.getOwnerPubKey());
         values.put(KEY_PROPOSAL_STATE,proposal.getState().toString());
         if (proposal.getBlockchainHash()!=null) values.put(KEY_PROPOSAL_BLOCKCHAIN_HASH,CryptoBytes.toHexString(proposal.getBlockchainHash()));
+        values.put(KEY_PROPOSAL_VOTES_YES,proposal.getVoteYes());
+        values.put(KEY_PROPOSAL_VOTES_NO,proposal.getVoteNo());
         return values;
     }
 

@@ -16,6 +16,8 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.w3c.dom.Text;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
@@ -72,6 +74,13 @@ public class VotingVoteSummary extends VotingBaseActivity implements View.OnClic
     private TextView txt_go_cancel;
     private TextView txt_go_vote;
     private View card_bottom_border;
+
+    private ProgressBar progressYes;
+    private TextView txt_vote_yes;
+    private ProgressBar progressNo;
+    private TextView txt_vote_no;
+
+    private TextView txt_vote_result;
 
     // loading ui
     private View container_send;
@@ -150,6 +159,14 @@ public class VotingVoteSummary extends VotingBaseActivity implements View.OnClic
         img_done = (ImageView) root.findViewById(R.id.img_done);
         txt_done = (TextView) root.findViewById(R.id.txt_done);
         progressBar = (ProgressBar) root.findViewById(R.id.progressBar);
+
+        progressYes = (ProgressBar) root.findViewById(R.id.progress_yes);
+        progressNo = (ProgressBar) root.findViewById(R.id.progress_no);
+
+        txt_vote_yes = (TextView) root.findViewById(R.id.txt_vote_yes);
+        txt_vote_no = (TextView) root.findViewById(R.id.txt_vote_no);
+
+        txt_vote_result = (TextView) root.findViewById(R.id.txt_vote_result);
 
         btn_minus_voting.setOnClickListener(this);
         btn_plus_voting.setOnClickListener(this);
@@ -268,6 +285,29 @@ public class VotingVoteSummary extends VotingBaseActivity implements View.OnClic
         hours = round(hours,2);
         txt_end_date.setText(String.valueOf(hours)+" hours");
         txt_total_amount.setText("Reward "+coinToString(voteWrapper.getProposal().getBlockReward())+" IoPs");
+
+        long voteNo = voteWrapper.getProposal().getVoteNo();
+        long voteYes = voteWrapper.getProposal().getVoteYes();
+
+        long totalValue = voteYes + voteNo;
+        int voteYesPorcen = 0;
+        int voteNoPorcen = 0;
+        if (totalValue!=0) {
+            // total -> 100%
+            voteYesPorcen = (int) ((voteYes * 100) / totalValue);
+            voteNoPorcen = (int) ((voteNo * 100) / totalValue);
+        }
+
+        progressNo.setProgress(voteNoPorcen);
+        progressYes.setProgress(voteYesPorcen);
+        txt_vote_yes.setText(String.valueOf(voteYes));
+        txt_vote_no.setText(String.valueOf(voteNo));
+
+        if (totalValue>0){
+            txt_vote_result.setText((voteYes>voteNo)?"Yes is winning":"No is winning");
+        }else {
+            txt_vote_result.setText("No votes yet");
+        }
 
     }
 

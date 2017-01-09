@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -222,6 +223,14 @@ public class ServerWrapper {
             return txHashes;
         }
 
+        public List<String> getTxHashesNew(){
+            List<String> txHashes = new ArrayList<>();
+            for (Proposal proposal : proposals) {
+                txHashes.add(proposal.getGenesisTxHash());
+            }
+            return txHashes;
+        }
+
         public int getBestChainHeight() {
             return bestChainHeight;
         }
@@ -324,6 +333,133 @@ public class ServerWrapper {
             throw new CantGetProposalsFromServer("Something fail, server return: "+result+", status code: "+httpResponse.getStatusLine().getStatusCode());
         }
         return requestProposalsResponse;
+    }
+
+    public RequestProposalsResponse getVotingProposalsNew(int blockHeight) throws CantGetProposalsFromServer{
+
+        String url = this.url+"/requestproposalsnew";
+
+        //url = url + "?api_key=" + DiscouseApiConstants.API_KEY + "&api_username=system";
+
+
+        RequestProposalsResponse requestProposalsResponse = new RequestProposalsResponse();
+
+        List<RequestParameter> requestParams = new ArrayList<>();
+        HttpResponse httpResponse = null;
+        String result = null;
+        try {
+
+
+            int i = 0;
+            for (RequestParameter requestParam: requestParams) {
+                url += (i==0 && !url.contains("?"))?"?":"&";
+                url += requestParam.format();
+                i++;
+            }
+
+            LOG.info("getVotingProposals URL: "+url);
+
+            BasicHttpParams basicHttpParams = new BasicHttpParams();
+            HttpConnectionParams.setSoTimeout(basicHttpParams, (int) TimeUnit.MINUTES.toMillis(1));
+            HttpClient client = new DefaultHttpClient(basicHttpParams);
+            HttpGet httpGet = new HttpGet(url);
+            //httpPost.setHeader("Content-type", "application/vnd.api+json");
+            httpGet.addHeader("Accept", "text/html,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5");
+            httpGet.setHeader("Content-type", "application/json");
+
+            // make GET request to the given URL
+            httpResponse = client.execute(httpGet);
+            InputStream inputStream = null;
+            // receive response as inputStream
+            inputStream = httpResponse.getEntity().getContent();
+
+            // convert inputstream to string
+            if (inputStream != null)
+                result = convertInputStreamToString(inputStream);
+
+
+            LOG.info("###########################");
+            LOG.info(result);
+            LOG.info("###########################");
+
+//
+
+
+            if (httpResponse.getStatusLine().getStatusCode()==200){
+                List<Proposal> ret = new ArrayList<>();
+
+                JsonParser jsonParser = new JsonParser();
+                JsonObject jsonObject = jsonParser.parse(result).getAsJsonObject();
+                JsonElement jsonElement = jsonObject.get("contribution_contracts");
+                if (jsonElement!=null) {
+                    JsonArray transactions = jsonElement.getAsJsonArray();
+//                JSONObject jsonObject = new JSONObject(result);
+//                JSONArray transactions = jsonObject.getJSONArray("transactions");
+                    for (i = 0; i < transactions.size(); i++) {
+//                        ret.add(transactions.get(i).getAsString());
+
+                        try {
+
+                            JsonObject tx = transactions.get(i).getAsJsonObject();
+
+                            String txid = tx.get("genesistxhash").getAsString();
+                            int blockStart = tx.get("blockstart").getAsInt();
+                            int blockEnd = tx.get("blockend").getAsInt();
+                            long blockReward = tx.get("blockreward").getAsLong();
+                            String StateStr = tx.get("state").getAsString();
+                            //Proposal.ProposalState state = Proposal.ProposalState.valueOf(StateStr);
+                            long voteYes = tx.get("voteyes").getAsLong();
+                            long voteNo = tx.get("voteno").getAsLong();
+
+                            Map<String, Long> beneficiaries = new HashMap<>();
+                            JsonArray beneficiariesJson = tx.get("beneficiaries").getAsJsonArray();
+                            for (int j = 0; j < beneficiariesJson.size(); j++) {
+                                JsonObject beneficiaryJson = beneficiariesJson.get(j).getAsJsonObject();
+                                long amount = beneficiaryJson.get("amount").getAsLong();
+                                String address = beneficiaryJson.get("address").getAsString();
+                                beneficiaries.put(address, amount);
+                            }
+
+                            String opReturn = tx.get("op_return").getAsString();
+
+                            Proposal proposal = ProposalTransactionBuilder.decodeContract(opReturn);
+
+//                        Proposal proposal = new Proposal();
+                            proposal.setGenesisTxHash(txid);
+                            proposal.setStartBlock(blockStart);
+                            proposal.setEndBlock(blockEnd);
+                            proposal.setBlockReward(blockReward);
+                            proposal.setVoteNo(voteNo);
+                            proposal.setVoteYes(voteYes);
+                            proposal.setBeneficiaries(beneficiaries);
+
+                            ret.add(proposal);
+                        } catch (DecoderException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+//                requestProposalsResponse.bestChainHeight = ((JsonObject)jsonObject.get("Data")).get("currentheight").getAsInt();
+                requestProposalsResponse.proposals = ret;
+                requestProposalsResponse.bestChainHash = jsonObject.get(BEST_CHAIN_HEIGHT_HASH).getAsString();
+            }else {
+                throw new CantGetProposalsFromServer("Something fail, server code: "+((httpResponse!=null)?httpResponse.getStatusLine().getStatusCode():"null"));
+            }
+
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        } catch (HttpHostConnectException e){
+            throw new CantGetProposalsFromServer("url: "+url,e);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (JsonParseException e) {
+            e.printStackTrace();
+        } catch (IllegalStateException e){
+            throw new CantGetProposalsFromServer("Something fail, server return: "+result+", status code: "+httpResponse.getStatusLine().getStatusCode());
+        }
+        return requestProposalsResponse;
+
+
     }
 
     public RequestProposalsResponse getVotingProposalsFullTx(int blockHeight) throws CantGetProposalsFromServer {

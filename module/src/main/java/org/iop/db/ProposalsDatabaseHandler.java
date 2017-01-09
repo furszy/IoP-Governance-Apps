@@ -144,7 +144,7 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
 
         // Inserting Row
         long rowId = db.insert(TABLE_PROPOSALS, null, values);
-        db.close(); // Closing database connection
+        //db.close(); // Closing database connection
 
         return rowId>0;
     }
@@ -599,7 +599,7 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
         values.put(KEY_PROPOSAL_EXTRA_FEE_VALUE,proposal.getExtraFeeValue());
         values.put(KEY_PROPOSAL_IS_MINE,proposal.isMine());
         values.put(KEY_PROPOSAL_IS_SENT,proposal.isSent());
-        if (proposal.getLockedOutputHashHex()!=null)values.put(KEY_PROPOSAL_LOCKED_OUTPUT_HASH,proposal.getLockedOutputHashHex());
+        if (proposal.getGenesisTxHash()!=null)values.put(KEY_PROPOSAL_LOCKED_OUTPUT_HASH,proposal.getGenesisTxHash());
         if (proposal.getLockedOutputIndex()!=-1) values.put(KEY_PROPOSAL_LOCKED_OUTPUT_POSITION,proposal.getLockedOutputIndex());
         values.put(KEY_PROPOSAL_VERSION,proposal.getVersion());
         values.put(KEY_PROPOSAL_OWNER_PUBKEY,proposal.getOwnerPubKey());

@@ -34,4 +34,6 @@ public interface VotesDao {
     public List<Vote> listVotes();
 
     void removeIfExist(Vote vote);
+
+    void clean();
 }

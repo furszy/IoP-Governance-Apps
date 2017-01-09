@@ -180,7 +180,7 @@ public class ProposalTransactionRequest {
             // lock address
             String parentTransactionHashHex = sendRequest.tx.getHash().toString();
             LOG.info("Locking transaction with 1000 IoPs: position: "+0+", parent hash: "+parentTransactionHashHex);
-            proposal.setLockedOutputHashHex(parentTransactionHashHex);
+            proposal.setGenesisTxHash(parentTransactionHashHex);
             proposal.setLockedOutputIndex(lockedOutputPosition);
             lockedOutputHashHex = parentTransactionHashHex;
             lockedOutputPosition = 0;

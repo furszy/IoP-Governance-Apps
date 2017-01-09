@@ -68,10 +68,13 @@ public class Proposal implements Serializable {
 
     private boolean isMine;
     private boolean isSent;
-    private String lockedOutputHashHex;
+    private String genesisTxHash;
     private long lockedOutputIndex;
     private ProposalState state = ProposalState.DRAFT;
     private byte[] blockchainHash;
+    private long voteYes;
+    private long voteNo;
+
     // IoPIP -> IoP improvement proposal
     private short version =  0x0100;
     private String title;
@@ -191,7 +194,7 @@ public class Proposal implements Serializable {
         this.beneficiaries = beneficiaries;
         this.extraFeeValue = extraFeeValue;
         this.isSent = isSent;
-        this.lockedOutputHashHex = lockedOutputHashhex;
+        this.genesisTxHash = lockedOutputHashhex;
         this.lockedOutputIndex = lockedOutputIndex;
         this.version = version;
         this.ownerPubKey = ownerPk;
@@ -332,8 +335,8 @@ public class Proposal implements Serializable {
         return isSent;
     }
 
-    public String getLockedOutputHashHex() {
-        return lockedOutputHashHex;
+    public String getGenesisTxHash() {
+        return genesisTxHash;
     }
 
     public void setTitle(String title) {
@@ -348,8 +351,8 @@ public class Proposal implements Serializable {
         isSent = sent;
     }
 
-    public void setLockedOutputHashHex(String lockedOutputHashHex) {
-        this.lockedOutputHashHex = lockedOutputHashHex;
+    public void setGenesisTxHash(String genesisTxHash) {
+        this.genesisTxHash = genesisTxHash;
     }
 
     public int getForumId() {
@@ -436,6 +439,22 @@ public class Proposal implements Serializable {
         this.blockchainHash = blockchainHash;
     }
 
+    public long getVoteYes() {
+        return voteYes;
+    }
+
+    public void setVoteYes(long voteYes) {
+        this.voteYes = voteYes;
+    }
+
+    public long getVoteNo() {
+        return voteNo;
+    }
+
+    public void setVoteNo(long voteNo) {
+        this.voteNo = voteNo;
+    }
+
     public boolean equals(Proposal o2) throws NotValidParametersException {
         checkEquals(getTitle(),o2.getTitle(),"tittle is changed");
         checkEquals(getSubTitle(),o2.getSubTitle(),"Subtitle is changed");
@@ -465,7 +484,7 @@ public class Proposal implements Serializable {
         return "Proposal{" +
                 "isMine=" + isMine +
                 ", isSent=" + isSent +
-                ", lockedOutputHash=" + lockedOutputHashHex +
+                ", lockedOutputHash=" + genesisTxHash +
                 ", lockedOutputIndex=" + lockedOutputIndex +
                 ", state=" + state +
                 ", version=" + version +

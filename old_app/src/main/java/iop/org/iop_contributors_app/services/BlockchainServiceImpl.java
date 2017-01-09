@@ -275,30 +275,34 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
                     executorService.submit(new Runnable() {
                         @Override
                         public void run() {
-                            if (bestBlockHeight != -1 && !transactionFinder.getLastBestChainHash().equals(block.getHash().toString())) {
-                                List<Proposal> proposals = null;
-                                ServerWrapper.RequestProposalsResponse requestProposalsResponse = null;
+                            try {
+                                if (bestBlockHeight != -1 && !transactionFinder.getLastBestChainHash().equals(block.getHash().toString())) {
+                                    List<Proposal> proposals = null;
+                                    ServerWrapper.RequestProposalsResponse requestProposalsResponse = null;
 
-                                if (application.isVotingApp()) {
-                                    // obtain proposal contracts to filter
-                                    requestProposalsResponse = walletModule.requestProposalsFullTx(blockchainManager.getChainHeadHeight());
-                                    if (requestProposalsResponse != null) {
-                                        proposals = requestProposalsResponse.getProposals();
-                                        for (Proposal proposal : proposals) {
-                                            try {
-                                                proposal = walletModule.proposalArrive(proposal);
-                                                LOG.info("Proposal saved!");
-                                                // notify state
-                                                broadcastProposalArrived(proposal);
-                                            } catch (CantSaveProposalException e) {
-                                                LOG.info(e.getMessage());
-                                            } catch (CantSaveProposalExistException e) {
-                                                // nothing
-                                                LOG.info("proposal exist! "+ CryptoBytes.toHexString(proposal.getBlockchainHash()));
+                                    if (application.isVotingApp()) {
+                                        // obtain proposal contracts to filter
+                                        requestProposalsResponse = walletModule.requestProposalsFullTx(blockchainManager.getChainHeadHeight());
+                                        if (requestProposalsResponse != null) {
+                                            proposals = requestProposalsResponse.getProposals();
+                                            for (Proposal proposal : proposals) {
+                                                try {
+                                                    proposal = walletModule.proposalArrive(proposal);
+                                                    LOG.info("Proposal saved!");
+                                                    // notify state
+                                                    broadcastProposalArrived(proposal);
+                                                } catch (CantSaveProposalException e) {
+                                                    LOG.info(e.getMessage());
+                                                } catch (CantSaveProposalExistException e) {
+                                                    // nothing
+                                                    LOG.info("proposal exist! " + CryptoBytes.toHexString(proposal.getBlockchainHash()));
+                                                }
                                             }
                                         }
                                     }
                                 }
+                            }catch (Exception e){
+                                e.printStackTrace();
                             }
                         }
 
@@ -669,7 +673,7 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
                     // obtain proposal contracts to filter
                     requestProposalsResponse = walletModule.requestProposals(blockchainManager.getChainHeadHeight());
                     if (requestProposalsResponse != null) {
-                        txHashes = requestProposalsResponse.getTxHashes();
+                        txHashes = requestProposalsResponse.getTxHashesNew();
                     }
                 }
 

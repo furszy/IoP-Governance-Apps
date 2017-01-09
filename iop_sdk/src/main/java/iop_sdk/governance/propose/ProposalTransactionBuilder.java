@@ -265,7 +265,7 @@ public  class ProposalTransactionBuilder {
 
         if (data.length!=CONTRACT_SIZE) throw new IllegalArgumentException("data has not the right size: "+data.length);
 
-        LOG.info("Data to decode: "+CryptoBytes.toHexString(data));
+        LOG.debug("Data to decode: "+CryptoBytes.toHexString(data));
 
         Proposal proposal = new Proposal();
 
@@ -289,6 +289,11 @@ public  class ProposalTransactionBuilder {
         byte[] contract = new byte[CONTRACT_SIZE];
         System.arraycopy(transactionOutput.getScriptBytes(),2,contract,0,CONTRACT_SIZE);
         return decodeContract(contract);
+    }
+
+    public static Proposal decodeContract(String opReturn) throws DecoderException, UnsupportedEncodingException {
+        byte[] opBytes = CryptoBytes.fromHexToBytes(opReturn);
+        return decodeContract(opBytes);
     }
 
     private static byte[] getByteArray(byte[] data, int init, int lenght) {
@@ -339,5 +344,7 @@ public  class ProposalTransactionBuilder {
         }
         return false;
     }
+
+
 }
 

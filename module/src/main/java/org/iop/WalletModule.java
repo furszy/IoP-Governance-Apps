@@ -457,6 +457,7 @@ public class WalletModule {
         configuration.remove();
         forumClient.clean();
         cleanProposalDb();
+        cleanVotesDb();
         profile = null;
 
     }
@@ -483,6 +484,12 @@ public class WalletModule {
 
     public void cleanProposalDb() {
         proposalsDao.clean();
+    }
+
+    public void cleanVotesDb(){
+        if (votesDaoImp!=null){
+            votesDaoImp.clean();
+        }
     }
 
     public void setWrapperHost(String wrapperHost) {
@@ -512,7 +519,7 @@ public class WalletModule {
     public ServerWrapper.RequestProposalsResponse requestProposals(int chainHeadHeight)  {
         try {
             // request tx hashes from node
-            ServerWrapper.RequestProposalsResponse requestProposalsResponse = serverWrapper.getVotingProposals(0);
+            ServerWrapper.RequestProposalsResponse requestProposalsResponse = serverWrapper.getVotingProposalsNew(0);
 
             return requestProposalsResponse;
         } catch (CantGetProposalsFromServer e) {
@@ -531,7 +538,7 @@ public class WalletModule {
     public ServerWrapper.RequestProposalsResponse requestProposalsFullTx(int chainHeadHeight) {
         try {
             // request tx hashes from node
-            ServerWrapper.RequestProposalsResponse requestProposalsResponse = serverWrapper.getVotingProposalsFullTx(0);
+            ServerWrapper.RequestProposalsResponse requestProposalsResponse = serverWrapper.getVotingProposalsNew(0);
 
             return requestProposalsResponse;
         } catch (CantGetProposalsFromServer e) {

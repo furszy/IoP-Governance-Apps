@@ -69,4 +69,9 @@ public class VotesDaoImp implements VotesDao{
     public void removeIfExist(Vote vote) {
         handler.delete(vote);
     }
+
+    @Override
+    public void clean() {
+        handler.deleteDb();
+    }
 }

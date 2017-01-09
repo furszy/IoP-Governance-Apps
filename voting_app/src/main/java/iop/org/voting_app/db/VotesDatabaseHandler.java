@@ -229,6 +229,10 @@ public class VotesDatabaseHandler extends SQLiteOpenHelper {
         return cursor.getCount();
     }
 
-
+    public void deleteDb() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete(TABLE_VOTES, null,null);
+        db.close();
+    }
 
 }

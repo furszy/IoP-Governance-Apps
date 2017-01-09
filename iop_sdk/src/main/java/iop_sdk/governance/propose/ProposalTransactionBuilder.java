@@ -56,8 +56,6 @@ public  class ProposalTransactionBuilder {
 
     /** tag */
     private static final short tag = 0x4343;
-    /**  */
-    private static short version = 1;
 
     private NetworkParameters networkParameters;
 
@@ -163,7 +161,7 @@ public  class ProposalTransactionBuilder {
         return this;
     }
 
-    public ProposalTransactionBuilder addContract(int blockStartHeight, int endHeight, long blockReward, byte[] proposalHash,int forumId){
+    public ProposalTransactionBuilder addContract(short version,int blockStartHeight, int endHeight, long blockReward, byte[] proposalHash,int forumId){
 
         // validate parameters
         if (proposalHash.length!=32) throw new IllegalArgumentException("hash is not from SHA256");

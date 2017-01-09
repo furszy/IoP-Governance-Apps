@@ -145,7 +145,7 @@ public class ForumClientDiscourseImp implements ForumClient {
                         throw new CantCreateTopicException("Cant create topic, something bad happen with the forum");
                     } else {
                         LOG.error("forum fail with proposal: title=" + title + ", category=" + category + ", raw=" + raw);
-                        throw new CantCreateTopicException("Forum fail, code: " + responseModel.meta.code + ",  " + errorDetail);
+                        throw new CantCreateTopicException(errorDetail);
                     }
                 }
             } else {

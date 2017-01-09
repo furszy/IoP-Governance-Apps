@@ -41,6 +41,7 @@ public class Proposal implements Serializable {
 
     public static final int BLOCK_REWARD_MAX_VALUE = 10000000;
     public static final double START_BLOCK_MAX_VALUE = Math.pow((double) 2, (double) 24);
+    public static final double END_BLOCK_MAX_VALUE = 120960;
 
 
     /**
@@ -374,6 +375,7 @@ public class Proposal implements Serializable {
     }
 
     public void setEndBlock(int endBlock) {
+        if(endBlock>END_BLOCK_MAX_VALUE) throw new IllegalArgumentException("End block must be lower than "+END_BLOCK_MAX_VALUE);
         this.endBlock = endBlock;
     }
 

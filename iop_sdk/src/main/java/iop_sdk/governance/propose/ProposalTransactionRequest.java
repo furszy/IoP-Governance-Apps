@@ -120,6 +120,7 @@ public class ProposalTransactionRequest {
 
         // contract
         proposalTransactionBuilder.addContract(
+                proposal.getVersion(),
                 proposal.getStartBlock(),
                 proposal.getEndBlock(),
                 proposal.getBlockReward(),

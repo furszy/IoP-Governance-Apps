@@ -63,6 +63,8 @@ import iop_sdk.wallet.exceptions.InsuficientBalanceException;
 
 /**
  * Created by mati on 12/11/16.
+ *
+ * todo: recuperar los 1000 IoPs bloqueados..
  */
 
 public class WalletModule {
@@ -401,6 +403,7 @@ public class WalletModule {
 
     public int createForumProposal(Proposal proposal) throws CantCreateTopicException, CantSaveProposalException, CantSaveProposalExistException {
         LOG.info("createForumProposal");
+        proposal.setCategory("Voting system");
         int forumId = forumClient.createTopic(proposal.getTitle(),proposal.getCategory(),proposal.toForumBody());
         if (forumId>0) {
             proposal.setForumId(forumId);
@@ -449,10 +452,12 @@ public class WalletModule {
 
     public boolean connectToForum(String username,String password) throws InvalidUserParametersException, ConnectionRefusedException {
         boolean ret = forumClient.connect(username,password);
-        if (ret){
-            // notify that the user is connected
-            LOG.info("checking uncheked proposals");
-            checkUncheckedProposals();
+        if (context.isVotingApp()) {
+            if (ret) {
+                // notify that the user is connected
+                LOG.info("checking uncheked proposals");
+                checkUncheckedProposals();
+            }
         }
         return ret;
     }
@@ -653,7 +658,7 @@ public class WalletModule {
         if (forumClient.getForumProfile()!=null) {
             // forum
             Proposal forumProposal = forumClient.getProposalFromWrapper(proposal.getForumId());
-
+            //todo: acá deberia chequear con el hash del foro..
             if (forumProposal != null) {
                 LOG.info("forumProposal arrive: " + forumProposal);
                 // set parameters
@@ -662,6 +667,10 @@ public class WalletModule {
                 forumProposal.setEndBlock(proposal.getEndBlock());
                 forumProposal.setBlockReward(proposal.getBlockReward());
                 forumProposal.setBlockchainHash(proposal.getBlockchainHash());
+                forumProposal.setState(proposal.getState());
+                forumProposal.setVoteNo(proposal.getVoteNo());
+                forumProposal.setVoteYes(proposal.getVoteYes());
+                forumProposal.setGenesisTxHash(proposal.getGenesisTxHash());
 
                 proposalsDao.saveProposal(forumProposal);
             } else {

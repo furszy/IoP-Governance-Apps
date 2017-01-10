@@ -58,13 +58,20 @@ public class Proposal implements Serializable {
     public enum ProposalState{
         DRAFT,          // Proposal in a edit state
         FORUM,          // Proposal created and posted in the forum
-        VOTING,         // Proposal in blockchain being voted
+        SUBMITTED,      //  Transaction confirmed on blockchain. No votes yet.
+        APPROVED,       // YES > NO. Current height  < (BlockStart + 1000 blocks).
+        NOT_APPROVED, 			// NO > YES. Current height  < (BlockStart + 1000 blocks).
         CANCELED_BY_OWNER,  // Proposal canceled by the owner, moving the locked funds to another address.
-        APPOVED,        // Proposal YES > NO && current height > (blockStart + 1000 blocks)
-        NOT_APPROVED,   // Proposal NO > YES && current height > (blockStart + 1000 blocks)
         // todo: faltan estados..
-        EXECUTED        // Proposal YES > NO && Current height > blockEnd
+        QUEUED_FOR_EXECUTION,	// YES > NO. Current height  < (BlockStart + 1000 blocks).
+        IN_EXECUTION,			// YES > NO. Current height  > BlockStart  and Current height  < BlockEnd
+        EXECUTION_CANCELLED, 	// NO > YES. Current height  > BlockStart  and Current height  < BlockEnd
+        EXECUTED,				// YES > NO. Current height  > BlockEnd
+        UNKNOWN
     }
+
+
+
 
     private boolean isMine;
     private boolean isSent;
@@ -89,7 +96,7 @@ public class Proposal implements Serializable {
     /** post id */
     private int forumPostId;
     // address -> value
-    private Map<String,Long> beneficiaries;
+    private List<Beneficiary> beneficiaries;
     /** Contributor owner */
     private byte[] ownerPubKey;
     /** will be used to put the proposal upper or lower in the voters list */
@@ -178,10 +185,10 @@ public class Proposal implements Serializable {
     }
 
     public Proposal(){
-        beneficiaries = new HashMap<>();
+        beneficiaries = new ArrayList<>();
     }
 
-    public Proposal(boolean isMine, String title, String subTitle, String category,String body, int startBlock, int endBlock, long blockReward, int forumId, Map<String, Long> beneficiaries,long extraFeeValue,boolean isSent,String lockedOutputHashhex,long lockedOutputIndex,short version,byte[] ownerPk,ProposalState proposalState) {
+    public Proposal(boolean isMine, String title, String subTitle, String category,String body, int startBlock, int endBlock, long blockReward, int forumId, List<Beneficiary> beneficiaries,long extraFeeValue,boolean isSent,String lockedOutputHashhex,long lockedOutputIndex,short version,byte[] ownerPk,ProposalState proposalState) {
         this.isMine = isMine;
         this.title = title;
         this.subTitle = subTitle;
@@ -267,8 +274,10 @@ public class Proposal implements Serializable {
                         .append("<br/>");
 
         int pos = 1;
-        for (Map.Entry<String, Long> beneficiary : beneficiaries.entrySet()) {
-            stringBuilder.append("Beneficiary"+pos+": Address: <address>"+replaceTag(TAG_BENEFICIARY_ADDRESS,beneficiary.getKey())+"</address>   value: "+replaceTag(TAG_BENEFICIARY_VALUE, String.valueOf(beneficiary.getValue()))+" IoPs");
+
+        for (Beneficiary beneficiary : beneficiaries) {
+            stringBuilder.append("Beneficiary"+pos+": Address: <address>"+replaceTag(TAG_BENEFICIARY_ADDRESS,beneficiary.getAddress())+"</address>   value: "+replaceTag(TAG_BENEFICIARY_VALUE, String.valueOf(beneficiary.getAmount()))+" IoPs");
+
         }
 
         return stringBuilder.toString();
@@ -281,7 +290,7 @@ public class Proposal implements Serializable {
     }
 
     public void addBeneficiary(String address,long value){
-        beneficiaries.put(address,value);
+        beneficiaries.add(new Beneficiary(address,value));
     }
     public String getTitle() {
         return title;
@@ -307,7 +316,7 @@ public class Proposal implements Serializable {
         return blockReward;
     }
 
-    public Map<String, Long> getBeneficiaries() {
+    public List<Beneficiary> getBeneficiaries() {
         return beneficiaries;
     }
 
@@ -391,7 +400,7 @@ public class Proposal implements Serializable {
         this.forumId = forumId;
     }
 
-    public void setBeneficiaries(Map<String, Long> beneficiaries) {
+    public void setBeneficiaries(List<Beneficiary> beneficiaries) {
         this.beneficiaries = beneficiaries;
     }
 
@@ -462,9 +471,9 @@ public class Proposal implements Serializable {
         checkEquals(getStartBlock(),o2.getStartBlock(),"StartBlock is changed");
         checkEquals(getEndBlock(),o2.getEndBlock(),"EndBlock is changed");
         checkEquals(getBlockReward(),o2.getBlockReward(),"BlockReward is changed");
-        for (Map.Entry<String, Long> beneficiary : getBeneficiaries().entrySet()) {
-            if (!o2.getBeneficiaries().containsKey(beneficiary.getKey())) throw new NotValidParametersException("Beneficiary address is changed");
-            if (!o2.getBeneficiaries().containsValue(beneficiary.getValue())) throw new NotValidParametersException("Beneficiary value is changed");
+        for (int i = 0; i < beneficiaries.size(); i++) {
+            if (!beneficiaries.get(i).getAddress().equals(o2.getBeneficiaries().get(i).getAddress())) throw new NotValidParametersException("Beneficiary address is changed");
+            if (beneficiaries.get(i).getAmount() != (o2.getBeneficiaries().get(i).getAmount())) throw new NotValidParametersException("Beneficiary value is changed");
         }
         return true;
     }

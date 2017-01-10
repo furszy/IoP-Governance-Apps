@@ -373,7 +373,8 @@
         <RelativeLayout
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:paddingTop="7dp">
+            android:paddingTop="7dp"
+            android:id="@+id/beneficiaries_container">
 
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -413,51 +414,77 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_below="@+id/delirable"
-                >
+                android:id="@+id/ben_container"
+                android:orientation="vertical"
+                android:layout_below="@+id/delirable">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/container_ben_1"
+                    android:orientation="horizontal"
+                    >
 
 
-                <EditText
+                    <EditText
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="#fff"
+                        android:layout_weight="1"
+                        android:padding="12dp"
+                        android:background="#4E4E4E"
+                        android:id="@+id/edit_beneficiary_1_address"
+                        android:maxLines="1"
+                        android:lines="1"
+                        android:hint="Address"
+                        android:inputType="text"
+                        android:layout_marginRight="9dp"
+                        android:textSize="15sp"
+                        android:textColorHint="#77ffffff"
+                        />
+
+
+                    <EditText
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/edit_beneficiary_1_value"
+                        android:layout_weight="0.25"
+                        android:maxLines="1"
+                        android:inputType="number"
+                        android:background="#4E4E4E"
+                        android:textColor="#fff"
+                        android:padding="12dp"
+                        android:layout_gravity="end"
+                        android:lines="1"
+                        android:layout_alignParentEnd="true"
+                        android:textColorHint="#77ffffff"
+                        android:hint="Reward"
+                        android:layout_marginLeft="9dp"
+                        android:textSize="15sp"
+                        android:gravity="start"
+                        />
+
+                </LinearLayout>
+
+
+                <android.support.v7.widget.RecyclerView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/recycler_beneficiaries"
+                    android:visibility="gone"/>
+
+
+                <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:id="@+id/txt_add_beneficiary"
+                    android:text=" *Add beneficiary"
+                    android:background="#027c62"
+                    android:layout_marginTop="9dp"
                     android:textColor="#fff"
-                    android:layout_weight="1"
-                    android:padding="12dp"
-                    android:background="#4E4E4E"
-                    android:id="@+id/edit_beneficiary_1_address"
-                    android:maxLines="1"
-                    android:lines="1"
-                    android:hint="Address"
-                    android:inputType="text"
-                    android:layout_marginRight="9dp"
-                    android:textSize="15sp"
-                    android:textColorHint="#77ffffff"
-                    />
-
-
-                <EditText
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/edit_beneficiary_1_value"
-                    android:layout_weight="0.25"
-                    android:maxLines="1"
-                    android:inputType="number"
-                    android:background="#4E4E4E"
-                    android:textColor="#fff"
-                    android:padding="12dp"
-                    android:layout_gravity="end"
-                    android:lines="1"
-                    android:layout_alignParentEnd="true"
-                    android:textColorHint="#77ffffff"
-                    android:hint="Reward"
-                    android:layout_marginLeft="9dp"
-                    android:textSize="15sp"
-                    android:gravity="start"
                     />
 
             </LinearLayout>
-
 
         </RelativeLayout>
 
@@ -507,14 +534,6 @@
                 />
 
         </LinearLayout>
-
-
-
-
-
-
-
-
 
 
     </LinearLayout>

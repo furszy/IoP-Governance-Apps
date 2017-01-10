@@ -48,7 +48,9 @@ public class ProposalsDao implements ProposalsContractDao {
      */
     public boolean saveProposal(Proposal proposal) throws CantSaveProposalException, CantSaveProposalExistException {
         try {
-            if (proposalsDatabaseHandler.exist(proposal.getTitle())) throw new CantSaveProposalExistException("Proposal title already exist");
+            if (proposalsDatabaseHandler.exist(proposal.getTitle(),proposal.getState())){
+                throw new CantSaveProposalExistException("Proposal title already exist");
+            }
             if (proposalsDatabaseHandler.exist(proposal.getForumId())){
                 LOG.info("updating proposal in saveProposal method");
                 boolean ret = proposalsDatabaseHandler.updateProposalByForumId(proposal)==1;

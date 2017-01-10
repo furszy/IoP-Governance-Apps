@@ -144,7 +144,7 @@ public class ForumClientDiscourseImp implements ForumClient {
                     if (errorDetail.contains("<!DOCTYPE html>")) {
                         throw new CantCreateTopicException("Cant create topic, something bad happen with the forum");
                     } else {
-                        LOG.error("forum fail with proposal: title=" + title + ", category=" + category + ", raw=" + raw);
+                        LOG.error("forum fail with proposal: title=" + title + ", category=" + category + ", raw=" + raw+ "\n"+responseModel.data.toString());
                         throw new CantCreateTopicException(errorDetail);
                     }
                 }

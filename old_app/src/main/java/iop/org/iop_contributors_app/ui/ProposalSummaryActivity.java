@@ -22,6 +22,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -30,6 +31,7 @@ import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.ui.dialogs.BroadcastContractDialog;
 import iop.org.iop_contributors_app.ui.dialogs.CancelLister;
 import iop.org.iop_contributors_app.ui.dialogs.SimpleDialogs;
+import iop_sdk.governance.propose.Beneficiary;
 import iop_sdk.governance.propose.Proposal;
 
 import static iop.org.iop_contributors_app.ui.CreateProposalActivity.INTENT_DATA_FORUM_ID;
@@ -190,12 +192,12 @@ public class ProposalSummaryActivity extends ContributorBaseActivity implements 
 
     }
 
-    private void loadBeneficiaries(Map<String,Long> beneficiaries){
-        for (Map.Entry<String, Long> beneficiary : beneficiaries.entrySet()) {
+    private void loadBeneficiaries(List<Beneficiary> beneficiaries){
+        for (Beneficiary beneficiary : beneficiaries) {
             TextView textView = new TextView(this);
             textView.setTextColor(Color.WHITE);
             textView.setTextSize(SizeUtils.convertDpToPx(getResources(),5));
-            String first = coinToString(beneficiary.getValue())+" IoPs "+ "<font color='#EE0000'> -> </font>"+" "+beneficiary.getKey();
+            String first = coinToString(beneficiary.getAmount())+" IoPs "+ "<font color='#EE0000'> -> </font>"+" "+beneficiary.getAddress();
             textView.setText(Html.fromHtml(first));
             containerBeneficiaries.addView(textView);
         }

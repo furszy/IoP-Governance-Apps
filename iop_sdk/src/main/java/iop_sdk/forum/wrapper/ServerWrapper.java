@@ -36,6 +36,7 @@ import iop_sdk.forum.InvalidUserParametersException;
 import iop_sdk.forum.discourge.com.wareninja.opensource.discourse.utils.RequestParameter;
 import iop_sdk.forum.discourge.com.wareninja.opensource.discourse.utils.StringRequestParameter;
 import iop_sdk.global.exceptions.ConnectionRefusedException;
+import iop_sdk.governance.propose.Beneficiary;
 import iop_sdk.governance.propose.Proposal;
 import iop_sdk.governance.propose.ProposalTransactionBuilder;
 
@@ -407,17 +408,17 @@ public class ServerWrapper {
                             int blockEnd = tx.get("blockend").getAsInt();
                             long blockReward = tx.get("blockreward").getAsLong();
                             String StateStr = tx.get("state").getAsString();
-                            //Proposal.ProposalState state = Proposal.ProposalState.valueOf(StateStr);
+                            Proposal.ProposalState state = Proposal.ProposalState.valueOf(StateStr);
                             long voteYes = tx.get("voteyes").getAsLong();
                             long voteNo = tx.get("voteno").getAsLong();
 
-                            Map<String, Long> beneficiaries = new HashMap<>();
+                            List<Beneficiary> beneficiaries = new ArrayList<>();
                             JsonArray beneficiariesJson = tx.get("beneficiaries").getAsJsonArray();
                             for (int j = 0; j < beneficiariesJson.size(); j++) {
                                 JsonObject beneficiaryJson = beneficiariesJson.get(j).getAsJsonObject();
                                 long amount = beneficiaryJson.get("amount").getAsLong();
                                 String address = beneficiaryJson.get("address").getAsString();
-                                beneficiaries.put(address, amount);
+                                beneficiaries.add(new Beneficiary(address, amount));
                             }
 
                             String opReturn = tx.get("op_return").getAsString();
@@ -432,6 +433,7 @@ public class ServerWrapper {
                             proposal.setVoteNo(voteNo);
                             proposal.setVoteYes(voteYes);
                             proposal.setBeneficiaries(beneficiaries);
+                            proposal.setState(state);
 
                             ret.add(proposal);
                         } catch (DecoderException e) {

@@ -71,8 +71,9 @@ public class ProposalTransactionRequest {
         Wallet wallet = walletManager.getWallet();
 
         Coin totalOuputsValue = Coin.ZERO;
-        for (Long aLong : proposal.getBeneficiaries().values()) {
-            totalOuputsValue = totalOuputsValue.add(Coin.valueOf(aLong));
+
+        for (Beneficiary beneficiary : proposal.getBeneficiaries()) {
+            totalOuputsValue = totalOuputsValue.add(Coin.valueOf(beneficiary.getAmount()));
         }
 
         // locked coins 1000 IoPs
@@ -129,14 +130,14 @@ public class ProposalTransactionRequest {
         );
 
         // beneficiaries outputs
-        for (Map.Entry<String, Long> beneficiary : proposal.getBeneficiaries().entrySet()) {
-            LOG.info("beneficiary address: "+beneficiary.getKey());
+        for (Beneficiary beneficiary : proposal.getBeneficiaries()) {
+            LOG.info("beneficiary address: "+beneficiary.getAddress());
             proposalTransactionBuilder.addBeneficiary(
-                    Address.fromBase58(conf.getNetworkParams(), beneficiary.getKey()),
-                    Coin.valueOf(beneficiary.getValue())
+                    Address.fromBase58(conf.getNetworkParams(), beneficiary.getAddress()),
+                    Coin.valueOf(beneficiary.getAmount())
             );
-
         }
+
         // build the transaction..
         Transaction tran = proposalTransactionBuilder.build();
 

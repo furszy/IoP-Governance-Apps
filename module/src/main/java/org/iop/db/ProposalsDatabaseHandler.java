@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 import iop_sdk.crypto.CryptoBytes;
+import iop_sdk.governance.propose.Beneficiary;
 import iop_sdk.governance.propose.Proposal;
 
 ;
@@ -29,7 +30,7 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
 
     // All Static variables
     // Database Version
-    private static final int DATABASE_VERSION = 16;
+    private static final int DATABASE_VERSION = 17;
 
     // Database Name
     private static final String DATABASE_NAME = "walletManager";
@@ -319,7 +320,7 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
         try {
 
             SQLiteDatabase db = this.getReadableDatabase();
-            Cursor cursor = db.query(TABLE_PROPOSALS, tableNames(), KEY_PROPOSAL_TITLE + "LIKE ? OR "+KEY_PROPOSAL_TITLE + "LIKE ?", new String[]{"","null"}, null, null, null, null);
+            Cursor cursor = db.query(TABLE_PROPOSALS, tableNames(), KEY_PROPOSAL_TITLE + " LIKE ? OR "+KEY_PROPOSAL_TITLE + " LIKE ?", new String[]{"","null"}, null, null, null, null);
 
             if (cursor.moveToFirst()) {
                 do {
@@ -467,6 +468,9 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
         return checkExistense(new Object[]{title},KEY_PROPOSAL_TITLE);
     }
 
+    public boolean exist(String title, Proposal.ProposalState state) {
+        return checkExistense(new Object[]{title,state.toString()},KEY_PROPOSAL_TITLE,KEY_PROPOSAL_STATE);
+    }
 
     public boolean exist(int forumId) {
         return checkExistense(new Object[]{forumId},KEY_PROPOSAL_FORUM_ID);
@@ -565,9 +569,9 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
     private Proposal buildProposal(Cursor cursor) throws IOException {
         Log.d(TAG,"buildProposal");
         ObjectMapper objectMapper = new ObjectMapper();
-        Map<String, Long> map = objectMapper.readValue(
+        List<Beneficiary> map = objectMapper.readValue(
                 cursor.getString(KEY_PROPOSAL_POS_BENEFICIARIES),
-                new TypeReference<Map<String, Long>>() {
+                new TypeReference<List<Beneficiary>>() {
                 });
 
         boolean isMine = ((cursor.getInt(KEY_PROPOSAL_POS_IS_MINE)==0)?false:true);
@@ -668,6 +672,7 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
         }
         return contentValues;
     }
+
 
 
 }

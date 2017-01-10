@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/base_background">
+
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/container_ben_1"
+        android:orientation="horizontal"
+        >
+
+
+        <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#fff"
+            android:layout_weight="1"
+            android:padding="12dp"
+            android:background="#4E4E4E"
+            android:id="@+id/edit_beneficiary_address"
+            android:maxLines="1"
+            android:lines="1"
+            android:hint="Address"
+            android:inputType="text"
+            android:layout_marginRight="9dp"
+            android:textSize="15sp"
+            android:textColorHint="#77ffffff"
+            />
+
+
+        <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/edit_beneficiary_value"
+            android:layout_weight="0.25"
+            android:maxLines="1"
+            android:inputType="number"
+            android:background="#4E4E4E"
+            android:textColor="#fff"
+            android:padding="12dp"
+            android:layout_gravity="end"
+            android:lines="1"
+            android:layout_alignParentEnd="true"
+            android:textColorHint="#77ffffff"
+            android:hint="Reward"
+            android:layout_marginLeft="9dp"
+            android:textSize="15sp"
+            android:gravity="start"
+            />
+
+    </LinearLayout>
+
+</LinearLayout>

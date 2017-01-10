@@ -17,6 +17,8 @@ import iop_sdk.governance.propose.Proposal;
 
 import static iop.org.iop_contributors_app.ui.ProposalSummaryActivity.INTENT_DATA_PROPOSAL;
 import static iop_sdk.blockchain.utils.CoinUtils.coinToString;
+import static iop_sdk.governance.propose.Proposal.ProposalState.EXECUTED;
+import static iop_sdk.governance.propose.Proposal.ProposalState.EXECUTION_CANCELLED;
 
 /**
  * Created by mati on 17/11/16.
@@ -79,10 +81,14 @@ public class VotingProposalsAdapter extends FermatAdapterImproved<Proposal,Votin
         holder.txt_go_vote.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(v.getContext(), VotingProposalActivity.class);
-                intent.putExtra(INTENT_DATA_PROPOSAL,data);
-                context.startActivity(intent);
+                if (data.getState()== EXECUTION_CANCELLED) Toast.makeText(v.getContext(),"Proposal execution cancelled",Toast.LENGTH_LONG).show();
+                else if (data.getState()== EXECUTED) Toast.makeText(v.getContext(),"Proposal executed",Toast.LENGTH_LONG).show();
+                else {
+                    Intent intent = new Intent(v.getContext(), VotingProposalActivity.class);
+                    intent.putExtra(INTENT_DATA_PROPOSAL, data);
+                    context.startActivity(intent);
 //                ((VotingProposalsActivity)context).showVoteDialog(data);
+                }
             }
         });
     }

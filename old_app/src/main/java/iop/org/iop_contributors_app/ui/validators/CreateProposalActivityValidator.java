@@ -4,8 +4,10 @@ import org.bitcoinj.core.Address;
 import org.bitcoinj.core.AddressFormatException;
 import org.iop.WalletConstants;
 
+import java.util.List;
 import java.util.Map;
 
+import iop_sdk.governance.propose.Beneficiary;
 import iop_sdk.governance.propose.Proposal;
 
 /**
@@ -52,15 +54,14 @@ public class CreateProposalActivityValidator {
     }
 
     public boolean validateBeneficiary(String addressBen1, long value) throws ValidationException {
-
         if (!checkAddress(addressBen1)) throwValidationException("Address not valid");
         return true;
     }
 
-    public void validateBeneficiaries(Map<String, Long> beneficiaries, long blockReward) throws ValidationException {
+    public void validateBeneficiaries(List<Beneficiary> beneficiaries, long blockReward) throws ValidationException {
         long beneficiariesValue = 0;
-        for (Long aLong : beneficiaries.values()) {
-            beneficiariesValue+=aLong;
+        for (Beneficiary beneficiary : beneficiaries) {
+            beneficiariesValue+=beneficiary.getAmount();
         }
         if (beneficiariesValue!=blockReward) throwValidationException("sum of all beneficiaries must be equal to blockReward");
     }

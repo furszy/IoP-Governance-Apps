@@ -45,13 +45,13 @@ public class VoteTransactionBuilder {
 
     // size
     private static final int VOTE_SIZE = 36;
-    private static final int VOTE_TAG_SIZE = 2;
+    private static final int VOTE_TAG_SIZE = 3;
     private static final int VOTE_POWER_SIZE = 1;
     private static final int VOTE_GENESIS_TRANSACTION_SIZE = 32;
 
 
     /** tag */
-    private static final short tag = 0x4343;
+    private static final int tag = 5656404;
     /**  */
     private static short version = 1;
 

@@ -5,6 +5,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -14,7 +16,9 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -24,11 +28,14 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import iop.org.furszy_lib.ChromeHelpPopup;
+import iop.org.furszy_lib.utils.SizeUtils;
 import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.ui.dialogs.wallet.InsuficientFundsDialog;
 import iop.org.iop_contributors_app.ui.validators.CreateProposalActivityValidator;
@@ -37,6 +44,7 @@ import iop.org.iop_contributors_app.ui.validators.ValidationException;
 import iop.org.iop_contributors_app.utils.AppUtils;
 import iop.org.iop_contributors_app.utils.CrashReporter;
 import iop_sdk.forum.CantCreateTopicException;
+import iop_sdk.governance.propose.Beneficiary;
 import iop_sdk.governance.propose.Proposal;
 
 import static iop.org.iop_contributors_app.ui.ProposalSummaryActivity.ACTION_PROPOSAL;
@@ -85,41 +93,6 @@ public class CreateProposalActivity extends ContributorBaseActivity {
     private Map<Integer,ChromeHelpPopup> popups;
 
 
-//    private final BroadcastReceiver receiver = new BroadcastReceiver() {
-//        @Override
-//        public void onReceive(Context context, final Intent intent) {
-//            runOnUiThread(new Runnable() {
-//                @Override
-//                public void run() {
-//                    switch (intent.getIntExtra(INTENT_DIALOG,0)){
-//                        case UNKNOWN_ERROR_DIALOG:
-//                            showCantSendProposalDialog();
-//                            break;
-//                        case INSUFICIENTS_FUNDS_DIALOG:
-//                            showInsuficientFundsException();
-//                            break;
-//                        case CANT_SAVE_PROPOSAL_DIALOG:
-//                            showErrorDialog("Error", intent.getStringExtra(INTENT_EXTRA_MESSAGE_DIALOG));
-//                            break;
-//                        case INVALID_PROPOSAL_DIALOG:
-//                            loadProposal();
-//                            showErrorDialog("Error",intent.getStringExtra(INTENT_EXTRA_MESSAGE_DIALOG));
-//                            break;
-//                        case COMMON_ERROR_DIALOG:
-//                            showErrorDialog("Error", intent.getStringExtra(INTENT_EXTRA_MESSAGE_DIALOG));
-//                            break;
-//                        default:
-//                            Log.e(TAG,"BroadcastReceiver fail");
-//                            break;
-//                    }
-//                    hideDoneLoading();
-//                }
-//            });
-//
-//        }
-//    };
-
-
     // UI
     private View root;
 
@@ -137,9 +110,19 @@ public class CreateProposalActivity extends ContributorBaseActivity {
     private EditText edit_block_reward;
     private EditText edit_beneficiary_address_1;
     private EditText edit_beneficiary_value_1;
+    private TextView txt_add_beneficiary;
     private Button btn_create_proposal;
 
+    private RecyclerView recycler_beneficiaries;
+    private BeneficiariesAdapter beneficiariesAdapter;
+    private List<Beneficiary> extraBeneficiaries = new ArrayList<>();
+    private LinearLayout ben_container;
+
+    private RelativeLayout beneficiaries_container;
+
+
     private Map<String,CreateProposalWatcher> watchers = new HashMap<>();
+
 
 
     @Override
@@ -209,7 +192,13 @@ public class CreateProposalActivity extends ContributorBaseActivity {
         edit_block_reward = (EditText) root.findViewById(R.id.edit_block_reward);
         edit_beneficiary_address_1 = (EditText) root.findViewById(R.id.edit_beneficiary_1_address);
         edit_beneficiary_value_1 = (EditText) root.findViewById(R.id.edit_beneficiary_1_value);
+        txt_add_beneficiary = (TextView) root.findViewById(R.id.txt_add_beneficiary);
         btn_create_proposal = (Button) root.findViewById(R.id.btn_create_proposal);
+
+        recycler_beneficiaries = (RecyclerView) root.findViewById(R.id.recycler_beneficiaries);
+        ben_container = (LinearLayout) root.findViewById(R.id.ben_container);
+
+        beneficiaries_container = (RelativeLayout) root.findViewById(R.id.beneficiaries_container) ;
 
         initHelpViews();
 
@@ -346,7 +335,44 @@ public class CreateProposalActivity extends ContributorBaseActivity {
                 }
             });
 
+            txt_add_beneficiary.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
 
+
+                    int beneficiariesSize = extraBeneficiaries.size();
+
+                    if (beneficiariesSize==0){
+                        extraBeneficiaries.add(new Beneficiary());
+                        recycler_beneficiaries.setVisibility(View.VISIBLE);
+                        //recycler_beneficiaries.setHasFixedSize(true);
+                        LinearLayoutManager layoutManager = new LinearLayoutManager(v.getContext());
+                        recycler_beneficiaries.setLayoutManager(layoutManager);
+                        VerticalSpaceItemDecoration dividerItemDecoration = new VerticalSpaceItemDecoration(SizeUtils.convertDpToPx(getResources(),12));
+                        recycler_beneficiaries.addItemDecoration(dividerItemDecoration);
+                        beneficiariesAdapter = new BeneficiariesAdapter(CreateProposalActivity.this,extraBeneficiaries,validator);
+                        recycler_beneficiaries.setAdapter(beneficiariesAdapter);
+
+                    }else {
+
+                        // check if the address and amount are loaded in the previous beneficiary
+                        Beneficiary lastBeneficiary = beneficiariesAdapter.getItem(beneficiariesSize-1);
+                        try {
+                            validator.validateBeneficiary(lastBeneficiary.getAddress(), lastBeneficiary.getAmount());
+                        } catch (ValidationException e) {
+                            Toast.makeText(v.getContext(),e.getMessage(),Toast.LENGTH_LONG).show();
+                            return;
+                        }
+
+//                        ben_container.getLayoutParams().height = recycler_beneficiaries.getLayoutParams().height+SizeUtils.convertDpToPx(getResources(),32);
+//                        recycler_beneficiaries.getLayoutParams().height = recycler_beneficiaries.getLayoutParams().height+SizeUtils.convertDpToPx(getResources(),32);
+                        Beneficiary beneficiary = new Beneficiary();
+                        beneficiariesAdapter.addItem(beneficiary);
+                        beneficiariesAdapter.notifyDataSetChanged();
+                    }
+
+                }
+            });
         }
 
     }
@@ -460,7 +486,7 @@ public class CreateProposalActivity extends ContributorBaseActivity {
 //        setWatcher(FIELD_VALUE,edit_beneficiary_value_1,null);
     }
 
-    private void setWatcher(String id,EditText editText,View errorView){
+    public void setWatcher(String id,EditText editText,View errorView){
         CreateProposalWatcher createProposalWatcher = new CreateProposalWatcher(id,validator,errorView);
         editText.addTextChangedListener(createProposalWatcher);
         watchers.put(id,createProposalWatcher);
@@ -495,10 +521,10 @@ public class CreateProposalActivity extends ContributorBaseActivity {
         edit_start_block.setText(String.valueOf(proposal.getStartBlock()));
         edit_end_block.setText(String.valueOf(proposal.getEndBlock()));
         edit_block_reward.setText(String.valueOf(proposal.getBlockReward()));
-        for (Map.Entry<String, Long> beneficiary : proposal.getBeneficiaries().entrySet()) {
-            Log.d(TAG,"setting beneficiary key: "+beneficiary.getKey());
-            edit_beneficiary_address_1.setText(beneficiary.getKey());
-            edit_beneficiary_value_1.setText(String.valueOf(beneficiary.getValue()));
+        for (Beneficiary beneficiary : proposal.getBeneficiaries()) {
+            Log.d(TAG,"setting beneficiary key: "+beneficiary.getAddress());
+            edit_beneficiary_address_1.setText(beneficiary.getAddress());
+            edit_beneficiary_value_1.setText(String.valueOf(beneficiary.getAmount()));
         }
 
 
@@ -647,10 +673,8 @@ public class CreateProposalActivity extends ContributorBaseActivity {
         int startBlock = Integer.parseInt(edit_start_block.getText().toString());
         int endBlock = Integer.parseInt(edit_end_block.getText().toString());
         long blockReward = Long.parseLong(edit_block_reward.getText().toString());
-        Map<String,Long> beneficiaries = new HashMap<>();
         String addressBen1 = edit_beneficiary_address_1.getText().toString();
         long value = Long.parseLong(edit_beneficiary_value_1.getText().toString());
-        beneficiaries.put(addressBen1,value);
 
         //todo: faltan los beneficiarios y las validaciones..
         proposal.setTitle(validator.validateTitle(title));
@@ -663,6 +687,12 @@ public class CreateProposalActivity extends ContributorBaseActivity {
         if (validator.validateBeneficiary(addressBen1, value)) {
             proposal.addBeneficiary(addressBen1,value);
         }
+        for (Beneficiary extraBeneficiary : extraBeneficiaries) {
+            if (validator.validateBeneficiary(extraBeneficiary.getAddress(),extraBeneficiary.getAmount())){
+                proposal.addBeneficiary(extraBeneficiary.getAddress(),extraBeneficiary.getAmount());
+            }
+        }
+
         validator.validateBeneficiaries(proposal.getBeneficiaries(),proposal.getBlockReward());
 
         return proposal;

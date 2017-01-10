@@ -60,8 +60,10 @@ public class BeneficiariesAdapter extends FermatAdapterImproved<Beneficiary,Bene
             @Override
             public void afterTextChanged(Editable s) {
                 try {
-                    validator.validateAddress(s.toString());
-                    data.setAddress(s.toString());
+                    if (!s.toString().equals("")) {
+                        validator.validateAddress(s.toString());
+                        data.setAddress(s.toString());
+                    }
                 } catch (ValidationException e) {
                     // nothing
                 }

@@ -56,18 +56,28 @@ public class Proposal implements Serializable {
      * EXECUTED: YES > NO. Current height  > BlockEnd
      */
     public enum ProposalState{
-        DRAFT,          // Proposal in a edit state
-        FORUM,          // Proposal created and posted in the forum
-        SUBMITTED,      //  Transaction confirmed on blockchain. No votes yet.
-        APPROVED,       // YES > NO. Current height  < (BlockStart + 1000 blocks).
-        NOT_APPROVED, 			// NO > YES. Current height  < (BlockStart + 1000 blocks).
-        CANCELED_BY_OWNER,  // Proposal canceled by the owner, moving the locked funds to another address.
+        DRAFT(100),          // Proposal in a edit state
+        FORUM(101),          // Proposal created and posted in the forum
+        SUBMITTED(102),      //  Transaction confirmed on blockchain. No votes yet.
+        APPROVED(103),       // YES > NO. Current height  < (BlockStart + 1000 blocks).
+        NOT_APPROVED(104), 			// NO > YES. Current height  < (BlockStart + 1000 blocks).
+        CANCELED_BY_OWNER(105),  // Proposal canceled by the owner, moving the locked funds to another address.
         // todo: faltan estados..
-        QUEUED_FOR_EXECUTION,	// YES > NO. Current height  < (BlockStart + 1000 blocks).
-        IN_EXECUTION,			// YES > NO. Current height  > BlockStart  and Current height  < BlockEnd
-        EXECUTION_CANCELLED, 	// NO > YES. Current height  > BlockStart  and Current height  < BlockEnd
-        EXECUTED,				// YES > NO. Current height  > BlockEnd
-        UNKNOWN
+        QUEUED_FOR_EXECUTION(106),	// YES > NO. Current height  < (BlockStart + 1000 blocks).
+        IN_EXECUTION(107),			// YES > NO. Current height  > BlockStart  and Current height  < BlockEnd
+        EXECUTION_CANCELLED(108), 	// NO > YES. Current height  > BlockStart  and Current height  < BlockEnd
+        EXECUTED(109),				// YES > NO. Current height  > BlockEnd
+        UNKNOWN(110);
+
+        private int id;
+
+        ProposalState(int id) {
+            this.id = id;
+        }
+
+        public int getId() {
+            return id;
+        }
     }
 
 
@@ -213,18 +223,14 @@ public class Proposal implements Serializable {
 
         ByteString buffTitle = ByteString.copyFromUtf8(this.title);
         ByteString buffSubTitle = ByteString.copyFromUtf8(this.subTitle);
-//        ByteString buffCategory = ByteString.copyFromUtf8(this.category);
-//        ByteString buffLink = ByteString.copyFromUtf8(forumLink);
-
-
+        ByteString buffBody = ByteString.copyFromUtf8(this.body);
         ByteBuffer byteBuffer = ByteBuffer.allocate(4048);
         byteBuffer.put(buffTitle.toByteArray());
         byteBuffer.put(buffSubTitle.toByteArray());
-//        byteBuffer.put(buffCategory.toByteArray());
+        byteBuffer.put(buffBody.toByteArray());
         byteBuffer.putInt(startBlock);
         byteBuffer.putInt(endBlock);
         byteBuffer.putLong(blockReward);
-//        byteBuffer.put(buffLink.toByteArray());
 
         int position = byteBuffer.position();
         byte[] buffToHash = new byte[position];
@@ -273,12 +279,15 @@ public class Proposal implements Serializable {
                         .append("Block reward "+replaceTag(TAG_BLOCK_REWARD, String.valueOf(blockReward)))
                         .append("<br/>");
 
-        int pos = 1;
 
-        for (Beneficiary beneficiary : beneficiaries) {
-            stringBuilder.append("Beneficiary"+pos+": Address: <address>"+replaceTag(TAG_BENEFICIARY_ADDRESS,beneficiary.getAddress())+"</address>   value: "+replaceTag(TAG_BENEFICIARY_VALUE, String.valueOf(beneficiary.getAmount()))+" IoPs");
-
+        for (int i = 0; i < beneficiaries.size(); i++) {
+            Beneficiary beneficiary = beneficiaries.get(i);
+            if (i!=0){
+                stringBuilder.append("\n");
+            }
+            stringBuilder.append("Beneficiary"+(i+1)+": Address: <address>"+replaceTag(TAG_BENEFICIARY_ADDRESS,beneficiary.getAddress())+"</address>   value: "+replaceTag(TAG_BENEFICIARY_VALUE, String.valueOf(beneficiary.getAmount()))+" IoPs");
         }
+
 
         return stringBuilder.toString();
 

@@ -108,8 +108,8 @@ public class CreateProposalActivity extends ContributorBaseActivity {
     private EditText edit_start_block;
     private EditText edit_end_block;
     private EditText edit_block_reward;
-    private EditText edit_beneficiary_address_1;
-    private EditText edit_beneficiary_value_1;
+//    private EditText edit_beneficiary_address_1;
+//    private EditText edit_beneficiary_value_1;
     private TextView txt_add_beneficiary;
     private Button btn_create_proposal;
 
@@ -190,8 +190,8 @@ public class CreateProposalActivity extends ContributorBaseActivity {
         edit_start_block = (EditText) root.findViewById(R.id.edit_start_block);
         edit_end_block = (EditText) root.findViewById(R.id.edit_end_block);
         edit_block_reward = (EditText) root.findViewById(R.id.edit_block_reward);
-        edit_beneficiary_address_1 = (EditText) root.findViewById(R.id.edit_beneficiary_1_address);
-        edit_beneficiary_value_1 = (EditText) root.findViewById(R.id.edit_beneficiary_1_value);
+//        edit_beneficiary_address_1 = (EditText) root.findViewById(R.id.edit_beneficiary_1_address);
+//        edit_beneficiary_value_1 = (EditText) root.findViewById(R.id.edit_beneficiary_1_value);
         txt_add_beneficiary = (TextView) root.findViewById(R.id.txt_add_beneficiary);
         btn_create_proposal = (Button) root.findViewById(R.id.btn_create_proposal);
 
@@ -207,8 +207,8 @@ public class CreateProposalActivity extends ContributorBaseActivity {
         root.findViewById(R.id.img_help_my_address).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!isEditing)
-                    edit_beneficiary_address_1.setText(module.getReceiveAddress());
+//                if (!isEditing)
+//                    edit_beneficiary_address_1.setText(module.getReceiveAddress());
             }
         });
 
@@ -335,6 +335,12 @@ public class CreateProposalActivity extends ContributorBaseActivity {
                 }
             });
 
+
+
+            extraBeneficiaries.add(new Beneficiary());
+            initBeneficiaryRecycler();
+
+
             txt_add_beneficiary.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -342,39 +348,40 @@ public class CreateProposalActivity extends ContributorBaseActivity {
 
                     int beneficiariesSize = extraBeneficiaries.size();
 
-                    if (beneficiariesSize==0){
-                        extraBeneficiaries.add(new Beneficiary());
-                        recycler_beneficiaries.setVisibility(View.VISIBLE);
-                        //recycler_beneficiaries.setHasFixedSize(true);
-                        LinearLayoutManager layoutManager = new LinearLayoutManager(v.getContext());
-                        recycler_beneficiaries.setLayoutManager(layoutManager);
-                        VerticalSpaceItemDecoration dividerItemDecoration = new VerticalSpaceItemDecoration(SizeUtils.convertDpToPx(getResources(),12));
-                        recycler_beneficiaries.addItemDecoration(dividerItemDecoration);
-                        beneficiariesAdapter = new BeneficiariesAdapter(CreateProposalActivity.this,extraBeneficiaries,validator);
-                        recycler_beneficiaries.setAdapter(beneficiariesAdapter);
-
-                    }else {
-
-                        // check if the address and amount are loaded in the previous beneficiary
-                        Beneficiary lastBeneficiary = beneficiariesAdapter.getItem(beneficiariesSize-1);
-                        try {
-                            validator.validateBeneficiary(lastBeneficiary.getAddress(), lastBeneficiary.getAmount());
-                        } catch (ValidationException e) {
-                            Toast.makeText(v.getContext(),e.getMessage(),Toast.LENGTH_LONG).show();
-                            return;
-                        }
+                    // check if the address and amount are loaded in the previous beneficiary
+                    Beneficiary lastBeneficiary = beneficiariesAdapter.getItem(beneficiariesSize-1);
+                    try {
+                        validator.validateBeneficiary(lastBeneficiary.getAddress(), lastBeneficiary.getAmount());
+                    } catch (ValidationException e) {
+                        Toast.makeText(v.getContext(),e.getMessage(),Toast.LENGTH_LONG).show();
+                        return;
+                    } catch (Exception e){
+                        e.printStackTrace();
+                        return;
+                    }
 
 //                        ben_container.getLayoutParams().height = recycler_beneficiaries.getLayoutParams().height+SizeUtils.convertDpToPx(getResources(),32);
 //                        recycler_beneficiaries.getLayoutParams().height = recycler_beneficiaries.getLayoutParams().height+SizeUtils.convertDpToPx(getResources(),32);
-                        Beneficiary beneficiary = new Beneficiary();
-                        beneficiariesAdapter.addItem(beneficiary);
-                        beneficiariesAdapter.notifyDataSetChanged();
-                    }
+                    Beneficiary beneficiary = new Beneficiary();
+                    beneficiariesAdapter.addItem(beneficiary);
+                    beneficiariesAdapter.notifyDataSetChanged();
+
 
                 }
             });
         }
 
+    }
+
+    private void initBeneficiaryRecycler(){
+        recycler_beneficiaries.setVisibility(View.VISIBLE);
+        //recycler_beneficiaries.setHasFixedSize(true);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        recycler_beneficiaries.setLayoutManager(layoutManager);
+        VerticalSpaceItemDecoration dividerItemDecoration = new VerticalSpaceItemDecoration(SizeUtils.convertDpToPx(getResources(),12));
+        recycler_beneficiaries.addItemDecoration(dividerItemDecoration);
+        beneficiariesAdapter = new BeneficiariesAdapter(CreateProposalActivity.this,extraBeneficiaries,validator);
+        recycler_beneficiaries.setAdapter(beneficiariesAdapter);
     }
 
 //    private void initBtnEdit() {
@@ -482,7 +489,7 @@ public class CreateProposalActivity extends ContributorBaseActivity {
         setWatcher(FIELD_START_BLOCK,edit_start_block,null);
         setWatcher(FIELD_END_BLOCK,edit_end_block,null);
         setWatcher(FIELD_BLOCK_REWARD,edit_block_reward,null);
-        setWatcher(FIELD_ADDRESS,edit_beneficiary_address_1,null);
+//        setWatcher(FIELD_ADDRESS,edit_beneficiary_address_1,null);
 //        setWatcher(FIELD_VALUE,edit_beneficiary_value_1,null);
     }
 
@@ -521,11 +528,20 @@ public class CreateProposalActivity extends ContributorBaseActivity {
         edit_start_block.setText(String.valueOf(proposal.getStartBlock()));
         edit_end_block.setText(String.valueOf(proposal.getEndBlock()));
         edit_block_reward.setText(String.valueOf(proposal.getBlockReward()));
-        for (Beneficiary beneficiary : proposal.getBeneficiaries()) {
-            Log.d(TAG,"setting beneficiary key: "+beneficiary.getAddress());
-            edit_beneficiary_address_1.setText(beneficiary.getAddress());
-            edit_beneficiary_value_1.setText(String.valueOf(beneficiary.getAmount()));
+
+        for (int i = 0; i < proposal.getBeneficiaries().size(); i++) {
+            Beneficiary beneficiaryToLoad = proposal.getBeneficiaries().get(i);
+            if (i==0){
+                Beneficiary beneficiary = beneficiariesAdapter.getItem(i);
+                beneficiary.setAddress(beneficiaryToLoad.getAddress());
+                beneficiary.setAmount(beneficiaryToLoad.getAmount());
+                extraBeneficiaries.get(i).setAddress(beneficiaryToLoad.getAddress());
+                beneficiariesAdapter.notifyItemChanged(i);
+            }else {
+                beneficiariesAdapter.addItem(beneficiaryToLoad);
+            }
         }
+
 
 
 //        View.OnClickListener onClickListener = null;
@@ -610,8 +626,8 @@ public class CreateProposalActivity extends ContributorBaseActivity {
         edit_start_block.setEnabled(false);
         edit_end_block.setEnabled(false);
         edit_block_reward.setEnabled(false);
-        edit_beneficiary_address_1.setEnabled(false);
-        edit_beneficiary_value_1.setEnabled(false);
+//        edit_beneficiary_address_1.setEnabled(false);
+//        edit_beneficiary_value_1.setEnabled(false);
 
     }
 
@@ -673,8 +689,8 @@ public class CreateProposalActivity extends ContributorBaseActivity {
         int startBlock = Integer.parseInt(edit_start_block.getText().toString());
         int endBlock = Integer.parseInt(edit_end_block.getText().toString());
         long blockReward = Long.parseLong(edit_block_reward.getText().toString());
-        String addressBen1 = edit_beneficiary_address_1.getText().toString();
-        long value = Long.parseLong(edit_beneficiary_value_1.getText().toString());
+//        String addressBen1 = edit_beneficiary_address_1.getText().toString();
+//        long value = Long.parseLong(edit_beneficiary_value_1.getText().toString());
 
         //todo: faltan los beneficiarios y las validaciones..
         proposal.setTitle(validator.validateTitle(title));
@@ -684,14 +700,22 @@ public class CreateProposalActivity extends ContributorBaseActivity {
         proposal.setStartBlock(validator.validateStartBlock(startBlock));
         proposal.setEndBlock(validator.validateEndBlock(endBlock));
         proposal.setBlockReward(validator.validateBlockReward(blockReward));
-        if (validator.validateBeneficiary(addressBen1, value)) {
-            proposal.addBeneficiary(addressBen1,value);
-        }
-        for (Beneficiary extraBeneficiary : extraBeneficiaries) {
+//        if (validator.validateBeneficiary(addressBen1, value)) {
+//            proposal.addBeneficiary(addressBen1,value);
+//        }
+
+        for (int i = 0; i < extraBeneficiaries.size(); i++) {
+            Beneficiary extraBeneficiary = beneficiariesAdapter.getItem(i);
+            if (i>0){
+                if (extraBeneficiary.getAddress()==null || extraBeneficiary.getAddress().equals("") && extraBeneficiary.getAmount()==0){
+                    continue;
+                }
+            }
             if (validator.validateBeneficiary(extraBeneficiary.getAddress(),extraBeneficiary.getAmount())){
                 proposal.addBeneficiary(extraBeneficiary.getAddress(),extraBeneficiary.getAmount());
             }
         }
+
 
         validator.validateBeneficiaries(proposal.getBeneficiaries(),proposal.getBlockReward());
 

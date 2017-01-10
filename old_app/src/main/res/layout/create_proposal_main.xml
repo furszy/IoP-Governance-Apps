@@ -37,6 +37,7 @@
                 android:text="Title"
                 android:layout_marginLeft="16dp"
                 android:textColor="#00A99D"
+                android:textStyle="bold"
                 />
 
 
@@ -76,6 +77,7 @@
                     android:text="Subtitle"
                     android:paddingLeft="16dp"
                     android:textColor="#00A99D"
+                    android:textStyle="bold"
                     />
 
 
@@ -119,6 +121,7 @@
                     android:paddingLeft="16dp"
                     android:textColor="#00A99D"
                     android:paddingBottom="7dp"
+                    android:textStyle="bold"
                     />
 
 
@@ -184,6 +187,7 @@
                     android:text="Summary:"
                     android:paddingLeft="16dp"
                     android:textColor="#00A99D"
+                    android:textStyle="bold"
                     android:paddingBottom="7dp"
                     />
 
@@ -241,6 +245,7 @@
                         android:paddingLeft="16dp"
                         android:textColor="#00A99D"
                         android:paddingBottom="7dp"
+                        android:textStyle="bold"
                         />
 
                     <ImageView
@@ -291,6 +296,7 @@
                         android:paddingLeft="16dp"
                         android:textColor="#00A99D"
                         android:paddingBottom="7dp"
+                        android:textStyle="bold"
                         />
 
                     <ImageView
@@ -343,6 +349,7 @@
                     android:paddingLeft="16dp"
                     android:textColor="#00A99D"
                     android:paddingBottom="7dp"
+                    android:textStyle="bold"
                     />
 
 
@@ -391,6 +398,7 @@
                     android:paddingLeft="16dp"
                     android:textColor="#00A99D"
                     android:paddingBottom="7dp"
+                    android:textStyle="bold"
                     />
 
                 <ImageView
@@ -418,53 +426,51 @@
                 android:orientation="vertical"
                 android:layout_below="@+id/delirable">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/container_ben_1"
-                    android:orientation="horizontal"
-                    >
+                <!--<LinearLayout-->
+                    <!--android:layout_width="match_parent"-->
+                    <!--android:layout_height="wrap_content"-->
+                    <!--android:id="@+id/container_ben_1"-->
+                    <!--android:orientation="horizontal"-->
+                    <!--&gt;-->
 
 
-                    <EditText
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textColor="#fff"
-                        android:layout_weight="1"
-                        android:padding="12dp"
-                        android:background="#4E4E4E"
-                        android:id="@+id/edit_beneficiary_1_address"
-                        android:maxLines="1"
-                        android:lines="1"
-                        android:hint="Address"
-                        android:inputType="text"
-                        android:layout_marginRight="9dp"
-                        android:textSize="15sp"
-                        android:textColorHint="#77ffffff"
-                        />
+                    <!--<EditText-->
+                        <!--android:layout_width="wrap_content"-->
+                        <!--android:layout_height="wrap_content"-->
+                        <!--android:textColor="#fff"-->
+                        <!--android:padding="12dp"-->
+                        <!--android:background="#4E4E4E"-->
+                        <!--android:id="@+id/edit_beneficiary_1_address"-->
+                        <!--android:maxLines="1"-->
+                        <!--android:lines="1"-->
+                        <!--android:hint="Address"-->
+                        <!--android:inputType="text"-->
+                        <!--android:layout_marginRight="9dp"-->
+                        <!--android:textSize="13sp"-->
+                        <!--android:textColorHint="#77ffffff"-->
+                        <!--/>-->
 
 
-                    <EditText
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/edit_beneficiary_1_value"
-                        android:layout_weight="0.25"
-                        android:maxLines="1"
-                        android:inputType="number"
-                        android:background="#4E4E4E"
-                        android:textColor="#fff"
-                        android:padding="12dp"
-                        android:layout_gravity="end"
-                        android:lines="1"
-                        android:layout_alignParentEnd="true"
-                        android:textColorHint="#77ffffff"
-                        android:hint="Reward"
-                        android:layout_marginLeft="9dp"
-                        android:textSize="15sp"
-                        android:gravity="start"
-                        />
+                    <!--<EditText-->
+                        <!--android:layout_width="30dp"-->
+                        <!--android:layout_height="wrap_content"-->
+                        <!--android:id="@+id/edit_beneficiary_1_value"-->
+                        <!--android:maxLines="1"-->
+                        <!--android:inputType="number"-->
+                        <!--android:background="#4E4E4E"-->
+                        <!--android:textColor="#fff"-->
+                        <!--android:padding="12dp"-->
+                        <!--android:layout_gravity="end"-->
+                        <!--android:lines="1"-->
+                        <!--android:layout_alignParentEnd="true"-->
+                        <!--android:textColorHint="#77ffffff"-->
+                        <!--android:hint="Reward"-->
+                        <!--android:layout_marginLeft="9dp"-->
+                        <!--android:textSize="13sp"-->
+                        <!--android:gravity="start"-->
+                        <!--/>-->
 
-                </LinearLayout>
+                <!--</LinearLayout>-->
 
 
                 <android.support.v7.widget.RecyclerView
@@ -474,15 +480,35 @@
                     android:visibility="gone"/>
 
 
-                <TextView
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:id="@+id/txt_add_beneficiary"
-                    android:text=" *Add beneficiary"
-                    android:background="#027c62"
-                    android:layout_marginTop="9dp"
-                    android:textColor="#fff"
-                    />
+                    android:orientation="horizontal"
+                    android:layout_gravity="end"
+                    android:layout_marginTop="15dp"
+                    android:gravity="end">
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginRight="7dp"
+                        android:src="@drawable/icono_createcontratct__home2doactionbar"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/txt_add_beneficiary"
+                        android:text=" Add beneficiary"
+                        android:textSize="16sp"
+                        android:layout_gravity="center"
+                        android:gravity="center"
+                        android:textStyle="bold"
+                        android:textColor="@color/text_blue"
+                        />
+
+                </LinearLayout>
+
 
             </LinearLayout>
 

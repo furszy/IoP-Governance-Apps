@@ -154,4 +154,14 @@ public class ProposalsDao implements ProposalsContractDao {
     public List<Proposal> listUncheckedProposals() {
         return proposalsDatabaseHandler.getProposalsEmptyTitle();
     }
+
+    /**
+     * List proposals by state id.
+     * Can concatenate two state using the '|'.
+     * @param stateId
+     * @return
+     */
+    public List<Proposal> listProposals(int stateId) {
+        return proposalsDatabaseHandler.getActiveProposals();
+    }
 }

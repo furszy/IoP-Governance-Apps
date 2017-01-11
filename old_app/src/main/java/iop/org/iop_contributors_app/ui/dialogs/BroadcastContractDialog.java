@@ -16,7 +16,7 @@ import iop.org.iop_contributors_app.services.BlockchainService;
 import iop.org.iop_contributors_app.ui.ProposalSummaryActivity;
 import iop_sdk.governance.propose.Proposal;
 
-;
+;import static org.iop.intents.constants.IntentsConstants.INTENT_EXTRA_PROPOSAL;
 
 public class BroadcastContractDialog extends DialogFragment {
 
@@ -68,7 +68,7 @@ public class BroadcastContractDialog extends DialogFragment {
 
     private void handleSend(){
         Bundle bundle = new Bundle();
-        bundle.putSerializable(BlockchainService.INTENT_EXTRA_PROPOSAL, proposal);
+        bundle.putSerializable(INTENT_EXTRA_PROPOSAL, proposal);
         ((ProposalSummaryActivity)getActivity()).sendWorkToBlockchainService(BlockchainService.ACTION_BROADCAST_PROPOSAL_TRANSACTION, bundle);
     }
 

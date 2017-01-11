@@ -157,7 +157,7 @@ public class ProfileActivity extends VotingBaseActivity implements View.OnClickL
                                 Toast.makeText(ProfileActivity.this, "Error password is invalid", Toast.LENGTH_LONG).show();
                             }
                         }else {
-                            Toast.makeText(ProfileActivity.this, "Username invalid, please add your nickname", Toast.LENGTH_LONG).show();
+                            Toast.makeText(ProfileActivity.this, "Username invalid, please put your nickname", Toast.LENGTH_LONG).show();
                         }
 
                     } catch (Exception e) {
@@ -180,7 +180,7 @@ public class ProfileActivity extends VotingBaseActivity implements View.OnClickL
     }
 
     @Override
-    protected boolean onBroadcastReceive(Bundle data) {
+    protected boolean onVotingBroadcastReceive(Bundle data) {
         return false;
     }
 

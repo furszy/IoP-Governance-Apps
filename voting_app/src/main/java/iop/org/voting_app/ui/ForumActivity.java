@@ -109,7 +109,7 @@ public class ForumActivity extends VotingBaseActivity {
         webSetting.setDomStorageEnabled(true);
 
         webView.setWebViewClient(new WebViewClient());
-        // add js callback
+        // put js callback
         webView.addJavascriptInterface(new MyJSI(), "myjsi");
         webView.loadUrl(address);
 
@@ -125,7 +125,7 @@ public class ForumActivity extends VotingBaseActivity {
     }
 
     @Override
-    protected boolean onBroadcastReceive(Bundle data) {
+    protected boolean onVotingBroadcastReceive(Bundle data) {
         return false;
     }
 

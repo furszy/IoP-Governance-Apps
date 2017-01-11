@@ -11,7 +11,6 @@ import iop_sdk.crypto.CryptoBytes;
 
 public class Vote implements Serializable {
 
-
     public enum VoteType{
         NO,
         NEUTRAL,
@@ -29,6 +28,7 @@ public class Vote implements Serializable {
     /** locked values */
     private String lockedOutputHashHex;
     private int lockedOutputIndex = 0;
+    private boolean outputFrozen;
 
     public Vote(String genesisHash, VoteType vote, long votingPower) {
         this.genesisHashHex = genesisHash;
@@ -36,13 +36,14 @@ public class Vote implements Serializable {
         this.votingPower = votingPower;
     }
 
-    public Vote(long voteId,String genesisHashHex, VoteType vote, long votingPower, String lockedOutputHashHex, int lockedOutputIndex) {
+    public Vote(long voteId,String genesisHashHex, VoteType vote, long votingPower, String lockedOutputHashHex, int lockedOutputIndex,boolean isOutputFrozen) {
         this.voteId = voteId;
         this.genesisHashHex = genesisHashHex;
         this.vote = vote;
         this.votingPower = votingPower;
         this.lockedOutputHashHex = lockedOutputHashHex;
         this.lockedOutputIndex = lockedOutputIndex;
+        this.outputFrozen = outputFrozen;
     }
 
     /**
@@ -64,6 +65,10 @@ public class Vote implements Serializable {
 
     public void setVoteId(long voteId) {
         this.voteId = voteId;
+    }
+
+    public void setOutputFrozen(boolean outputFrozen) {
+        this.outputFrozen = outputFrozen;
     }
 
     public void setVoteType(VoteType voteType) {
@@ -111,5 +116,9 @@ public class Vote implements Serializable {
 
     public long getVoteId() {
         return voteId;
+    }
+
+    public boolean isOutputFrozen() {
+        return outputFrozen;
     }
 }

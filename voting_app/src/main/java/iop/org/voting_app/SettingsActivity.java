@@ -47,7 +47,7 @@ public class SettingsActivity  extends VotingBaseActivity {
     }
 
     @Override
-    protected boolean onBroadcastReceive(Bundle data) {
+    protected boolean onVotingBroadcastReceive(Bundle data) {
         return false;
     }
 

@@ -206,7 +206,7 @@ public class ProposalSummaryActivity extends ContributorBaseActivity implements 
 
 
     @Override
-    protected boolean onBroadcastReceive(Bundle data) {
+    protected boolean onContributorsBroadcastReceive(Bundle data) {
         if (data.containsKey(INTENT_BROADCAST_DATA_TYPE)) {
             if (data.getString(INTENT_BROADCAST_DATA_TYPE).equals(INTENT_BROADCAST_DATA_TRANSACTION_SUCCED)) {
                 lockBroadcast.set(false);

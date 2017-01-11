@@ -67,10 +67,10 @@ import iop_sdk.wallet.BlockchainManagerListener;
 import iop_sdk.wallet.exceptions.InsuficientBalanceException;
 import iop_sdk.wallet.utils.BlockchainState;
 
-import static iop.org.iop_contributors_app.ui.base.BaseActivity.ACTION_NOTIFICATION;
 import static org.iop.WalletConstants.BLOCKCHAIN_STATE_BROADCAST_THROTTLE_MS;
 import static org.iop.WalletConstants.CONTEXT;
 import static org.iop.WalletConstants.SHOW_BLOCKCHAIN_OFF_DIALOG;
+import static org.iop.intents.constants.IntentsConstants.ACTION_NOTIFICATION;
 import static org.iop.intents.constants.IntentsConstants.CANT_SAVE_PROPOSAL_DIALOG;
 import static org.iop.intents.constants.IntentsConstants.COMMON_ERROR_DIALOG;
 import static org.iop.intents.constants.IntentsConstants.INSUFICIENTS_FUNDS_DIALOG;
@@ -85,6 +85,7 @@ import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_V
 import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_TYPE;
 import static org.iop.intents.constants.IntentsConstants.INTENT_DATA;
 import static org.iop.intents.constants.IntentsConstants.INTENT_DIALOG;
+import static org.iop.intents.constants.IntentsConstants.INTENT_EXTRA_PROPOSAL;
 import static org.iop.intents.constants.IntentsConstants.INTENT_NOTIFICATION;
 import static org.iop.intents.constants.IntentsConstants.INVALID_PROPOSAL_DIALOG;
 import static org.iop.intents.constants.IntentsConstants.UNKNOWN_ERROR_DIALOG;
@@ -606,7 +607,7 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
 
 
     private void showDialogException(int dialogType, String message){
-        Intent intent = new Intent(BaseActivity.ACTION_NOTIFICATION);
+        Intent intent = new Intent(ACTION_NOTIFICATION);
         intent.putExtra(INTENT_BROADCAST_TYPE,INTENT_DIALOG);
         intent.putExtra(INTENTE_BROADCAST_DIALOG_TYPE,dialogType);
 //        intent.putExtra(INTENT_DIALOG,dialogType);public static final String ACTION_RECEIVE_EXCEPTION = CreateProposalActivity.class.getName() + "_receive_exception";
@@ -615,7 +616,7 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
     }
 
     private void broadcastProposalSuced(String title){
-        Intent intent = new Intent(BaseActivity.ACTION_NOTIFICATION);
+        Intent intent = new Intent(ACTION_NOTIFICATION);
         intent.putExtra("title",title);
         intent.putExtra(INTENT_BROADCAST_TYPE,INTENT_DATA+INTENT_NOTIFICATION);
         intent.putExtra(INTENT_BROADCAST_DATA_TYPE, INTENT_BROADCAST_DATA_TRANSACTION_SUCCED);
@@ -623,7 +624,7 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
     }
 
     private void broadcastVoteSucced(Vote vote){
-        Intent intent = new Intent(BaseActivity.ACTION_NOTIFICATION);
+        Intent intent = new Intent(ACTION_NOTIFICATION);
 //        intent.putExtra(I,title);
         intent.putExtra(INTENT_BROADCAST_TYPE,INTENT_DATA+INTENT_NOTIFICATION);
         intent.putExtra(INTENT_BROADCAST_DATA_TYPE, INTENT_BROADCAST_DATA_VOTE_TRANSACTION_SUCCED);
@@ -632,7 +633,7 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
     }
 
     private void broadcastProposalArrived(Proposal proposal) {
-        Intent intent = new Intent(BaseActivity.ACTION_NOTIFICATION);
+        Intent intent = new Intent(ACTION_NOTIFICATION);
 //        intent.putExtra(I,title);
         intent.putExtra(INTENT_BROADCAST_TYPE,INTENT_DATA+INTENT_NOTIFICATION);
         intent.putExtra(INTENT_BROADCAST_DATA_TYPE, INTENT_BROADCAST_DATA_PROPOSAL_TRANSACTION_ARRIVED);

@@ -96,13 +96,13 @@ public class VoteProposalRequest {
             throw new InsuficientBalanceException("Inputs not satisfied vote value");
 
 
-        // add inputs..
+        // put inputs..
         voteTransactionBuilder.addInputs(unspentTransactions);
         // freeze address -> voting power
         Address lockAddress = wallet.freshReceiveAddress();
         TransactionOutput transactionOutputToLock = voteTransactionBuilder.addLockedAddressOutput(lockAddress,vote.getVotingPower());
         //update locked balance
-        lockedBalance+=transactionOutputToLock.getValue().getValue();
+        lockedBalance+=vote.getVotingPower();
         // op return output
         voteTransactionBuilder.addContract(vote.isYesVote(),vote.getGenesisHash());
         // refunds output

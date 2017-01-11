@@ -410,7 +410,7 @@ public class ServerWrapper {
 //                JSONObject jsonObject = new JSONObject(result);
 //                JSONArray transactions = jsonObject.getJSONArray("transactions");
                     for (i = 0; i < transactions.size(); i++) {
-//                        ret.add(transactions.get(i).getAsString());
+//                        ret.put(transactions.get(i).getAsString());
 
                         try {
 
@@ -537,7 +537,7 @@ public class ServerWrapper {
 //                JSONObject jsonObject = new JSONObject(result);
 //                JSONArray transactions = jsonObject.getJSONArray("transactions");
                     for (i = 0; i < transactions.size(); i++) {
-//                        ret.add(transactions.get(i).getAsString());
+//                        ret.put(transactions.get(i).getAsString());
 
                         JsonObject tx = transactions.get(i).getAsJsonObject();
 

@@ -212,7 +212,7 @@ public class MyWebClient {
 		for (String key : parameters.keySet()) {
 			requestParams.add( new StringRequestParameter(key, parameters.get(key)) );
 //			if ( !key.equalsIgnoreCase("api_key") && !key.equalsIgnoreCase("api_username")) {
-//				requestParams.add( new StringRequestParameter(key, parameters.get(key)) );
+//				requestParams.put( new StringRequestParameter(key, parameters.get(key)) );
 //			}
 		}
 		return post(methodName, requestParams);//, contentType);

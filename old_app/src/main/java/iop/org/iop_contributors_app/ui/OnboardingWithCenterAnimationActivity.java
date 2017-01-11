@@ -152,7 +152,7 @@ public class OnboardingWithCenterAnimationActivity extends AppCompatActivity {
                             }
 
                         } else {
-                            Toast.makeText(OnboardingWithCenterAnimationActivity.this, "Username invalid, please add your nickname", Toast.LENGTH_LONG).show();
+                            Toast.makeText(OnboardingWithCenterAnimationActivity.this, "Username invalid, please put your nickname", Toast.LENGTH_LONG).show();
                             progressBar.setVisibility(View.INVISIBLE);
                         }
                     }else

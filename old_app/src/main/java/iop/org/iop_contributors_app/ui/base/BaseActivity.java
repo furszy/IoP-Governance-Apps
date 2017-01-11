@@ -53,6 +53,7 @@ import iop.org.iop_contributors_app.utils.Cache;
 import static android.graphics.Color.WHITE;
 import static iop.org.furszy_lib.utils.QrUtils.encodeAsBitmap;
 import static iop.org.furszy_lib.utils.SizeUtils.convertDpToPx;
+import static org.iop.intents.constants.IntentsConstants.ACTION_NOTIFICATION;
 import static org.iop.intents.constants.IntentsConstants.INTENTE_BROADCAST_DIALOG_TYPE;
 import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_ON_COIN_RECEIVED;
 import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_TRANSACTION_SUCCED;
@@ -69,8 +70,6 @@ import static org.iop.intents.constants.IntentsConstants.RESTORE_SUCCED_DIALOG;
 public abstract class BaseActivity extends AppCompatActivity {
 
     private static final String TAG = "BaseActivity";
-
-    public static final String ACTION_NOTIFICATION = BaseActivity.class.getPackage().toString() + "_action_notification";
 
 
     protected NotificationManager notificationManager;

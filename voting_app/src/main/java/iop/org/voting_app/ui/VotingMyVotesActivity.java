@@ -99,7 +99,7 @@ public class VotingMyVotesActivity extends VotingBaseActivity implements FermatL
     }
 
     @Override
-    protected boolean onBroadcastReceive(Bundle data) {
+    protected boolean onVotingBroadcastReceive(Bundle data) {
         return false;
     }
 

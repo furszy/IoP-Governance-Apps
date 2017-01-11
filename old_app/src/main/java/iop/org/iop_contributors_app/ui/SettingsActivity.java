@@ -46,7 +46,7 @@ public class SettingsActivity  extends ContributorBaseActivity {
     }
 
     @Override
-    protected boolean onBroadcastReceive(Bundle data) {
+    protected boolean onContributorsBroadcastReceive(Bundle data) {
         return false;
     }
 

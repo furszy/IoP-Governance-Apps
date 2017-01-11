@@ -31,6 +31,7 @@ public class VotesDatabaseHandler extends SQLiteOpenHelper {
     private static final String KEY_VOTING_POWER = "voting_power";
     private static final String KEY_LOCKED_OUTPUT_HASH = "locked_output_hash";
     private static final String KEY_LOCKED_OUTPUT_INDEX = "locked_output_index";
+    private static final String KEY_IS_VOTE_LOCKED = "is_vote_locked";
 
     // positions
     private static final int KEY_POS_ID =                                           0;
@@ -39,6 +40,7 @@ public class VotesDatabaseHandler extends SQLiteOpenHelper {
     private static final int KEY_POS_VOTING_POWER =                                 3;
     private static final int KEY_POS_LOCKED_OUTPUT_HASH =                           4;
     private static final int KEY_POS_LOCKED_OUTPUT_INDEX =                          5;
+    private static final int KEY_POS_IS_VOTE_LOCKED =                               6;
 
 
     public VotesDatabaseHandler(Context context) {
@@ -74,6 +76,7 @@ public class VotesDatabaseHandler extends SQLiteOpenHelper {
         contentValues.put(KEY_VOTING_POWER,vote.getVotingPower());
         contentValues.put(KEY_LOCKED_OUTPUT_HASH,vote.getLockedOutputHex());
         contentValues.put(KEY_LOCKED_OUTPUT_INDEX,vote.getLockedOutputIndex());
+        contentValues.put(KEY_IS_VOTE_LOCKED,vote.isOutputFrozen());
         return contentValues;
     }
 
@@ -85,6 +88,7 @@ public class VotesDatabaseHandler extends SQLiteOpenHelper {
         colums[KEY_POS_VOTING_POWER] = KEY_VOTING_POWER;
         colums[KEY_POS_LOCKED_OUTPUT_HASH] = KEY_LOCKED_OUTPUT_HASH;
         colums[KEY_POS_LOCKED_OUTPUT_INDEX] = KEY_LOCKED_OUTPUT_INDEX;
+        colums[KEY_POS_IS_VOTE_LOCKED] = KEY_IS_VOTE_LOCKED;
         return colums;
     }
 
@@ -95,8 +99,9 @@ public class VotesDatabaseHandler extends SQLiteOpenHelper {
         long votingPower = cursor.getLong(KEY_POS_VOTING_POWER);
         String lockedOutputHash = cursor.getString(KEY_POS_LOCKED_OUTPUT_HASH);
         int lockedOutputIndex = cursor.getInt(KEY_POS_LOCKED_OUTPUT_INDEX);
+        boolean isOutputFrozen = cursor.getInt(KEY_POS_IS_VOTE_LOCKED) > 0;
 
-        return new Vote(id,genesisHash,voteType,votingPower,lockedOutputHash,lockedOutputIndex);
+        return new Vote(id,genesisHash,voteType,votingPower,lockedOutputHash,lockedOutputIndex,isOutputFrozen);
     }
 
 
@@ -116,7 +121,7 @@ public class VotesDatabaseHandler extends SQLiteOpenHelper {
         return id;
     }
 
-    // Getting single contact
+    // Getting single vote
     Vote getVote(String genesisHashHex) {
         SQLiteDatabase db = this.getReadableDatabase();
 
@@ -150,7 +155,7 @@ public class VotesDatabaseHandler extends SQLiteOpenHelper {
                 new String[] { parentVoteTransactionHash, String.valueOf(index)}, null, null, null, null);
         if (cursor != null)
             cursor.moveToFirst();
-        boolean exist = cursor.getCount()>0;
+        boolean exist = cursor.getInt(KEY_POS_IS_VOTE_LOCKED)>0;
         cursor.close();
         return exist;
     }
@@ -205,14 +210,26 @@ public class VotesDatabaseHandler extends SQLiteOpenHelper {
         return res == 1;
     }
 
-    public boolean updateVote(long voteId,String lockedOutputHex, int lockedOutputIndex) {
+    public boolean updateVote(long voteId,String genesisProposalHash, int lockedOutputIndex) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
-        contentValues.put(KEY_LOCKED_OUTPUT_HASH,lockedOutputHex);
+        contentValues.put(KEY_LOCKED_OUTPUT_HASH,genesisProposalHash);
         contentValues.put(KEY_LOCKED_OUTPUT_INDEX,lockedOutputIndex);
+        contentValues.put(KEY_IS_VOTE_LOCKED,true);
         // updating row
         int resp = db.update(TABLE_VOTES, contentValues, KEY_ID + " = ?",
                 new String[] { String.valueOf(voteId) });
+        db.close();
+        return resp==1;
+    }
+
+    public boolean updateVote(String genesisProposalHash, boolean isOutputFrozen) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(KEY_IS_VOTE_LOCKED,isOutputFrozen);
+        // updating row
+        int resp = db.update(TABLE_VOTES, contentValues, KEY_GENESIS_HASH + " LIKE ?",
+                new String[] { genesisProposalHash });
         db.close();
         return resp==1;
     }

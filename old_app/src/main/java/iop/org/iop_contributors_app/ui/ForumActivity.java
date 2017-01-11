@@ -105,7 +105,7 @@ public class ForumActivity extends ContributorBaseActivity {
         webSetting.setDomStorageEnabled(true);
 
         webView.setWebViewClient(new WebViewClient());
-        // add js callback
+        // put js callback
         webView.addJavascriptInterface(new MyJSI(), "myjsi");
         webView.loadUrl(address);
 
@@ -121,7 +121,7 @@ public class ForumActivity extends ContributorBaseActivity {
     }
 
     @Override
-    protected boolean onBroadcastReceive(Bundle data) {
+    protected boolean onContributorsBroadcastReceive(Bundle data) {
         return false;
     }
 

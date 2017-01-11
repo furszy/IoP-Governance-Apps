@@ -146,7 +146,7 @@
 //                            Toast.makeText(StartActivity.this, "Error password is invalid", Toast.LENGTH_LONG).show();
 //
 //                    } else {
-//                        Toast.makeText(StartActivity.this, "Username invalid, please add your nickname", Toast.LENGTH_LONG).show();
+//                        Toast.makeText(StartActivity.this, "Username invalid, please put your nickname", Toast.LENGTH_LONG).show();
 //                    }
 //                    // invisible progress bar
 //                    progressBar.setVisibility(View.INVISIBLE);

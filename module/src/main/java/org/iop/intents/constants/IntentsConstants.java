@@ -1,6 +1,8 @@
 package org.iop.intents.constants;
 
 
+import android.support.v4.content.IntentCompat;
+
 /**
  * Created by mati on 08/12/16.
  *
@@ -25,6 +27,10 @@ package org.iop.intents.constants;
  */
 
 public class IntentsConstants {
+
+
+    /** Notificacion base */
+    public static final String ACTION_NOTIFICATION = IntentsConstants.class.getPackage().toString() + "_action_notification";
 
 
     /** tipo de broadcast del intent -> dialog,notification,data */
@@ -77,5 +83,11 @@ public class IntentsConstants {
 
     public static final String INTENT_BROADCAST_DATA_ON_COIN_RECEIVED = IntentsConstants.class.getPackage().toString() + "_broadcast_coin_received";
     public static final String INTENT_BROADCAST_DATA_ON_COIN_RECEIVED_IS_TRANSACTION_MINE = IntentsConstants.class.getPackage().toString()+"_bradcast_coin_received_is_transaction_mine";
+
+    public static final String INTENT_BROADCAST_DATA_VOTE_FROZEN_FUNDS_UNLOCKED = IntentsConstants.class.getPackage().toString()+"_broadcast_vote_frozen_funds_unlocked";
+    public static final String INTENT_BROADCAST_EXTRA_DATA_VOTE = IntentsConstants.class.getPackage().toString()+"_broadcast_vote";
+
+    public static final String INTENT_EXTRA_PROPOSAL = IntentsConstants.class.getPackage().toString()+"_broadcast_proposal";
+    public static final String INTENT_BROADCAST_DATA_PROPOSAL_FROZEN_FUNDS_UNLOCKED = IntentsConstants.class.getPackage().toString()+"_broadcast_proposal_frozen_funds_unlocked";
 
 }

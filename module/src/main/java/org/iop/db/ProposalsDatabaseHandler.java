@@ -497,7 +497,6 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
     }
 
 
-
     public boolean exist(String title) {
         return checkExistense(new Object[]{title},KEY_PROPOSAL_TITLE);
     }

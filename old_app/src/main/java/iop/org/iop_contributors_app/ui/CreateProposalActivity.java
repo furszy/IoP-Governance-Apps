@@ -463,10 +463,10 @@ public class CreateProposalActivity extends ContributorBaseActivity {
 //
 //        // Spinner Drop down elements
 //        List<String> categories = new ArrayList <String>();
-//        categories.add("Develop");
-//        categories.add("Graphic design");
-//        categories.add("Community");
-//        categories.add("Public relationship");
+//        categories.put("Develop");
+//        categories.put("Graphic design");
+//        categories.put("Community");
+//        categories.put("Public relationship");
 //
 //
 //        // Creating adapter for spinner
@@ -511,7 +511,7 @@ public class CreateProposalActivity extends ContributorBaseActivity {
     }
 
     @Override
-    protected boolean onBroadcastReceive(Bundle data) {
+    protected boolean onContributorsBroadcastReceive(Bundle data) {
         if (data.getString(INTENT_BROADCAST_DATA_TYPE).equals(INTENT_BROADCAST_DATA_TRANSACTION_SUCCED)){
             showDoneLoading();
 //            lockBroadcast.set(false);

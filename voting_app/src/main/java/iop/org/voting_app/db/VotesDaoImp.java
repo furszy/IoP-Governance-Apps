@@ -46,6 +46,11 @@ public class VotesDaoImp implements VotesDao{
         return handler.updateVote(voteId,lockedOutputHex,lockedOutputIndex);
     }
 
+    @Override
+    public boolean unlockOutput(String genesisTxHash) {
+        return handler.updateVote(genesisTxHash,false);
+    }
+
     /**
      *
      * @param vote
@@ -73,5 +78,10 @@ public class VotesDaoImp implements VotesDao{
     @Override
     public void clean() {
         handler.deleteDb();
+    }
+
+    @Override
+    public Vote getVote(String genesisTxHash) {
+        return handler.getVote(genesisTxHash);
     }
 }

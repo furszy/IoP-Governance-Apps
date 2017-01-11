@@ -26,8 +26,6 @@ public interface BlockchainService {
     public static final String ACTION_BROADCAST_PROPOSAL_TRANSACTION = BlockchainService.class.getPackage().getName() + ".broadcast_proposal_transaction";
     public static final String ACTION_BROADCAST_TRANSACTION_HASH = "hash";
 
-    public static final String INTENT_EXTRA_PROPOSAL = "proposal";
-
     // voting
     public static final String ACTION_BROADCAST_VOTE_PROPOSAL_TRANSACTION = BlockchainService.class.getPackage().getName() + ".broadcast_vote_proposal_transaction";
     public static final String INTENT_EXTRA_PROPOSAL_VOTE = "proposal_vote";

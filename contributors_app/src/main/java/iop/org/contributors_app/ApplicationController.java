@@ -27,6 +27,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
+import java.util.Map;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
@@ -52,6 +54,7 @@ import iop_sdk.global.PackageInfoWrapper;
 
 import static org.iop.WalletConstants.SHOW_BLOCKCHAIN_OFF_DIALOG;
 import static org.iop.WalletConstants.SHOW_IMPORT_EXPORT_KEYS_DIALOG_FAILURE;
+import static org.iop.intents.constants.IntentsConstants.ACTION_NOTIFICATION;
 
 /**
  * Created by mati on 07/11/16.
@@ -318,6 +321,12 @@ public class ApplicationController extends Application implements AppController 
         if (broadcast.getPackageName()!=null) {
             broadcast.setPackage(getPackageName());
         }
+        Map<String,Serializable> bundle = broadcast.getBundle();
+        if (bundle!=null){
+            for (Map.Entry<String, Serializable> stringSerializableEntry : bundle.entrySet()) {
+                intent.putExtra(stringSerializableEntry.getKey(),stringSerializableEntry.getValue());
+            }
+        }
         localBroadcastManager.sendBroadcast(intent);
     }
 
@@ -379,7 +388,7 @@ public class ApplicationController extends Application implements AppController 
                 "\n\n" +
                 this.getString(iop.org.iop_contributors_app.R.string.restore_wallet_dialog_success_replay);
 
-        Intent intent = new Intent(BaseActivity.ACTION_NOTIFICATION);
+        Intent intent = new Intent(ACTION_NOTIFICATION);
         intent.putExtra(IntentsConstants.INTENT_BROADCAST_TYPE,IntentsConstants.INTENT_DIALOG);
         intent.putExtra(IntentsConstants.INTENTE_BROADCAST_DIALOG_TYPE,IntentsConstants.RESTORE_SUCCED_DIALOG);
         intent.putExtra(IntentsConstants.INTENTE_EXTRA_MESSAGE, message);
@@ -387,7 +396,7 @@ public class ApplicationController extends Application implements AppController 
     }
 
     private void showBlockchainOff(String dialogText){
-        Intent intent = new Intent(BaseActivity.ACTION_NOTIFICATION);
+        Intent intent = new Intent(ACTION_NOTIFICATION);
         intent.putExtra(IntentsConstants.INTENT_BROADCAST_TYPE,IntentsConstants.INTENT_DIALOG);
         intent.putExtra(IntentsConstants.INTENTE_BROADCAST_DIALOG_TYPE,IntentsConstants.COMMON_ERROR_DIALOG);
         intent.putExtra(IntentsConstants.INTENTE_EXTRA_MESSAGE, dialogText);

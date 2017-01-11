@@ -166,12 +166,12 @@ public class VoteTransactionBuilder {
 
     public Transaction build(){
 
-        // add inputs
+        // put inputs
         for (TransactionOutput input : inputs) {
             proposalTransaction.addInput(input);
         }
 
-        // first add the prev contract outputs (like lock coins, refund)
+        // first put the prev contract outputs (like lock coins, refund)
         for (TransactionOutput prevOpOutput : prevOpOutputs) {
             proposalTransaction.addOutput(prevOpOutput);
         }

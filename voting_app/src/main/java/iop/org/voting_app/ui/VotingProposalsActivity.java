@@ -18,9 +18,9 @@ import iop.org.voting_app.ui.components.proposals.VotingProposalsAdapter;
 import iop.org.voting_app.ui.dialogs.VoteDialog;
 import iop_sdk.governance.propose.Proposal;
 
-import static iop.org.iop_contributors_app.services.BlockchainService.INTENT_EXTRA_PROPOSAL;
 import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_PROPOSAL_TRANSACTION_ARRIVED;
 import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_TYPE;
+import static org.iop.intents.constants.IntentsConstants.INTENT_EXTRA_PROPOSAL;
 
 /**
  * Created by mati on 17/11/16.
@@ -111,7 +111,7 @@ public class VotingProposalsActivity extends VotingBaseActivity {
     }
 
     @Override
-    protected boolean onBroadcastReceive(Bundle data) {
+    protected boolean onVotingBroadcastReceive(Bundle data) {
         if (data.getString(INTENT_BROADCAST_DATA_TYPE).equals(INTENT_BROADCAST_DATA_PROPOSAL_TRANSACTION_ARRIVED)){
             Proposal proposal = (Proposal) data.get(INTENT_EXTRA_PROPOSAL);
             if (proposals==null || proposals.isEmpty()) {
@@ -119,7 +119,7 @@ public class VotingProposalsActivity extends VotingBaseActivity {
                 hideEmptyScreen();
             }
             if (!proposals.contains(proposal)) {
-                //proposals.add(proposal);
+                //proposals.put(proposal);
                 adapter.addItem(proposal);
                 adapter.notifyDataSetChanged();
             }

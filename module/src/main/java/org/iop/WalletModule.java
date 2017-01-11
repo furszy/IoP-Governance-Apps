@@ -31,10 +31,10 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import iop.org.iop_sdk_android.core.profile_server.Profile;
+import iop.org.iop_sdk_android.core.wrappers.IntentWrapperAndroid;
 import iop_sdk.blockchain.NotConnectedPeersException;
 import iop_sdk.blockchain.explorer.TransactionFinder;
 import iop_sdk.blockchain.explorer.TransactionStorage;
-import iop_sdk.crypto.CryptoBytes;
 import iop_sdk.forum.CantCreateTopicException;
 import iop_sdk.forum.CantUpdatePostException;
 import iop_sdk.forum.ForumClient;
@@ -45,6 +45,7 @@ import iop_sdk.forum.InvalidUserParametersException;
 import iop_sdk.forum.wrapper.CantGetProposalsFromServer;
 import iop_sdk.forum.wrapper.ServerWrapper;
 import iop_sdk.global.ContextWrapper;
+import iop_sdk.global.IntentWrapper;
 import iop_sdk.global.exceptions.ConnectionRefusedException;
 import iop_sdk.global.exceptions.NotValidParametersException;
 import iop_sdk.governance.propose.Proposal;
@@ -61,6 +62,15 @@ import iop_sdk.wallet.exceptions.InsuficientBalanceException;
 
 ;import static iop_sdk.governance.propose.Proposal.ProposalState.EXECUTED;
 import static iop_sdk.governance.propose.Proposal.ProposalState.EXECUTION_CANCELLED;
+import static org.iop.intents.constants.IntentsConstants.ACTION_NOTIFICATION;
+import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_PROPOSAL_FROZEN_FUNDS_UNLOCKED;
+import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_TYPE;
+import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_VOTE_FROZEN_FUNDS_UNLOCKED;
+import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_EXTRA_DATA_VOTE;
+import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_TYPE;
+import static org.iop.intents.constants.IntentsConstants.INTENT_DATA;
+import static org.iop.intents.constants.IntentsConstants.INTENT_EXTRA_PROPOSAL;
+import static org.iop.intents.constants.IntentsConstants.INTENT_NOTIFICATION;
 
 /**
  * Created by mati on 12/11/16.
@@ -643,7 +653,7 @@ public class WalletModule {
 //                //check hash
 ////            forumProposal.checkHash();
 //
-//                proposals.add(forumProposal);
+//                proposals.put(forumProposal);
 //            }else {
 //                LOG.error("Forum proposal bad decode");
 //            }
@@ -701,12 +711,50 @@ public class WalletModule {
                 forumProposal.setGenesisTxHash(proposal.getGenesisTxHash());
 
                 proposalsDao.saveProposal(forumProposal);
+
+                // Unlock freeze outputs if the proposal is finished
+                if(context.isVotingApp()){
+                    if (forumProposal.getState() == EXECUTED || forumProposal.getState()== EXECUTION_CANCELLED){
+                        // unlock funds
+                        if (votesDaoImp.unlockOutput(proposal.getGenesisTxHash())){
+
+                            Vote vote = votesDaoImp.getVote(proposal.getGenesisTxHash());
+                            lockedBalance-=vote.getVotingPower();
+                            // notify unlocked funds
+                            IntentWrapper intentWrapper = new IntentWrapperAndroid(ACTION_NOTIFICATION);
+                            intentWrapper.put(INTENT_BROADCAST_TYPE,INTENT_DATA+INTENT_NOTIFICATION);
+                            intentWrapper.put(INTENT_BROADCAST_DATA_TYPE, INTENT_BROADCAST_DATA_VOTE_FROZEN_FUNDS_UNLOCKED);
+                            intentWrapper.put(INTENT_BROADCAST_EXTRA_DATA_VOTE,vote);
+                            intentWrapper.put(INTENT_EXTRA_PROPOSAL,proposal);
+                            context.sendLocalBroadcast(intentWrapper);
+                        }
+
+                    }
+                }else {
+                    if (forumProposal.getState() == EXECUTED || forumProposal.getState()== EXECUTION_CANCELLED){
+                        // No tengo que desloquear los fondos aquí ya que se lokean por el estado de la propuesta
+                        // así que solamente tengo que notificar al usuario que sus fondos fueron desbloqueados
+                        lockedBalance-=ProposalTransactionBuilder.FREEZE_VALUE.getValue();
+
+                        IntentWrapper intentWrapper = new IntentWrapperAndroid(ACTION_NOTIFICATION);
+                        intentWrapper.put(INTENT_BROADCAST_TYPE,INTENT_DATA+INTENT_NOTIFICATION);
+                        intentWrapper.put(INTENT_BROADCAST_DATA_TYPE, INTENT_BROADCAST_DATA_PROPOSAL_FROZEN_FUNDS_UNLOCKED);
+                        intentWrapper.put(INTENT_EXTRA_PROPOSAL,proposal);
+                        context.sendLocalBroadcast(intentWrapper);
+
+
+                    }
+
+
+                }
+
+
             } else {
                 LOG.error("txProposalArrive error", proposal, "proposal decoded form blokcchain: " + proposal, "Proposal obtained from the forum: " + forumProposal);
             }
             return forumProposal;
         }else {
-            LOG.info("ProposalArrive, profile not exist, saving to add it later");
+            LOG.info("ProposalArrive, profile not exist, saving to put it later");
             proposalsDao.saveProposal(proposal);
             return proposal;
         }

@@ -25,7 +25,7 @@ public class RegtestUtil {
         List<PeerAddress> list = new ArrayList<>();
         // peers
         list.add(new PeerAddress(params,new InetSocketAddress(host,7685)));
-//        list.add(new PeerAddress(params,new InetSocketAddress(LOCAL_PC,7686)));
+//        list.put(new PeerAddress(params,new InetSocketAddress(LOCAL_PC,7686)));
         list.add(new PeerAddress(params,new InetSocketAddress(host,7684)));
         return list;
     }

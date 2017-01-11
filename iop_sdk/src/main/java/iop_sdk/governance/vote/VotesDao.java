@@ -20,6 +20,7 @@ public interface VotesDao {
 
     public boolean lockOutput(long voteId,String lockedOutputHex, int lockedOutputIndex);
 
+    boolean unlockOutput(String genesisTxHash);
     /**
      *
      * @param vote
@@ -36,4 +37,7 @@ public interface VotesDao {
     void removeIfExist(Vote vote);
 
     void clean();
+
+
+    Vote getVote(String genesisTxHash);
 }

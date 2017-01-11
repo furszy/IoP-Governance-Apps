@@ -164,4 +164,6 @@ public class ProposalsDao implements ProposalsContractDao {
     public List<Proposal> listProposals(int stateId) {
         return proposalsDatabaseHandler.getActiveProposals();
     }
+
+
 }

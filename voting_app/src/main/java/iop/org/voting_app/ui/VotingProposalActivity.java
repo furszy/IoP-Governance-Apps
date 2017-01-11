@@ -174,7 +174,7 @@ public class VotingProposalActivity extends VotingBaseActivity implements View.O
     }
 
     @Override
-    protected boolean onBroadcastReceive(Bundle bundle) {
+    protected boolean onVotingBroadcastReceive(Bundle bundle) {
 
         if (bundle.containsKey(INTENT_BROADCAST_DATA_TYPE)){
             if (bundle.getString(INTENT_BROADCAST_DATA_TYPE).equals(INTENT_BROADCAST_DATA_VOTE_TRANSACTION_SUCCED)) {

@@ -434,8 +434,7 @@ public class VotingVoteSummary extends VotingBaseActivity implements View.OnClic
 
 
     @Override
-    protected boolean onBroadcastReceive(Bundle bundle) {
-
+    protected boolean onVotingBroadcastReceive(Bundle bundle) {
         if (bundle.containsKey(INTENT_BROADCAST_DATA_TYPE)){
             if (bundle.getString(INTENT_BROADCAST_DATA_TYPE).equals(INTENT_BROADCAST_DATA_VOTE_TRANSACTION_SUCCED)) {
                 Vote vote = (Vote) bundle.getSerializable(INTENT_EXTRA_PROPOSAL_VOTE);

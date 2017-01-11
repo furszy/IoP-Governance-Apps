@@ -1,5 +1,8 @@
 package iop.org.iop_sdk_android.core.wrappers;
 
+import java.io.Serializable;
+import java.util.Map;
+
 import iop_sdk.global.IntentWrapper;
 
 /**
@@ -10,6 +13,7 @@ public class IntentWrapperAndroid implements IntentWrapper {
 
     String action;
     String packageName;
+    Map<String,Serializable> bundle;
 
     public IntentWrapperAndroid(String action) {
         this.action = action;
@@ -28,5 +32,15 @@ public class IntentWrapperAndroid implements IntentWrapper {
     @Override
     public String getPackageName() {
         return packageName;
+    }
+
+    @Override
+    public void put(String key, Object o) {
+        if (!(o instanceof Serializable)) throw new IllegalArgumentException("Object is not serializable, "+o.getClass().getName());
+        bundle.put(key, (Serializable) o);
+    }
+
+    public Map<String, Serializable> getBundle() {
+        return bundle;
     }
 }

@@ -152,7 +152,7 @@ public class VotingStartActivity extends AppCompatActivity {
                             }
 
                         } else {
-                            Toast.makeText(v.getContext(), "Username invalid, please add your nickname", Toast.LENGTH_LONG).show();
+                            Toast.makeText(v.getContext(), "Username invalid, please put your nickname", Toast.LENGTH_LONG).show();
                             progressBar.setVisibility(View.INVISIBLE);
                         }
                     }else

@@ -102,7 +102,7 @@ public class ProposalTransactionRequest {
         if (!inputsSatisfiedContractValue)
             throw new InsuficientBalanceException("Inputs not satisfied contract value");
 
-        // add inputs..
+        // put inputs..
         proposalTransactionBuilder.addInputs(unspentTransactions);
 
         // lock address output

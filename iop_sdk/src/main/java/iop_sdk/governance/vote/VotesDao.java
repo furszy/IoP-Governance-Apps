@@ -18,7 +18,7 @@ public interface VotesDao {
      */
     public boolean exist(Vote vote);
 
-    public boolean lockOutput(long voteId,String lockedOutputHex, int lockedOutputIndex);
+    public boolean lockOutput(String genesisHash,String lockedOutputHex, int lockedOutputIndex);
 
     boolean unlockOutput(String genesisTxHash);
     /**
@@ -26,7 +26,7 @@ public interface VotesDao {
      * @param vote
      * @return  vote ID
      */
-    public long addVote(Vote vote);
+    public long addUpdateIfExistVote(Vote vote);
 
     /**
      ¿     *

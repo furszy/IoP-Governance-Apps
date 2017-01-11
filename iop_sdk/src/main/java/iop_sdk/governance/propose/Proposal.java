@@ -89,7 +89,6 @@ public class Proposal implements Serializable {
     private String genesisTxHash;
     private long lockedOutputIndex;
     private ProposalState state = ProposalState.DRAFT;
-    private byte[] blockchainHash;
     private long voteYes;
     private long voteNo;
 
@@ -111,7 +110,7 @@ public class Proposal implements Serializable {
     /** Contributor owner */
     private byte[] ownerPubKey;
     /** will be used to put the proposal upper or lower in the voters list */
-    private long extraFeeValue = 10000000;
+    private long extraFeeValue = 100000000;
 
     public static Proposal buildRandomProposal(){
         Proposal proposal = new Proposal();
@@ -245,8 +244,9 @@ public class Proposal implements Serializable {
      * @return
      */
     public boolean checkHash() {
-        if (blockchainHash!=null){
-            return Arrays.equals(blockchainHash,hash());
+        byte[] hash = CryptoBytes.fromHexToBytes(genesisTxHash);
+        if (hash!=null){
+            return Arrays.equals(hash,hash());
         }
         return false;
     }
@@ -338,10 +338,6 @@ public class Proposal implements Serializable {
         return body;
     }
 
-
-    public byte[] getBlockchainHash() {
-        return blockchainHash;
-    }
     public short getVersion() {
         return version;
     }
@@ -454,10 +450,6 @@ public class Proposal implements Serializable {
         this.forumPostId = forumPostId;
     }
 
-    public void setBlockchainHash(byte[] blockchainHash) {
-        this.blockchainHash = blockchainHash;
-    }
-
     public long getVoteYes() {
         return voteYes;
     }
@@ -494,7 +486,7 @@ public class Proposal implements Serializable {
                 ", endBlock=" + endBlock +
                 ", blockReward=" + blockReward +
                 ", forumId=" + forumId +
-                ", blockchainHash="+ CryptoBytes.toHexString(blockchainHash)+
+                ", blockchainHash="+ genesisTxHash+
                 '}';
     }
 

@@ -242,6 +242,10 @@ public class WalletModule {
         }
     }
 
+    private void rollbackTx(){
+
+    }
+
     public boolean sendProposal(Proposal proposal,byte[] transactionHashDest) throws InsuficientBalanceException, InsufficientMoneyException, NotConnectedPeersException {
 
         ProposalTransactionRequest proposalTransactionRequest = new ProposalTransactionRequest(blockchainManager, walletManager, proposalsDao);
@@ -273,7 +277,7 @@ public class WalletModule {
 
         try {
             // save vote
-            long voteId = votesDaoImp.addVote(vote);
+            long voteId = votesDaoImp.addUpdateIfExistVote(vote);
             // send vote
             VoteProposalRequest proposalVoteRequest = new VoteProposalRequest(blockchainManager, walletManager, votesDaoImp);
             proposalVoteRequest.forVote(vote);
@@ -281,7 +285,7 @@ public class WalletModule {
 
             vote = proposalVoteRequest.getUpdatedVote();
             // lock contract output
-            boolean resp = votesDaoImp.lockOutput(voteId,vote.getLockedOutputHex(),vote.getLockedOutputIndex());
+            boolean resp = votesDaoImp.lockOutput(vote.getGenesisHashHex(),vote.getLockedOutputHex(),vote.getLockedOutputIndex());
             LOG.info("vote locked "+resp);
             // locked balance
             lockedBalance += proposalVoteRequest.getLockedBalance();
@@ -704,7 +708,7 @@ public class WalletModule {
                 forumProposal.setStartBlock(proposal.getStartBlock());
                 forumProposal.setEndBlock(proposal.getEndBlock());
                 forumProposal.setBlockReward(proposal.getBlockReward());
-                forumProposal.setBlockchainHash(proposal.getBlockchainHash());
+                forumProposal.setGenesisTxHash(proposal.getGenesisTxHash());
                 forumProposal.setState(proposal.getState());
                 forumProposal.setVoteNo(proposal.getVoteNo());
                 forumProposal.setVoteYes(proposal.getVoteYes());

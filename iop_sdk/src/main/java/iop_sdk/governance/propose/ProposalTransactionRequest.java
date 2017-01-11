@@ -38,6 +38,8 @@ public class ProposalTransactionRequest {
 
     private static final Logger LOG = LoggerFactory.getLogger(ProposalTransactionRequest.class.getName());
 
+    public static final Coin PROPOSAL_CONTRACT_FEE = Coin.valueOf(1,0);
+
     private BlockchainManager blockchainManager;
     private WalletManager walletManager;
     private ProposalsContractDao proposalsDao;
@@ -78,6 +80,8 @@ public class ProposalTransactionRequest {
 
         // locked coins 1000 IoPs
         totalOuputsValue = totalOuputsValue.add(Coin.valueOf(1000, 0));
+        // 1 IoP minimum contract fee
+        totalOuputsValue = totalOuputsValue.add(Coin.valueOf(proposal.getExtraFeeValue()));
 
         List<TransactionOutput> unspentTransactions = new ArrayList<>();
         Coin totalInputsValue = Coin.ZERO;
@@ -100,7 +104,7 @@ public class ProposalTransactionRequest {
         }
 
         if (!inputsSatisfiedContractValue)
-            throw new InsuficientBalanceException("Inputs not satisfied contract value");
+            throw new InsuficientBalanceException("Inputs not satisfied contract value, total contract value: "+totalOuputsValue.toFriendlyString());
 
         // put inputs..
         proposalTransactionBuilder.addInputs(unspentTransactions);
@@ -115,7 +119,7 @@ public class ProposalTransactionRequest {
         // refund transaction, tengo el fee agregado al totalOutputsValue
         Coin flyingCoins = totalInputsValue.minus(totalOuputsValue);
         // le resto el fee
-        flyingCoins = flyingCoins.minus(Coin.valueOf(proposal.getExtraFeeValue())).minus(conf.getWalletContext().getFeePerKb());
+        //flyingCoins = flyingCoins.minus(Coin.valueOf(proposal.getExtraFeeValue()));//.minus(conf.getWalletContext().getFeePerKb());
         proposalTransactionBuilder.addRefundOutput(flyingCoins, wallet.freshReceiveAddress());
 
 
@@ -148,6 +152,7 @@ public class ProposalTransactionRequest {
         sendRequest.signInputs = true;
         sendRequest.shuffleOutputs = false;
         sendRequest.coinSelector = new MyCoinSelector();
+
 
         // complete transaction
         try {

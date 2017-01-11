@@ -42,8 +42,8 @@ public class VotesDaoImp implements VotesDao{
         return handler.exist(vote.getGenesisHashHex());
     }
 
-    public boolean lockOutput(long voteId,String lockedOutputHex, int lockedOutputIndex) {
-        return handler.updateVote(voteId,lockedOutputHex,lockedOutputIndex);
+    public boolean lockOutput(String genesisHash,String lockedOutputHex, int lockedOutputIndex) {
+        return handler.updateVote(genesisHash,lockedOutputHex,lockedOutputIndex);
     }
 
     @Override
@@ -54,12 +54,17 @@ public class VotesDaoImp implements VotesDao{
     /**
      *
      * @param vote
-     * @return  vote ID
+     * @return  vote id o 0 si se actualizó o -1 si no actualizó
      */
-    public long addVote(Vote vote){
-        long voteId = handler.addVote(vote);
-        vote.setVoteId(voteId);
-        return voteId;
+    public long addUpdateIfExistVote(Vote vote){
+        if (!handler.exist(vote.getGenesisHashHex())) {
+            long voteId = handler.addVote(vote);
+            vote.setVoteId(voteId);
+            return voteId;
+        }else {
+            return  (handler.updateVote(vote))?0:-1;
+        }
+
     }
 
     /**

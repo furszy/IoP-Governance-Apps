@@ -551,7 +551,7 @@ public class ServerWrapper {
                             byte[] realData = new byte[46];
                             System.arraycopy(data,1,realData,0,46);
                             Proposal proposal = ProposalTransactionBuilder.decodeContract(realData);
-                            proposal.setBlockchainHash(CryptoBytes.fromHexToBytes(txid));
+                            proposal.setGenesisTxHash(txid);
                             ret.add(proposal);
                         } catch (DecoderException e) {
                             e.printStackTrace();

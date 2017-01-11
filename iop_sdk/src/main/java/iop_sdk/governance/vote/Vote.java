@@ -43,7 +43,7 @@ public class Vote implements Serializable {
         this.votingPower = votingPower;
         this.lockedOutputHashHex = lockedOutputHashHex;
         this.lockedOutputIndex = lockedOutputIndex;
-        this.outputFrozen = outputFrozen;
+        this.outputFrozen = isOutputFrozen;
     }
 
     /**

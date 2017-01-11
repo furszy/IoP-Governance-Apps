@@ -19,7 +19,7 @@ import iop_sdk.governance.vote.Vote;
 public class VotesDatabaseHandler extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "VOTING";
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
 
     // Contacts table name
     private static final String TABLE_VOTES = "votes";
@@ -55,7 +55,8 @@ public class VotesDatabaseHandler extends SQLiteOpenHelper {
                 + KEY_VOTE_TYPE + " TEXT,"
                 + KEY_VOTING_POWER + " LONG,"
                 + KEY_LOCKED_OUTPUT_HASH + " TEXT,"
-                + KEY_LOCKED_OUTPUT_INDEX + " INTEGER"
+                + KEY_LOCKED_OUTPUT_INDEX + " INTEGER,"
+                + KEY_IS_VOTE_LOCKED + " INTEGER"
                 + ")";
         db.execSQL(CREATE_CONTACTS_TABLE);
     }
@@ -81,7 +82,7 @@ public class VotesDatabaseHandler extends SQLiteOpenHelper {
     }
 
     private String[] allColumns(){
-        String[] colums = new String[6];
+        String[] colums = new String[7];
         colums[KEY_POS_ID] = KEY_ID;
         colums[KEY_POS_GENESIS_HASH] = KEY_GENESIS_HASH;
         colums[KEY_POS_VOTE_TYPE] = KEY_VOTE_TYPE;
@@ -151,11 +152,13 @@ public class VotesDatabaseHandler extends SQLiteOpenHelper {
     public boolean isLockedOutput(String parentVoteTransactionHash, long index) {
         SQLiteDatabase db = this.getReadableDatabase();
 
-        Cursor cursor = db.query(TABLE_VOTES,allColumns(), KEY_LOCKED_OUTPUT_HASH + "=? AND "+KEY_LOCKED_OUTPUT_INDEX+"=?",
+        Cursor cursor = db.query(TABLE_VOTES,allColumns(), KEY_LOCKED_OUTPUT_HASH + " LIKE ? AND "+KEY_LOCKED_OUTPUT_INDEX+"=?",
                 new String[] { parentVoteTransactionHash, String.valueOf(index)}, null, null, null, null);
         if (cursor != null)
             cursor.moveToFirst();
-        boolean exist = cursor.getInt(KEY_POS_IS_VOTE_LOCKED)>0;
+        boolean exist = false;
+        if (cursor.getCount()>0)
+            exist = cursor.getInt(KEY_POS_IS_VOTE_LOCKED)>0;
         cursor.close();
         return exist;
     }
@@ -210,15 +213,25 @@ public class VotesDatabaseHandler extends SQLiteOpenHelper {
         return res == 1;
     }
 
-    public boolean updateVote(long voteId,String genesisProposalHash, int lockedOutputIndex) {
+    public boolean updateVote(String genesisHash,String genesisProposalHash, int lockedOutputIndex) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put(KEY_LOCKED_OUTPUT_HASH,genesisProposalHash);
         contentValues.put(KEY_LOCKED_OUTPUT_INDEX,lockedOutputIndex);
         contentValues.put(KEY_IS_VOTE_LOCKED,true);
         // updating row
+        int resp = db.update(TABLE_VOTES, contentValues, KEY_GENESIS_HASH + " = ?",
+                new String[] { genesisHash });
+        db.close();
+        return resp==1;
+    }
+
+    public boolean updateVote(Vote vote) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = buildContentValues(vote);
+        // updating row
         int resp = db.update(TABLE_VOTES, contentValues, KEY_ID + " = ?",
-                new String[] { String.valueOf(voteId) });
+                new String[] { String.valueOf(vote.getVoteId()) });
         db.close();
         return resp==1;
     }

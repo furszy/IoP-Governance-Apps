@@ -16,7 +16,6 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import iop_sdk.crypto.CryptoBytes;
 import iop_sdk.governance.propose.Beneficiary;
@@ -30,7 +29,7 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
 
     // All Static variables
     // Database Version
-    private static final int DATABASE_VERSION = 17;
+    private static final int DATABASE_VERSION = 18;
 
     // Database Name
     private static final String DATABASE_NAME = "walletManager";
@@ -59,7 +58,7 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
     private static final String KEY_PROPOSAL_VERSION = "version";
     private static final String KEY_PROPOSAL_OWNER_PUBKEY = "owner_pubkey";
     private static final String KEY_PROPOSAL_STATE = "prop_state";
-    private static final String KEY_PROPOSAL_BLOCKCHAIN_HASH = "blockchain_hash";
+    private static final String KEY_PROPOSAL_GENESIS_HASH = "blockchain_hash";
 
     private static final String KEY_PROPOSAL_VOTES_YES = "votes_yes";
     private static final String KEY_PROPOSAL_VOTES_NO = "votes_no";
@@ -118,7 +117,7 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
                 + KEY_PROPOSAL_VERSION + " SHORT,"
                 + KEY_PROPOSAL_OWNER_PUBKEY + " BLOB,"
                 + KEY_PROPOSAL_STATE + " TEXT,"
-                + KEY_PROPOSAL_BLOCKCHAIN_HASH + " TEXT,"
+                + KEY_PROPOSAL_GENESIS_HASH + " TEXT,"
                 + KEY_PROPOSAL_VOTES_YES + " INTEGER,"
                 + KEY_PROPOSAL_VOTES_NO + " INTEGER"
                 + ")";
@@ -162,7 +161,7 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
                 KEY_PROPOSAL_VERSION,
                 KEY_PROPOSAL_OWNER_PUBKEY,
                 KEY_PROPOSAL_STATE,
-                KEY_PROPOSAL_BLOCKCHAIN_HASH,
+                KEY_PROPOSAL_GENESIS_HASH,
                 KEY_PROPOSAL_VOTES_YES,
                 KEY_PROPOSAL_VOTES_NO
         };
@@ -276,7 +275,7 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
             for (int i = 0; i < transactionHashes.size(); i++) {
                 String hash = transactionHashes.get(i);
 
-                selection.append(KEY_PROPOSAL_BLOCKCHAIN_HASH+"=?");
+                selection.append(KEY_PROPOSAL_GENESIS_HASH +" = ?");
                 where[i] = hash;
 
                 if (i!=transactionHashes.size()-1){
@@ -285,7 +284,15 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
             }
 
             SQLiteDatabase db = this.getReadableDatabase();
-            Cursor cursor = db.query(TABLE_PROPOSALS, tableNames(), selection.toString(), where, null, null, null, null);
+            String query = "SELECT * FROM "+TABLE_PROPOSALS+" WHERE "+ KEY_PROPOSAL_GENESIS_HASH +" = '" + transactionHashes.get(0)+"'";
+            Cursor cursor = db.rawQuery(query, null);
+
+            String selectQuery = "SELECT  * FROM " + TABLE_PROPOSALS;
+            Cursor cursor2 = db.rawQuery(selectQuery, null);
+            cursor2.moveToFirst();
+            Log.d(TAG,"genesis hash: "+buildProposal(cursor2).getGenesisTxHash());
+            Log.d(TAG,"genesis param: "+transactionHashes.get(0));
+//            Cursor cursor = db.query(TABLE_PROPOSALS, tableNames(), selection.toString(), where, null, null, null, null);
 
             if (cursor.moveToFirst()) {
                 do {
@@ -389,7 +396,7 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
         ContentValues values = buildContentValues(proposal);
 //        // updating row
         try {
-            return db.update(TABLE_PROPOSALS, values, KEY_PROPOSAL_TITLE + " = ?",
+            return db.update(TABLE_PROPOSALS, values, KEY_PROPOSAL_TITLE + " LIKE ?",
                     new String[]{proposal.getTitle()});
         }finally {
             db.close();
@@ -510,7 +517,44 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
     }
 
     public boolean isOutputLocked(String hashHex, long position) {
-        return checkExistense(new Object[]{hashHex,position},KEY_PROPOSAL_LOCKED_OUTPUT_HASH, KEY_PROPOSAL_LOCKED_OUTPUT_POSITION);
+
+        Log.d(TAG,"isOutputLocked: "+hashHex);
+
+        Object[] dataToCompare = new Object[]{hashHex, Proposal.ProposalState.EXECUTED.toString(),Proposal.ProposalState.EXECUTION_CANCELLED.toString()};
+
+        String[] keyToCompare = new String[]{KEY_PROPOSAL_LOCKED_OUTPUT_HASH, KEY_PROPOSAL_LOCKED_OUTPUT_POSITION};
+
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        StringBuilder stringBuilder = new StringBuilder();
+        String[] valuesToCompare = new String[dataToCompare.length];
+
+        for (int i = 0; i < dataToCompare.length; i++) {
+            //build the values
+            valuesToCompare[i]=String.valueOf(dataToCompare[i]);
+        }
+
+        stringBuilder.append(KEY_PROPOSAL_LOCKED_OUTPUT_HASH+" LIKE ?"+" AND "+KEY_PROPOSAL_STATE+" NOT LIKE ? AND "+KEY_PROPOSAL_STATE+" NOT LIKE ? ");
+
+        Cursor cursor = db.query(TABLE_PROPOSALS, tableNames(), stringBuilder.toString(), valuesToCompare, null, null, null, null);
+        if (cursor != null)
+            cursor.moveToFirst();
+
+        //db.close();
+        boolean ret = false;
+        try {
+            if (cursor.getCount()>0) {
+                Proposal proposal = buildProposal(cursor);
+                Log.d(TAG, "proposal: " + proposal.toString());
+                cursor.close();
+                ret = (hashHex.equals(proposal.getGenesisTxHash()));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        Log.d(TAG,"Is output locked: "+ret);
+
+        return ret;
     }
 
     private boolean checkExistense(Object[] dataToCompare,String... keyToCompare){
@@ -546,6 +590,8 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
         //db.close();
         return cursor.getCount()>0;
     }
+
+
 
     public boolean isProposalMine(String title) {
         SQLiteDatabase db = this.getReadableDatabase();
@@ -623,10 +669,7 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
         short version = cursor.getShort(KEY_PROPOSAL_POS_VERSION);
         byte[] ownerPk = cursor.getBlob(KEY_PROPOSAL_POS_OWNER_PUBKEY);
         Proposal.ProposalState proposalState = Proposal.ProposalState.valueOf(cursor.getString(KEY_PROPOSAL_POS_PROPOSAL_STATE));
-        byte[] blockchainHash = null;
         String blockchainHashHex = cursor.getString(KEY_PROPOSAL_POS_BLOCKCHAIN_HASH);
-        if (blockchainHashHex!=null) blockchainHash = CryptoBytes.fromHexToBytes(blockchainHashHex);
-
         int votesYes = cursor.getInt(KEY_PROPOSAL_POS_VOTES_YES);
         int votesNo = cursor.getInt(KEY_PROPOSAL_POS_VOTES_NO);
 
@@ -650,7 +693,7 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
                 ownerPk,
                 proposalState
         );
-        proposal.setBlockchainHash(blockchainHash);
+        proposal.setGenesisTxHash(blockchainHashHex);
         proposal.setVoteYes(votesYes);
         proposal.setVoteNo(votesNo);
         return proposal;
@@ -680,7 +723,7 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
         values.put(KEY_PROPOSAL_VERSION,proposal.getVersion());
         values.put(KEY_PROPOSAL_OWNER_PUBKEY,proposal.getOwnerPubKey());
         values.put(KEY_PROPOSAL_STATE,proposal.getState().toString());
-        if (proposal.getBlockchainHash()!=null) values.put(KEY_PROPOSAL_BLOCKCHAIN_HASH,CryptoBytes.toHexString(proposal.getBlockchainHash()));
+        if (proposal.getGenesisTxHash()!=null) values.put(KEY_PROPOSAL_GENESIS_HASH,proposal.getGenesisTxHash());
         values.put(KEY_PROPOSAL_VOTES_YES,proposal.getVoteYes());
         values.put(KEY_PROPOSAL_VOTES_NO,proposal.getVoteNo());
         return values;

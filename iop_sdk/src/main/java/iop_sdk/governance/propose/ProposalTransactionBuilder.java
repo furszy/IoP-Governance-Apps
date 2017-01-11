@@ -279,7 +279,7 @@ public  class ProposalTransactionBuilder {
 // 4343||0001||000014||003c||f5e100||0080a9f7727726783617077919407ceec77865f5ae67d908b87ab0b42ef55fc9||007f
         //todo: el hash deberia matchear despues cuando traigo la propuesta del foro y chequeo que sea igual
 //        if (proposal.checkHash(getByteArray(data,CONTRACT_HASH_POSITION,CONTRACT_HASH_SIZE))) throw new IllegalArgumentException("Hash don't match");
-        proposal.setBlockchainHash(getByteArray(data,CONTRACT_HASH_POSITION,CONTRACT_HASH_SIZE));
+        proposal.setGenesisTxHash(CryptoBytes.toHexString(getByteArray(data,CONTRACT_HASH_POSITION,CONTRACT_HASH_SIZE)));
         proposal.setForumId(getIntData(data,CONTRACT_FORUM_ID_POSITION,CONTRACT_FORUM_ID_SIZE));
 
         return proposal;

@@ -336,7 +336,7 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
                     LOG.info(e.getMessage());
                 } catch (CantSaveProposalExistException e) {
                     // nothing
-                    LOG.info("proposal exist! " + CryptoBytes.toHexString(proposal.getBlockchainHash()));
+                    LOG.info("proposal exist! " + proposal.getGenesisTxHash());
                 }
             }
         }

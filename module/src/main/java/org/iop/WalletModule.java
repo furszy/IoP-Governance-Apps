@@ -59,7 +59,8 @@ import iop_sdk.wallet.WalletManager;
 import iop_sdk.wallet.WalletPreferenceConfigurations;
 import iop_sdk.wallet.exceptions.InsuficientBalanceException;
 
-;
+;import static iop_sdk.governance.propose.Proposal.ProposalState.EXECUTED;
+import static iop_sdk.governance.propose.Proposal.ProposalState.EXECUTION_CANCELLED;
 
 /**
  * Created by mati on 12/11/16.
@@ -320,6 +321,10 @@ public class WalletModule {
         return proposalsDao.listProposals();
     }
 
+    public List<Proposal> getActiveProposals() {
+        return proposalsDao.listProposals(EXECUTED.getId()|EXECUTION_CANCELLED.getId());
+    }
+
     public String getReceiveAddress() {
         String address = configuration.getReceiveAddress();
         if (address==null){
@@ -575,6 +580,29 @@ public class WalletModule {
     }
 
     /**
+     * Request proposal by his genesis hash.
+     * @param list
+     * @return
+     */
+    public ServerWrapper.RequestProposalsResponse requestProposalsFullTx(List<Proposal> list) {
+        try {
+
+            List<String> hashes = new ArrayList<>();
+            for (Proposal proposal : list) {
+                hashes.add(proposal.getGenesisTxHash());
+            }
+            // request tx hashes from node
+            ServerWrapper.RequestProposalsResponse requestProposalsResponse = serverWrapper.getVotingProposalsNew(hashes);
+
+            return requestProposalsResponse;
+        } catch (CantGetProposalsFromServer e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    /**
      *
      * @return
      * @throws Exception
@@ -705,8 +733,8 @@ public class WalletModule {
         List<Proposal> proposals = proposalsDao.listProposals(transactionHashes);
         for (Proposal proposal : proposals) {
             // todo: esto es totalmente mejorable si le pongo un hex en vez del byte array que tiene.
-            String proposalHash = CryptoBytes.toHexString(proposal.getBlockchainHash());
-            Vote vote = voteByProposalHash.get(proposalHash);
+            String proposalGenesisHash = proposal.getGenesisTxHash();
+            Vote vote = voteByProposalHash.get(proposalGenesisHash);
             if (vote!=null) {
                 wrappers.add(new VoteWrapper(
                         vote,
@@ -726,6 +754,7 @@ public class WalletModule {
     public void setTransactionStorage(TransactionStorage transactionStorage) {
         this.transactionStorage = transactionStorage;
     }
+
 
 
 }

@@ -336,16 +336,29 @@ public class ServerWrapper {
         return requestProposalsResponse;
     }
 
+    public RequestProposalsResponse getVotingProposalsNew(List<String> hashes) throws CantGetProposalsFromServer {
+        return getProposals(0,hashes);
+    }
+
     public RequestProposalsResponse getVotingProposalsNew(int blockHeight) throws CantGetProposalsFromServer{
-
-        String url = this.url+"/requestproposalsnew";
-
         //url = url + "?api_key=" + DiscouseApiConstants.API_KEY + "&api_username=system";
+        return getProposals(blockHeight,null);
+
+    }
 
 
+    public RequestProposalsResponse getProposals(int blockHeight,List<String> hashes) throws CantGetProposalsFromServer {
+        String url = this.url+"/requestproposalsnew";
         RequestProposalsResponse requestProposalsResponse = new RequestProposalsResponse();
-
         List<RequestParameter> requestParams = new ArrayList<>();
+        if (hashes!=null){
+            JsonArray jsonElements = new JsonArray();
+            for (String hash : hashes) {
+                jsonElements.add(hash);
+            }
+            requestParams.add(new StringRequestParameter("hashes",jsonElements));
+        }
+
         HttpResponse httpResponse = null;
         String result = null;
         try {
@@ -461,8 +474,8 @@ public class ServerWrapper {
         }
         return requestProposalsResponse;
 
-
     }
+
 
     public RequestProposalsResponse getVotingProposalsFullTx(int blockHeight) throws CantGetProposalsFromServer {
         String url = this.url+"/requestproposalsfulltx";

@@ -274,7 +274,7 @@ public class VotingProposalActivity extends VotingBaseActivity implements View.O
 
         long amountIoPToshis = IoPCalculator.iopToIopToshis(votingAmount);
 
-        vote = new Vote(CryptoBytes.toHexString(proposal.getBlockchainHash()),voteType,amountIoPToshis);
+        vote = new Vote(proposal.getGenesisTxHash(),voteType,amountIoPToshis);
 
         // todo: Esto está así hasta que vuelva de las vacaciones..
         if (voteType == Vote.VoteType.NEUTRAL){

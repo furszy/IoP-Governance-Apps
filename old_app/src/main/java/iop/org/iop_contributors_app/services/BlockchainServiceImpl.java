@@ -272,37 +272,24 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
 
                 if (application.isVotingApp()) {
 
-                    LOG.info("executing download");
+                    LOG.info("executing download voting");
 
                     executorService.submit(new Runnable() {
                         @Override
                         public void run() {
                             try {
-                                if (bestBlockHeight != -1 && !transactionFinder.getLastBestChainHash().equals(block.getHash().toString())) {
+                                //bestBlockHeight != -1 &&
+                                if (!transactionFinder.getLastBestChainHash().equals(block.getHash().toString())) {
                                     LOG.info("executing download-1");
                                     List<Proposal> proposals = null;
                                     ServerWrapper.RequestProposalsResponse requestProposalsResponse = null;
 
-                                    if (application.isVotingApp()) {
-                                        // obtain proposal contracts to filter
-                                        requestProposalsResponse = walletModule.requestProposalsFullTx(blockchainManager.getChainHeadHeight());
-                                        if (requestProposalsResponse != null) {
-                                            proposals = requestProposalsResponse.getProposals();
-                                            for (Proposal proposal : proposals) {
-                                                try {
-                                                    proposal = walletModule.proposalArrive(proposal);
-                                                    LOG.info("Proposal saved!");
-                                                    // notify state
-                                                    broadcastProposalArrived(proposal);
-                                                } catch (CantSaveProposalException e) {
-                                                    LOG.info(e.getMessage());
-                                                } catch (CantSaveProposalExistException e) {
-                                                    // nothing
-                                                    LOG.info("proposal exist! " + CryptoBytes.toHexString(proposal.getBlockchainHash()));
-                                                }
-                                            }
-                                        }
+                                    // obtain proposal contracts to filter
+                                    requestProposalsResponse = walletModule.requestProposalsFullTx(blockchainManager.getChainHeadHeight());
+                                    if (requestProposalsResponse != null) {
+                                        proposalsArrive(requestProposalsResponse.getProposals());
                                     }
+
                                 }
                             }catch (Exception e){
                                 e.printStackTrace();
@@ -313,13 +300,48 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
                     });
 
 
+                }else {
+
+                    LOG.info("executing download active proposals (para actualizarlas)");
+                    executorService.submit(new Runnable() {
+                        @Override
+                        public void run() {
+                            // update own contract proposal
+                            List<Proposal> list = walletModule.getActiveProposals();
+                            Log.i(TAG, Arrays.toString(list.toArray()));
+                            if (!list.isEmpty()) {
+                                ServerWrapper.RequestProposalsResponse requestProposalsResponse = walletModule.requestProposalsFullTx(list);
+                                if (requestProposalsResponse!=null){
+                                    proposalsArrive(requestProposalsResponse.getProposals());
+                                }
+                            }
+                        }
+                    });
+
                 }
 
                 // todo: ver esto, lo broadcastea para que todos sepan el estado de la blockchain
 //                broadcastBlockchainState();
             }
         }
+        private void proposalsArrive(List<Proposal> proposals){
+            for (Proposal proposal : proposals) {
+                try {
+                    proposal = walletModule.proposalArrive(proposal);
+                    LOG.info("Proposal saved!");
+                    // notify state
+                    broadcastProposalArrived(proposal);
+                } catch (CantSaveProposalException e) {
+                    LOG.info(e.getMessage());
+                } catch (CantSaveProposalExistException e) {
+                    // nothing
+                    LOG.info("proposal exist! " + CryptoBytes.toHexString(proposal.getBlockchainHash()));
+                }
+            }
+        }
+
     };
+
 
 
     private final BroadcastReceiver connectivityReceiver = new BroadcastReceiver() {

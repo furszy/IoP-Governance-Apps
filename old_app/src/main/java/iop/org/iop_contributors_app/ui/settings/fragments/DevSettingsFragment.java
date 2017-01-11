@@ -158,7 +158,7 @@ public class DevSettingsFragment extends PreferenceFragment implements Preferenc
                 public void run() {
                     Context.propagate(WalletConstants.CONTEXT);
                     Proposal proposal = Proposal.buildRandomProposal();
-                    proposal.setForumId(23);
+                    proposal.setForumId(1);
                     proposal.addBeneficiary(module.getReceiveAddress(),proposal.getBlockReward());
 
                     String message;

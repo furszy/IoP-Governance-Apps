@@ -40,8 +40,8 @@ public class VoteTransactionBuilder {
 
     // position
     private static final int VOTE_TAG_POSITION = 0;
-    private static final int VOTE_POWER_POSITION = 2;
-    private static final int VOTE_GENESIS_TRANSACTION_POSITION = 3;
+    private static final int VOTE_POWER_POSITION = 3;
+    private static final int VOTE_GENESIS_TRANSACTION_POSITION = 4;
 
     // size
     private static final int VOTE_SIZE = 36;
@@ -51,7 +51,7 @@ public class VoteTransactionBuilder {
 
 
     /** tag */
-    private static final int tag = 5656404;
+    private static final int tag = 0x564f54;
     /**  */
     private static short version = 1;
 
@@ -144,7 +144,7 @@ public class VoteTransactionBuilder {
             // data
             byte[] prevData = new byte[VOTE_SIZE];
             numericTypeToByteArray(prevData,tag,VOTE_TAG_POSITION,VOTE_TAG_SIZE);
-            prevData[VOTE_TAG_POSITION] = (byte) (vote ? 1:0);
+            prevData[VOTE_POWER_POSITION] = (byte) (vote ? 1:0);
             System.arraycopy(contractHash,0,prevData,VOTE_GENESIS_TRANSACTION_POSITION,VOTE_GENESIS_TRANSACTION_SIZE);
 
             OpReturnOutputTransaction opReturnOutputTransaction = new OpReturnOutputTransaction.Builder(networkParameters)

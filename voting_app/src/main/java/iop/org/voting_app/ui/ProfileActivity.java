@@ -38,9 +38,7 @@ import java.util.regex.Pattern;
 import de.hdodenhof.circleimageview.CircleImageView;
 import iop.org.furszy_lib.dialogs.DialogBuilder;
 import iop.org.iop_contributors_app.R;
-import iop.org.iop_contributors_app.ui.ContributorBaseActivity;
 import iop.org.iop_contributors_app.ui.MainActivity;
-import iop.org.iop_contributors_app.ui.OnboardingWithCenterAnimationActivity;
 import iop.org.voting_app.base.VotingBaseActivity;
 import iop_sdk.forum.ForumProfile;
 import iop_sdk.forum.InvalidUserParametersException;
@@ -374,7 +372,7 @@ public class ProfileActivity extends VotingBaseActivity implements View.OnClickL
         dialogBuilder.singleDismissButton(new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                startActivity(new Intent(ProfileActivity.this,OnboardingWithCenterAnimationActivity.class));
+                startActivity(new Intent(ProfileActivity.this,VotingStartActivity.class));
             }
         });
 

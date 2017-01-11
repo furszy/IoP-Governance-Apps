@@ -33,6 +33,7 @@ import static iop_sdk.governance.ProposalForum.TAG_TITLE;
 /**
  * Created by mati on 07/11/16.
  * //todo: ponerle el class en el tag para determinar que campo es.
+ * // ver tema fee extra, --> fee minimo es de 1 IoP para evitar spam
  */
 
 public class Proposal implements Serializable {
@@ -110,7 +111,7 @@ public class Proposal implements Serializable {
     /** Contributor owner */
     private byte[] ownerPubKey;
     /** will be used to put the proposal upper or lower in the voters list */
-    private long extraFeeValue = 1000;
+    private long extraFeeValue = 10000000;
 
     public static Proposal buildRandomProposal(){
         Proposal proposal = new Proposal();

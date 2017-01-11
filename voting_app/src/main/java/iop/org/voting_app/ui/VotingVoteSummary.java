@@ -87,6 +87,7 @@ public class VotingVoteSummary extends VotingBaseActivity implements View.OnClic
     private ProgressBar progressBar;
     private ImageView img_done;
     private TextView txt_done;
+    private View container_back;
 
     /** change vote */
     private int votingAmount;
@@ -101,6 +102,7 @@ public class VotingVoteSummary extends VotingBaseActivity implements View.OnClic
     private EditText txt_vote_quantity;
 
     private boolean isChangeVoteExpanded;
+
 
 
     @Override
@@ -167,6 +169,8 @@ public class VotingVoteSummary extends VotingBaseActivity implements View.OnClic
         txt_vote_no = (TextView) root.findViewById(R.id.txt_vote_no);
 
         txt_vote_result = (TextView) root.findViewById(R.id.txt_vote_result);
+
+        container_back = root.findViewById(R.id.container_back);
 
         btn_minus_voting.setOnClickListener(this);
         btn_plus_voting.setOnClickListener(this);
@@ -402,6 +406,7 @@ public class VotingVoteSummary extends VotingBaseActivity implements View.OnClic
     }
 
     private void preparateLoading(String textDone, int resImgDone){
+        container_back.setVisibility(View.VISIBLE);
         container_send.setVisibility(View.VISIBLE);
         progressBar.setVisibility(View.VISIBLE);
         txt_done.setText(textDone);
@@ -424,6 +429,7 @@ public class VotingVoteSummary extends VotingBaseActivity implements View.OnClic
 
     private void hideDoneLoading(){
         container_send.setVisibility(View.INVISIBLE);
+        container_back.setVisibility(View.INVISIBLE);
     }
 
 

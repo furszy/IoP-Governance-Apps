@@ -120,7 +120,7 @@ public class Proposal implements Serializable {
         proposal.setTitle("Propuesta a enviar numero 1011");
         proposal.setSubTitle("subTitulo4");
         proposal.setCategory("categoria");
-        proposal.setBody("Esta es una propuesta para crear propuestas, por lo cual debo poner cosas locas acá. ");
+        proposal.setBody("Esta es una propuesta para crear propuestas, por lo cual debo poner cosas locas acá. Asi que voy a poner lo que se me dé la gana. y voy a llenar todo esto con cosas para probar su funcionamiento es bueno");
         proposal.setStartBlock(10);
         proposal.setEndBlock(10);
         proposal.setBlockReward(8000000);

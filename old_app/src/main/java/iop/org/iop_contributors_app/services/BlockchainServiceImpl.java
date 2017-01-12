@@ -424,7 +424,7 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
                         new NotificationCompat.Builder(getApplicationContext())
                                 .setSmallIcon(R.drawable.ic__launcher)
                                 .setContentTitle("IoPs received!")
-                                .setContentText("Transaction received for a value of " + notificationAccumulatedAmount.toFriendlyString())
+                                .setContentText("Transaction received for a value of " + round(notificationAccumulatedAmount.getValue(),4))
                                 .setAutoCancel(false)
                                 .setDeleteIntent(deleteIntent);
 
@@ -442,6 +442,15 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
             }
         }
     };
+
+    public static double round(double value, int places) {
+        if (places < 0) throw new IllegalArgumentException();
+
+        long factor = (long) Math.pow(10, places);
+        value = value * factor;
+        long tmp = Math.round(value);
+        return (double) tmp / factor;
+    }
 
 
     private TransactionFinderListener transactionFinderListener = new TransactionFinderListener() {

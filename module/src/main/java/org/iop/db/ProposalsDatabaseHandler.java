@@ -284,15 +284,7 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
             }
 
             SQLiteDatabase db = this.getReadableDatabase();
-            String query = "SELECT * FROM "+TABLE_PROPOSALS+" WHERE "+ KEY_PROPOSAL_GENESIS_HASH +" = '" + transactionHashes.get(0)+"'";
-            Cursor cursor = db.rawQuery(query, null);
-
-            String selectQuery = "SELECT  * FROM " + TABLE_PROPOSALS;
-            Cursor cursor2 = db.rawQuery(selectQuery, null);
-            cursor2.moveToFirst();
-            Log.d(TAG,"genesis hash: "+buildProposal(cursor2).getGenesisTxHash());
-            Log.d(TAG,"genesis param: "+transactionHashes.get(0));
-//            Cursor cursor = db.query(TABLE_PROPOSALS, tableNames(), selection.toString(), where, null, null, null, null);
+            Cursor cursor = db.query(TABLE_PROPOSALS, tableNames(), selection.toString(), where, null, null, null, null);
 
             if (cursor.moveToFirst()) {
                 do {

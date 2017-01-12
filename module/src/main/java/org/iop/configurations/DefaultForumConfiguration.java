@@ -10,6 +10,7 @@ import java.io.IOException;
 import iop_sdk.forum.ForumConfigurations;
 import iop_sdk.forum.ForumProfile;
 import iop_sdk.forum.discourge.com.wareninja.opensource.discourse.DiscouseApiConstants;
+import iop_sdk.global.HardCodedConstans;
 
 
 /**
@@ -91,7 +92,7 @@ public class DefaultForumConfiguration extends Configurations implements ForumCo
 
     @Override
     public String getWrapperUrl() {
-        return getString(PREFS_WRAPPER_URL,"http://"+ DiscouseApiConstants.FORUM_WRAPPER_URL);
+        return getString(PREFS_WRAPPER_URL,"http://"+ HardCodedConstans.HOST);
     }
 
     @Override

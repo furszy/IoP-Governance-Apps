@@ -1,6 +1,7 @@
 package iop.org.iop_contributors_app.services;
 
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.ComponentCallbacks2;
@@ -126,6 +127,10 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
     private long serviceCreatedAt;
 
     private LocalBroadcastManager localBroadcast;
+
+    // Notifications
+    private int notificationCount;
+    private Coin notificationAccumulatedAmount = Coin.ZERO;
 
 
     private final class PeerConnectivityListener
@@ -386,6 +391,10 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
     };
 
     private WalletCoinsReceivedEventListener coinReceiverListener = new WalletCoinsReceivedEventListener() {
+
+        android.support.v4.app.NotificationCompat.Builder mBuilder;
+        PendingIntent deleteIntent;
+
         @Override
         public void onCoinsReceived(Wallet wallet, Transaction transaction, Coin coin, Coin coin1) {
 
@@ -401,12 +410,23 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
 
             localBroadcast.sendBroadcast(intent);
 
+            notificationCount++;
+            notificationAccumulatedAmount = notificationAccumulatedAmount.add(coin1);
+
             if (!isTransactionMine ){//&& depthInBlocks>1) {
-                android.support.v4.app.NotificationCompat.Builder mBuilder =
+
+                Intent resultIntent = new Intent(getApplicationContext(),BlockchainServiceImpl.this.getClass());
+                resultIntent.setAction(ACTION_CANCEL_COINS_RECEIVED);
+                deleteIntent = PendingIntent.getService(BlockchainServiceImpl.this, 0, resultIntent,PendingIntent.FLAG_CANCEL_CURRENT);
+
+
+                 mBuilder =
                         new NotificationCompat.Builder(getApplicationContext())
                                 .setSmallIcon(R.drawable.ic__launcher)
                                 .setContentTitle("IoPs received!")
-                                .setContentText("Transaction received for a value of " + coin1.toFriendlyString());
+                                .setContentText("Transaction received for a value of " + notificationAccumulatedAmount.toFriendlyString())
+                                .setAutoCancel(false)
+                                .setDeleteIntent(deleteIntent);
 
                 nm.notify(1, mBuilder.build());
             } else {
@@ -415,7 +435,8 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
                                 .setSmallIcon(R.drawable.ic__launcher)
                                 .setContentTitle("IoPs received!")
                                 .setContentText("Transaction received for a value of " + coin1.toFriendlyString())
-                                .setSubText("This transaction is not confirmed yet, will be confirmed in the next 10 minutes");
+                                .setSubText("This transaction is not confirmed yet, will be confirmed in the next 10 minutes")
+                                .setDeleteIntent(deleteIntent);
 
                 nm.notify(5, mBuilder.build());
             }
@@ -508,7 +529,6 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
         intentFilter.addAction(Intent.ACTION_DEVICE_STORAGE_OK);
         registerReceiver(connectivityReceiver, intentFilter); // implicitly init PeerGroup
 
-
         // coins received
         walletModule.getWalletManager().getWallet().addCoinsReceivedEventListener(coinReceiverListener);
 
@@ -525,7 +545,6 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
 
     @Override
     public int onStartCommand(final Intent intent, int flags, int startId) {
-
         if (intent != null) {
             LOG.info("service init command: " + intent
                     + (intent.hasExtra(Intent.EXTRA_ALARM_COUNT) ? " (alarm count: " + intent.getIntExtra(Intent.EXTRA_ALARM_COUNT, 0) + ")" : ""));
@@ -585,8 +604,8 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
                 });
 
             } else if (BlockchainService.ACTION_CANCEL_COINS_RECEIVED.equals(action)) {
-//                notificationCount = 0;
-//                notificationAccumulatedAmount = Coin.ZERO;
+                notificationCount = 0;
+                notificationAccumulatedAmount = Coin.ZERO;
 //                notificationAddresses.clear();
 
                 nm.cancel(WalletConstants.NOTIFICATION_ID_COINS_RECEIVED);

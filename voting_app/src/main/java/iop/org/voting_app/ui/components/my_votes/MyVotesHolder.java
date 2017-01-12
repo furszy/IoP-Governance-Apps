@@ -17,6 +17,8 @@ public class MyVotesHolder extends FermatViewHolder {
     TextView txt_sub_title;
     TextView txt_categories;
     TextView txt_body;
+    TextView txt_forum;
+    TextView txt_read_more;
 
 
     public MyVotesHolder(View itemView, int holderType) {
@@ -27,6 +29,8 @@ public class MyVotesHolder extends FermatViewHolder {
         txt_sub_title = (TextView) itemView.findViewById(R.id.txt_sub_title);
         txt_categories = (TextView) itemView.findViewById(R.id.txt_categories);
         txt_body = (TextView) itemView.findViewById(R.id.txt_body);
+        txt_forum = (TextView) itemView.findViewById(R.id.txt_forum);
+        txt_read_more = (TextView) itemView.findViewById(R.id.txt_read_more);
 
     }
 }

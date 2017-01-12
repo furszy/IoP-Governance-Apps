@@ -5,6 +5,7 @@ import android.view.View;
 import org.iop.WalletModule;
 
 import iop.org.furszy_lib.adapter.FermatAdapterImproved;
+import iop.org.furszy_lib.adapter.FermatListItemListeners;
 import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.ui.base.BaseActivity;
 import iop_sdk.governance.vote.VoteWrapper;
@@ -16,6 +17,7 @@ import iop_sdk.governance.vote.VoteWrapper;
 public class MyVotesAdapter extends FermatAdapterImproved<VoteWrapper,MyVotesHolder> {
 
     private WalletModule module;
+    private FermatListItemListeners<VoteWrapper> onEventListeners;
 
     public MyVotesAdapter(BaseActivity context, WalletModule module) {
         super(context);
@@ -33,7 +35,7 @@ public class MyVotesAdapter extends FermatAdapterImproved<VoteWrapper,MyVotesHol
     }
 
     @Override
-    protected void bindHolder(MyVotesHolder holder, VoteWrapper data, int position) {
+    protected void bindHolder(MyVotesHolder holder, final VoteWrapper data, final int position) {
         String title = data.getProposal().getTitle();
         if (title.length()>29){
             title = title.substring(0,30)+"...";
@@ -43,6 +45,17 @@ public class MyVotesAdapter extends FermatAdapterImproved<VoteWrapper,MyVotesHol
         holder.txt_sub_title.setText(data.getProposal().getSubTitle());
         holder.txt_categories.setText(data.getProposal().getCategory());
         holder.txt_body.setText(data.getProposal().getBody());
+        holder.txt_read_more.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onEventListeners.onItemClickListener(data,position);
+            }
+        });
+
+    }
+
+    public void setFermatListEventListener(FermatListItemListeners<VoteWrapper> onEventListeners) {
+        this.onEventListeners=onEventListeners;
     }
 
 

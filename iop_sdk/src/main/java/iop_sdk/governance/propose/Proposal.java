@@ -157,10 +157,24 @@ public class Proposal implements Serializable {
         proposal.setStartBlock(Integer.parseInt(getTagValue(formatedBody,PATTERN_TAG_START_BLOCK,1)));
         proposal.setEndBlock(Integer.parseInt(getTagValue(formatedBody,PATTERN_TAG_END_BLOCK,2)));
         proposal.setBlockReward(Long.parseLong(getTagValue(formatedBody,PATTERN_TAG_BLOCK_REWARD,3)));
-        String address = getTagValue(formatedBody,PATTERN_TAG_BENEFICIARY_ADDRESS,4);
-        long value = Long.parseLong(getTagValue(formatedBody,PATTERN_TAG_BENEFICIARY_VALUE,5));
-        proposal.addBeneficiary(address,value);
+//        String address = getTagValue(formatedBody,PATTERN_TAG_BENEFICIARY_ADDRESS,4);
+//        long value = Long.parseLong(getTagValue(formatedBody,PATTERN_TAG_BENEFICIARY_VALUE,5));
+//        proposal.addBeneficiary(address,value);
+//
+        proposal.setBeneficiaries(buildBeneficiaries(formatedBody));
         return proposal;
+    }
+
+    public static List<Beneficiary> buildBeneficiaries(String formatedBody){
+        List<Beneficiary> beneficiaries = new ArrayList<>();
+        List<String> list = getTagValues(formatedBody,PATTERN_TAG_BENEFICIARY_ADDRESS);
+        if (!list.isEmpty()){
+            for (int i=4;i<list.size();i=i+2){
+                beneficiaries.add(new Beneficiary(list.get(i),Long.parseLong(list.get(i+1))));
+            }
+        }else
+            LOG.info("Tag not found for pattern: "+PATTERN_TAG_BENEFICIARY_ADDRESS.toString());
+        return beneficiaries;
     }
 
     private static final Pattern PATTERN_TAG_TITLE = Pattern.compile(replaceTag(TAG_TITLE,"(.+?)"));//("<h1>(.+?)</h1>");

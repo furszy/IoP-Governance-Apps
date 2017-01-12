@@ -95,6 +95,40 @@
                     android:textColor="#808080" />
 
 
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="end"
+                    android:paddingTop="7dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Forum"
+                        android:paddingEnd="28dp"
+                        android:textSize="15sp"
+                        android:textColor="@color/purple"
+                        android:textStyle="bold"
+                        android:id="@+id/txt_forum"/>
+
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/txt_read_more"
+                        android:text="Read More"
+                        android:layout_marginRight="12dp"
+                        android:textColor="@color/purple"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        />
+
+
+
+                </LinearLayout>
+
+
             </LinearLayout>
 
 

@@ -71,6 +71,22 @@ public class ProposalsAdapter extends FermatAdapterImproved<Proposal,ProposalsHo
         });
 
         holder.txt_state.setText(data.getState().toString().toLowerCase());
+
+        long voteNo = data.getVoteNo();
+        long voteYes = data.getVoteYes();
+        long totalValue = voteYes + voteNo;
+        int voteYesPorcen = 0;
+        int voteNoPorcen = 0;
+        if (totalValue!=0) {
+            // total -> 100%
+            voteYesPorcen = (int) ((voteYes * 100) / totalValue);
+            voteNoPorcen = (int) ((voteNo * 100) / totalValue);
+        }
+
+        holder.progressYes.setProgress(voteYesPorcen);
+        holder.progressNo.setProgress(voteNoPorcen);
+        holder.txt_vote_yes.setText(String.valueOf(data.getVoteYes()));
+        holder.txt_vote_no.setText(String.valueOf(data.getVoteNo()));
     }
 
 

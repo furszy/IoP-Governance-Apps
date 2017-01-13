@@ -8,6 +8,8 @@ import iop.org.furszy_lib.adapter.FermatAdapterImproved;
 import iop.org.furszy_lib.adapter.FermatListItemListeners;
 import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.ui.base.BaseActivity;
+import iop.org.iop_contributors_app.utils.ForumUtils;
+import iop_sdk.governance.propose.Proposal;
 import iop_sdk.governance.vote.VoteWrapper;
 
 /**
@@ -51,7 +53,15 @@ public class MyVotesAdapter extends FermatAdapterImproved<VoteWrapper,MyVotesHol
                 onEventListeners.onItemClickListener(data,position);
             }
         });
-
+        holder.txt_forum.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ForumUtils.goToFoum(v.getContext(),module,data.getProposal());
+            }
+        });
+        if (!data.getProposal().isActive()){
+            holder.view_proposal_state.setBackgroundResource(R.drawable.gradientecards_rojo);
+        }
     }
 
     public void setFermatListEventListener(FermatListItemListeners<VoteWrapper> onEventListeners) {

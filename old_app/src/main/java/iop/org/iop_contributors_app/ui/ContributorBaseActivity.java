@@ -27,10 +27,6 @@ import iop_sdk.governance.vote.Vote;
 import static org.iop.intents.constants.IntentsConstants.ACTION_NOTIFICATION;
 import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_PROPOSAL_FROZEN_FUNDS_UNLOCKED;
 import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_TYPE;
-import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_VOTE_FROZEN_FUNDS_UNLOCKED;
-import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_EXTRA_DATA_VOTE;
-import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_TYPE;
-import static org.iop.intents.constants.IntentsConstants.INTENT_DATA;
 import static org.iop.intents.constants.IntentsConstants.INTENT_EXTRA_PROPOSAL;
 import static org.iop.intents.constants.IntentsConstants.INTENT_NOTIFICATION;
 

@@ -130,9 +130,11 @@ public class VotesDatabaseHandler extends SQLiteOpenHelper {
                 new String[] { genesisHashHex }, null, null, null, null);
         if (cursor != null)
             cursor.moveToFirst();
-
-        Vote contact = buildVote(cursor);
+        Vote contact = null;
+        if (cursor.getCount()>0)
+            contact = buildVote(cursor);
         // return contact
+        cursor.close();
         return contact;
     }
 

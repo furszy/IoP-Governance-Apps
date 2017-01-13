@@ -38,6 +38,7 @@ import iop_sdk.governance.vote.VoteWrapper;
 
 import static iop.org.iop_contributors_app.services.BlockchainService.INTENT_EXTRA_PROPOSAL_VOTE;
 import static iop_sdk.blockchain.utils.CoinUtils.coinToString;
+import static iop_sdk.utils.StringUtils.numberToNumberWithDots;
 import static org.iop.intents.constants.IntentsConstants.COMMON_ERROR_DIALOG;
 import static org.iop.intents.constants.IntentsConstants.INSUFICIENTS_FUNDS_DIALOG;
 import static org.iop.intents.constants.IntentsConstants.INTENTE_BROADCAST_DIALOG_TYPE;
@@ -117,14 +118,15 @@ public class VotingVoteSummary extends VotingBaseActivity implements View.OnClic
 
         if (item.getItemId()==R.id.id_change_vote){
 
-            if (!isChangeVoteExpanded){
-                expand(container_change_vote,card_bottom_border);
-            }else {
-                collapse(container_change_vote,card_bottom_border);
+            if (voteWrapper.getProposal().isActive()) {
+                if (!isChangeVoteExpanded) {
+                    expand(container_change_vote, card_bottom_border);
+                } else {
+                    collapse(container_change_vote, card_bottom_border);
+                }
+
+                isChangeVoteExpanded = !isChangeVoteExpanded;
             }
-
-            isChangeVoteExpanded = !isChangeVoteExpanded;
-
             return true;
         }
 
@@ -304,8 +306,8 @@ public class VotingVoteSummary extends VotingBaseActivity implements View.OnClic
 
         progressNo.setProgress(voteNoPorcen);
         progressYes.setProgress(voteYesPorcen);
-        txt_vote_yes.setText(String.valueOf(voteYes));
-        txt_vote_no.setText(String.valueOf(voteNo));
+        txt_vote_yes.setText(numberToNumberWithDots(voteYes));
+        txt_vote_no.setText(numberToNumberWithDots(voteNo));
 
         if (totalValue>0){
             txt_vote_result.setText((voteYes>voteNo)?"Yes is winning":"No is winning");
@@ -313,7 +315,20 @@ public class VotingVoteSummary extends VotingBaseActivity implements View.OnClic
             txt_vote_result.setText("No votes yet");
         }
 
+        if (voteYesPorcen>voteNoPorcen){
+            txt_vote_no.getLayoutParams().width=txt_vote_yes.getLayoutParams().width;
+            progressNo.getLayoutParams().width=progressYes.getLayoutParams().width;
+
+        }else {
+            txt_vote_yes.getLayoutParams().width=txt_vote_no.getLayoutParams().width;
+            progressYes.getLayoutParams().width=progressNo.getLayoutParams().width;
+        }
+
+        if (!voteWrapper.getProposal().isActive()){
+            card_bottom_border.setBackgroundResource(R.drawable.gradientecards_rojo);
+        }
     }
+
 
     public static double round(double value, int places) {
         if (places < 0) throw new IllegalArgumentException();

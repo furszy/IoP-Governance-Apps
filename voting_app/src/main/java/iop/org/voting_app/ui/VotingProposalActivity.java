@@ -36,7 +36,12 @@ import static iop.org.iop_contributors_app.ui.CreateProposalActivity.INTENT_DATA
 import static iop.org.iop_contributors_app.ui.CreateProposalActivity.INTENT_DATA_FORUM_TITLE;
 import static iop.org.iop_contributors_app.ui.ProposalSummaryActivity.ACTION_SUMMARY_PROPOSAL;
 import static iop.org.iop_contributors_app.ui.ProposalSummaryActivity.INTENT_DATA_PROPOSAL;
+import static iop.org.iop_contributors_app.ui.components.switch_seek_bar.SwitchSeekBar.Position.CENTER;
+import static iop.org.iop_contributors_app.ui.components.switch_seek_bar.SwitchSeekBar.Position.LEFT;
+import static iop.org.iop_contributors_app.ui.components.switch_seek_bar.SwitchSeekBar.Position.RIGHT;
 import static iop_sdk.blockchain.utils.CoinUtils.coinToString;
+import static iop_sdk.governance.propose.Proposal.ProposalState.IN_EXECUTION;
+import static iop_sdk.governance.propose.Proposal.ProposalState.QUEUED_FOR_EXECUTION;
 import static org.iop.intents.constants.IntentsConstants.COMMON_ERROR_DIALOG;
 import static org.iop.intents.constants.IntentsConstants.INSUFICIENTS_FUNDS_DIALOG;
 import static org.iop.intents.constants.IntentsConstants.INTENTE_BROADCAST_DIALOG_TYPE;
@@ -171,6 +176,25 @@ public class VotingProposalActivity extends VotingBaseActivity implements View.O
         txt_start_block.setText(String.valueOf(proposal.getStartBlock()));
         txt_end_block.setText(String.valueOf(proposal.getEndBlock()));
         txt_total_amount.setText("Reward "+coinToString(proposal.getBlockReward())+" IoPs");
+
+        vote = module.getVote(proposal.getGenesisTxHash());
+        if (vote!=null){
+            voteType = vote.getVote();
+            switchSeekBar.setPosition(getPositionByVoteType(vote.getVote()));
+        }
+    }
+
+    private SwitchSeekBar.Position getPositionByVoteType(Vote.VoteType voteType){
+        switch (voteType){
+            case NEUTRAL:
+                return CENTER;
+            case NO:
+                return LEFT;
+            case YES:
+                return RIGHT;
+            default:
+                throw new IllegalArgumentException("Something really bad happen");
+        }
     }
 
     @Override
@@ -243,7 +267,7 @@ public class VotingProposalActivity extends VotingBaseActivity implements View.O
             }
         }
         else if (id == R.id.txt_go_forum){
-            ForumUtils.goToFoum(this,module,proposal);
+            onBackPressed();
         }
         else if (id == R.id.txt_go_vote){
             handleSend();
@@ -279,15 +303,19 @@ public class VotingProposalActivity extends VotingBaseActivity implements View.O
         // todo: Esto está así hasta que vuelva de las vacaciones..
         if (voteType == Vote.VoteType.NEUTRAL){
             Toast.makeText(this,"Neutral votes not allowed by now\nplease contact Furszy :)",Toast.LENGTH_LONG).show();
-            lockBroadcast.set(false);
-            hideDoneLoading();
+            unlockAndHideLoading();
             return;
+        }
+
+        // check if the proposal is in a valid state
+        if (voteType == Vote.VoteType.YES && (proposal.getState() == QUEUED_FOR_EXECUTION || proposal.getState() == IN_EXECUTION ) ){
+            Toast.makeText(this,"No more positive votes are allowed\nProposal is already in execution",Toast.LENGTH_LONG).show();
+            unlockAndHideLoading();
         }
 
         if (amountIoPToshis==0){
             Toast.makeText(this,"Zero votes not allowed",Toast.LENGTH_LONG).show();
-            lockBroadcast.set(false);
-            hideDoneLoading();
+            unlockAndHideLoading();
             return;
         }
 
@@ -312,8 +340,11 @@ public class VotingProposalActivity extends VotingBaseActivity implements View.O
             hideDoneLoading();
             lockBroadcast.set(false);
         }
+    }
 
-
+    private void unlockAndHideLoading(){
+        lockBroadcast.set(false);
+        hideDoneLoading();
     }
 
     private boolean checkVote(Vote vote) {

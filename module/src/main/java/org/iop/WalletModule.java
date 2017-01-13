@@ -277,7 +277,7 @@ public class WalletModule {
 
         try {
             // save vote
-            long voteId = votesDaoImp.addUpdateIfExistVote(vote);
+            votesDaoImp.addUpdateIfExistVote(vote);
             // send vote
             VoteProposalRequest proposalVoteRequest = new VoteProposalRequest(blockchainManager, walletManager, votesDaoImp);
             proposalVoteRequest.forVote(vote);
@@ -336,7 +336,7 @@ public class WalletModule {
     }
 
     public List<Proposal> getActiveProposals() {
-        return proposalsDao.listProposals(EXECUTED.getId()|EXECUTION_CANCELLED.getId());
+        return proposalsDao.listProposalsActive(EXECUTED.getId()|EXECUTION_CANCELLED.getId());
     }
 
     public String getReceiveAddress() {
@@ -624,45 +624,6 @@ public class WalletModule {
     public List<Proposal> getVotingProposals() throws Exception {
         List<Proposal> proposals = new ArrayList<>();
         proposals = proposalsDao.listProposals();
-//        for (Transaction transaction : transactionFinder.getWatchedTransactions()) {
-//            // new proposal
-//            Proposal proposal = null;
-//
-//            List<TransactionOutput> outputs = transaction.getOutputs();
-//            // empiezo en 2 porque el 0 es el de lockeo y el 1 es el de changeAddress
-//            for (int i = 2; i < outputs.size(); i++) {
-//                TransactionOutput transactionOutput = outputs.get(i);
-//                try {
-//                    proposal = ProposalTransactionBuilder.decodeContract(transactionOutput);
-//                    break;
-//                }catch (Exception e){
-//                    e.printStackTrace();
-//                    continue;
-//                }
-//            }
-//
-//            proposal.setMine(false);
-//
-//            // forum
-//            Proposal forumProposal = forumClient.getProposalFromWrapper(proposal.getForumId());
-//
-//            if (forumProposal!=null) {
-//                // set parameters
-//                forumProposal.setForumId(proposal.getForumId());
-//                forumProposal.setStartBlock(proposal.getStartBlock());
-//                forumProposal.setEndBlock(proposal.getEndBlock());
-//                forumProposal.setBlockReward(proposal.getBlockReward());
-//                forumProposal.setBlockchainHash(proposal.getBlockchainHash());
-//
-//                //check hash
-////            forumProposal.checkHash();
-//
-//                proposals.put(forumProposal);
-//            }else {
-//                LOG.error("Forum proposal bad decode");
-//            }
-//        }
-
         return proposals;
     }
 
@@ -808,5 +769,7 @@ public class WalletModule {
     }
 
 
-
+    public Vote getVote(String genesisTxHash) {
+        return votesDaoImp.getVote(genesisTxHash);
+    }
 }

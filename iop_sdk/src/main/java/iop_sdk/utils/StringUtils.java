@@ -16,4 +16,20 @@ public class StringUtils {
         return stringBuilder.toString();
     }
 
+    public static String numberToNumberWithDots(long number){
+        String numberStr = String.valueOf(number);
+        int size = numberStr.length();
+        StringBuilder ret = new StringBuilder();
+        int num = 0;
+        for (int i=size-1;i>-1;i--){
+            num++;
+            char digit = numberStr.charAt(i);
+            ret.append(digit);
+            if (num % 3 == 0){
+                ret.append(".");
+            }
+        }
+        return ret.reverse().toString();
+    }
+
 }

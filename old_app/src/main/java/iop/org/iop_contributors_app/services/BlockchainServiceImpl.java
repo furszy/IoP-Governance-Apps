@@ -314,7 +314,6 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
                         public void run() {
                             // update own contract proposal
                             List<Proposal> list = walletModule.getActiveProposals();
-                            Log.i(TAG, Arrays.toString(list.toArray()));
                             if (!list.isEmpty()) {
                                 ServerWrapper.RequestProposalsResponse requestProposalsResponse = walletModule.requestProposalsFullTx(list);
                                 if (requestProposalsResponse!=null){
@@ -584,6 +583,7 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
                         } catch (NotConnectedPeersException e) {
                             e.printStackTrace();
                             showDialogException(COMMON_ERROR_DIALOG,"Not connected peers, please try again later");
+                            check();
                         } catch (Exception e){
                             e.printStackTrace();
                         }

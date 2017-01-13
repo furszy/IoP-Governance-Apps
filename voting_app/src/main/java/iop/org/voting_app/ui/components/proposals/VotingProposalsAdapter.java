@@ -78,19 +78,20 @@ public class VotingProposalsAdapter extends FermatAdapterImproved<Proposal,Votin
 
             }
         });
-        holder.txt_go_vote.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (data.getState()== EXECUTION_CANCELLED) Toast.makeText(v.getContext(),"Proposal execution cancelled",Toast.LENGTH_LONG).show();
-                else if (data.getState()== EXECUTED) Toast.makeText(v.getContext(),"Proposal executed",Toast.LENGTH_LONG).show();
-                else {
+        if (!data.isActive()) {
+            holder.txt_go_vote.setVisibility(View.GONE);
+            holder.view_btns_divider.setVisibility(View.GONE);
+            holder.view_proposal_state.setBackgroundResource(R.drawable.gradientecards_rojo);
+        }else {
+            holder.txt_go_vote.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
                     Intent intent = new Intent(v.getContext(), VotingProposalActivity.class);
                     intent.putExtra(INTENT_DATA_PROPOSAL, data);
                     context.startActivity(intent);
-//                ((VotingProposalsActivity)context).showVoteDialog(data);
                 }
-            }
-        });
+            });
+        }
     }
 
 

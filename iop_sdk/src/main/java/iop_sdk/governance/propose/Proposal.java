@@ -480,6 +480,10 @@ public class Proposal implements Serializable {
         this.voteNo = voteNo;
     }
 
+    public boolean isActive(){
+        return (state != ProposalState.EXECUTED && state != ProposalState.EXECUTION_CANCELLED);
+    }
+
     public boolean equals(Proposal o2) throws NotValidParametersException {
         checkEquals(getTitle(),o2.getTitle(),"tittle is changed");
         checkEquals(getSubTitle(),o2.getSubTitle(),"Subtitle is changed");

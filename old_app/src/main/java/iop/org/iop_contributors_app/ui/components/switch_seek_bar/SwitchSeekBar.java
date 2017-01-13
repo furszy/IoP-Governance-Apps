@@ -4,6 +4,8 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.SeekBar;
 
+import com.fasterxml.jackson.databind.node.POJONode;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,7 +27,24 @@ public class SwitchSeekBar extends SeekBar implements SeekBar.OnSeekBarChangeLis
 
     }
 
+    public enum Position {
+
+        LEFT(3),CENTER(50),RIGHT(97);
+
+        int pos;
+
+        Position(int pos) {
+            this.pos = pos;
+        }
+
+        public int getPos() {
+            return pos;
+        }
+    }
+
     private List<SwitchListener> switchListeners = new ArrayList<>();
+    private Position position = Position.CENTER;
+
 
     public SwitchSeekBar(Context context) {
         super(context);
@@ -70,24 +89,30 @@ public class SwitchSeekBar extends SeekBar implements SeekBar.OnSeekBarChangeLis
     public void onStopTrackingTouch(SeekBar seekBar) {
         int mProgress = seekBar.getProgress();
         if(mProgress >= 0 & mProgress < 31) {
-            seekBar.setProgress(3);
+            seekBar.setProgress(Position.LEFT.getPos());
             seekBar.setBackgroundResource(R.drawable.img_swicth_rojo);
             for (SwitchListener listener : switchListeners) {
                 listener.handleLeft();
             }
         } else if(mProgress > 25 & mProgress < 70) {
             seekBar.setBackgroundResource(R.drawable.img_siwcht_gris);
-            seekBar.setProgress(50);
+            seekBar.setProgress(Position.CENTER.getPos());
             for (SwitchListener listener : switchListeners) {
                 listener.handleCenter();
             }
         } else {
-            seekBar.setProgress(97);
+            seekBar.setProgress(Position.RIGHT.getPos());
             seekBar.setBackgroundResource(R.drawable.img_swicht_verde);
             for (SwitchListener listener : switchListeners) {
                 listener.handleRight();
             }
         }
     }
+
+    public void setPosition(Position position) {
+        this.position = position;
+        setProgress(position.getPos());
+    }
+
 
 }

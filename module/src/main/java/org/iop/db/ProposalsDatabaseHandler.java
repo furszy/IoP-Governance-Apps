@@ -208,6 +208,46 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
         return proposal;
     }
 
+    public Proposal getProposalByHash(String genesisTxHash) throws Exception {
+        try {
+            return getProposal(new String[]{KEY_PROPOSAL_GENESIS_HASH},new String[]{genesisTxHash});
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
+    private Proposal getProposal(String[] columnsWhere,String[] valuesWhere) throws IOException {
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        StringBuilder stringBuilder = new StringBuilder();
+        String[] valuesToCompare = new String[columnsWhere.length];
+
+        for (int i = 0; i < columnsWhere.length; i++) {
+
+            // build the sentence
+            stringBuilder.append(columnsWhere[i]).append("=?");
+            if (i!=columnsWhere.length-1){
+                stringBuilder.append(" AND ");
+            }
+
+            //build the values
+            valuesToCompare[i]=String.valueOf(columnsWhere[i]);
+        }
+
+        Cursor cursor = db.query(TABLE_PROPOSALS, tableNames(), stringBuilder.toString(), valuesToCompare, null, null, null, null);
+        if (cursor != null)
+            cursor.moveToFirst();
+
+        Proposal proposal = buildProposal(cursor);
+
+        cursor.close();
+
+        return proposal;
+
+
+    }
+
     // Getting single contact
     Proposal getProposal(int forumId) throws CantGetProposalException {
         Log.d(TAG,"getProposal");
@@ -552,13 +592,6 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
     private boolean checkExistense(Object[] dataToCompare,String... keyToCompare){
         SQLiteDatabase db = this.getReadableDatabase();
 
-        // todo: quizás esto no haga falta
-        String[] fields = new String[keyToCompare.length];
-        for (int i = 0; i < keyToCompare.length; i++) {
-            fields[i] = keyToCompare[i];
-        }
-
-
         StringBuilder stringBuilder = new StringBuilder();
         String[] valuesToCompare = new String[dataToCompare.length];
 
@@ -574,7 +607,7 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
             valuesToCompare[i]=String.valueOf(dataToCompare[i]);
         }
 
-        Cursor cursor = db.query(TABLE_PROPOSALS, fields, stringBuilder.toString(), valuesToCompare, null, null, null, null);
+        Cursor cursor = db.query(TABLE_PROPOSALS, keyToCompare, stringBuilder.toString(), valuesToCompare, null, null, null, null);
         if (cursor != null)
             cursor.moveToFirst();
 

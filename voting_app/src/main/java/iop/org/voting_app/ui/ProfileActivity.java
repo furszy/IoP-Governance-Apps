@@ -43,7 +43,7 @@ import iop.org.voting_app.base.VotingBaseActivity;
 import iop_sdk.forum.ForumProfile;
 import iop_sdk.forum.InvalidUserParametersException;
 
-import static iop_sdk.governance.utils.StringUtils.cleanString;
+import static iop_sdk.utils.StringUtils.cleanString;
 
 /**
  * Created by mati on 07/11/16.

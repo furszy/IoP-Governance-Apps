@@ -11,6 +11,7 @@ import java.util.List;
 import iop_sdk.governance.propose.Proposal;
 import iop_sdk.governance.propose.ProposalTransactionBuilder;
 import iop_sdk.governance.propose.ProposalsContractDao;
+import iop_sdk.governance.vote.Vote;
 
 ;
 
@@ -161,9 +162,12 @@ public class ProposalsDao implements ProposalsContractDao {
      * @param stateId
      * @return
      */
-    public List<Proposal> listProposals(int stateId) {
+    public List<Proposal> listProposalsActive(int stateId) {
         return proposalsDatabaseHandler.getActiveProposals();
     }
 
 
+    public Proposal findProposalByGenesisHash(String genesisTxHash) throws Exception {
+        return proposalsDatabaseHandler.getProposalByHash(genesisTxHash);
+    }
 }

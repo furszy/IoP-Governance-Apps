@@ -308,6 +308,7 @@ public class ProposalSummaryActivity extends ContributorBaseActivity implements 
         Intent intent1 = new Intent(this,ForumActivity.class);
         String url = module.getForumUrl()+"/t/"+proposal.getTitle().toLowerCase().replace(" ","-")+"/"+proposal.getForumId();
         intent1.putExtra(ForumActivity.INTENT_URL,url);
+        finish();
         startActivity(intent1);
     }
 
@@ -336,23 +337,6 @@ public class ProposalSummaryActivity extends ContributorBaseActivity implements 
                     }
                 });
         alertDialog.show();
-    }
-
-    public static String getErrorsFromJson(String json){
-        StringBuilder formatedStr = new StringBuilder();
-        try {
-            JSONObject jsonObject = new JSONObject(json);
-            JSONArray jsonArray = (JSONArray) jsonObject.get("errors");
-            for (int i=0;i<jsonArray.length();i++){
-                formatedStr.append(jsonArray.get(i));
-                if (jsonArray.length()-1!=i)
-                    formatedStr.append("\n");
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        String result = formatedStr.toString();
-        return result.equals("")?json:formatedStr.toString();
     }
 
 

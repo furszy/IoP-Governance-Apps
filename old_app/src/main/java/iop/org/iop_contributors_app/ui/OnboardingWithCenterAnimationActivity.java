@@ -44,7 +44,7 @@ import iop_sdk.forum.ForumProfile;
 import iop_sdk.forum.InvalidUserParametersException;
 import iop_sdk.global.exceptions.ConnectionRefusedException;
 
-import static iop_sdk.governance.utils.StringUtils.cleanString;
+import static iop_sdk.utils.StringUtils.cleanString;
 
 public class OnboardingWithCenterAnimationActivity extends AppCompatActivity {
 

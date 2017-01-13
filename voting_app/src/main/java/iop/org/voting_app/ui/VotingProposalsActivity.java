@@ -5,6 +5,9 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -41,6 +44,28 @@ public class VotingProposalsActivity extends VotingBaseActivity {
 
     private List<Proposal> proposals;
 
+    private boolean allProposals;
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.voting_proposals_menu, menu);
+        return super.onCreateOptionsMenu(menu);
+
+    }
+
+
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId()==R.id.action_show_all){
+            allProposals = true;
+            load();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
 
     @Override
     protected boolean hasDrawer() {
@@ -70,20 +95,13 @@ public class VotingProposalsActivity extends VotingBaseActivity {
         adapter = new VotingProposalsAdapter(this,module,null);
         recyclerView.setAdapter(adapter);
 
-//        container_empty_screen.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                showVoteDialog(null);
-//            }
-//        });
-
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
                 // activate refresh
                 swipeRefreshLayout.setRefreshing(true);
-                // Refresh items
-                executor.submit(loadProposals);
+                // load proposals
+                load();
             }
         });
 
@@ -132,7 +150,6 @@ public class VotingProposalsActivity extends VotingBaseActivity {
     @Override
     protected void onResume() {
         if (proposals==null){
-
             executor.execute(loadProposals);
         }
         super.onResume();
@@ -143,11 +160,16 @@ public class VotingProposalsActivity extends VotingBaseActivity {
         super.onStop();
     }
 
+    private void load(){
+        // Refresh items
+        executor.submit(loadProposals);
+    }
+
     Runnable loadProposals = new Runnable() {
         @Override
         public void run() {
             try {
-                proposals = module.getVotingProposals();
+                proposals = (allProposals)? module.getProposals() : module.getActiveProposals();
                 Log.d(TAG,"Proposals loaded: "+proposals.size());
                 runOnUiThread(new Runnable() {
                     @Override

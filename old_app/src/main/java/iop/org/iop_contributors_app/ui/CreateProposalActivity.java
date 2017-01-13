@@ -802,4 +802,5 @@ public class CreateProposalActivity extends ContributorBaseActivity {
     }
 
 
+
 }

@@ -7,6 +7,7 @@ import org.bitcoinj.core.InsufficientMoneyException;
 import org.bitcoinj.core.PeerGroup;
 import org.bitcoinj.core.Transaction;
 import org.bitcoinj.core.TransactionOutput;
+import org.bitcoinj.utils.BtcFormat;
 import org.bitcoinj.wallet.Wallet;
 import org.iop.db.CantGetProposalException;
 import org.iop.db.CantSaveProposalException;
@@ -351,7 +352,7 @@ public class WalletModule {
 
     public CharSequence getAvailableBalanceStr() {
         long balance = walletManager.getWallet().getBalance(Wallet.BalanceType.AVAILABLE_SPENDABLE).value-lockedBalance;
-        return coinToString(balance);
+        return BtcFormat.getCoinInstance().format(balance);
     }
     public long getAvailableBalance() {
         return walletManager.getWallet().getBalance(Wallet.BalanceType.AVAILABLE_SPENDABLE).value-lockedBalance;
@@ -360,7 +361,7 @@ public class WalletModule {
 
 
     public String getLockedBalance() {
-        return coinToString(lockedBalance);
+        return BtcFormat.getCoinInstance().format(lockedBalance);
     }
 
     private String coinToString(long amount){

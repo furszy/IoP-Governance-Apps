@@ -67,6 +67,7 @@ public abstract class ContributorBaseActivity extends BaseActivity {
                     intent = new Intent(ContributorBaseActivity.this, SettingsActivity.class);
                     break;
             }
+            onActionDrawerClicked();
             startActivity(intent);
         }
 
@@ -75,6 +76,13 @@ public abstract class ContributorBaseActivity extends BaseActivity {
 
         }
     };
+
+    /**
+     * method to finish or not the activity when the drawer is clicked
+     */
+    protected void onActionDrawerClicked() {
+
+    }
 
     protected void beforeCreate(Bundle savedInstanceState){
     }

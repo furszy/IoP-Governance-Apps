@@ -20,6 +20,7 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 
+import org.bitcoinj.core.Address;
 import org.bitcoinj.core.Block;
 import org.bitcoinj.core.Coin;
 import org.bitcoinj.core.FilteredBlock;
@@ -27,10 +28,12 @@ import org.bitcoinj.core.Peer;
 import org.bitcoinj.core.PeerGroup;
 import org.bitcoinj.core.StoredBlock;
 import org.bitcoinj.core.Transaction;
+import org.bitcoinj.core.TransactionConfidence;
 import org.bitcoinj.core.listeners.AbstractPeerDataEventListener;
 import org.bitcoinj.core.listeners.PeerConnectedEventListener;
 import org.bitcoinj.core.listeners.PeerDataEventListener;
 import org.bitcoinj.core.listeners.PeerDisconnectedEventListener;
+import org.bitcoinj.utils.BtcFormat;
 import org.bitcoinj.wallet.Wallet;
 import org.bitcoinj.wallet.listeners.WalletCoinsReceivedEventListener;
 import org.iop.AppController;
@@ -67,6 +70,7 @@ import iop_sdk.wallet.BlockchainManager;
 import iop_sdk.wallet.BlockchainManagerListener;
 import iop_sdk.wallet.exceptions.InsuficientBalanceException;
 import iop_sdk.wallet.utils.BlockchainState;
+import iop_sdk.wallet.utils.WalletUtils;
 
 import static org.iop.WalletConstants.BLOCKCHAIN_STATE_BROADCAST_THROTTLE_MS;
 import static org.iop.WalletConstants.CONTEXT;
@@ -409,10 +413,15 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
 
             localBroadcast.sendBroadcast(intent);
 
+            //final Address address = WalletUtils.getWalletAddressOfReceived(WalletConstants.NETWORK_PARAMETERS,transaction, wallet);
+            final Coin amount = transaction.getValue(wallet);
+            final TransactionConfidence.ConfidenceType confidenceType = transaction.getConfidence().getConfidenceType();
+
             notificationCount++;
-            notificationAccumulatedAmount = notificationAccumulatedAmount.add(coin1);
+            notificationAccumulatedAmount = notificationAccumulatedAmount.add(amount);
 
             if (!isTransactionMine ){//&& depthInBlocks>1) {
+
 
                 Intent resultIntent = new Intent(getApplicationContext(),BlockchainServiceImpl.this.getClass());
                 resultIntent.setAction(ACTION_CANCEL_COINS_RECEIVED);
@@ -423,7 +432,7 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
                         new NotificationCompat.Builder(getApplicationContext())
                                 .setSmallIcon(R.drawable.ic__launcher)
                                 .setContentTitle("IoPs received!")
-                                .setContentText("Transaction received for a value of " + round(notificationAccumulatedAmount.getValue(),4))
+                                .setContentText("Transaction received for a value of " + BtcFormat.getInstance().format(notificationAccumulatedAmount.getValue()))
                                 .setAutoCancel(false)
                                 .setDeleteIntent(deleteIntent);
 
@@ -433,7 +442,7 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
                         new NotificationCompat.Builder(getApplicationContext())
                                 .setSmallIcon(R.drawable.ic__launcher)
                                 .setContentTitle("IoPs received!")
-                                .setContentText("Transaction received for a value of " + coin1.toFriendlyString())
+                                .setContentText("Transaction received for a value of " + amount.toFriendlyString())
                                 .setSubText("This transaction is not confirmed yet, will be confirmed in the next 10 minutes")
                                 .setDeleteIntent(deleteIntent);
 

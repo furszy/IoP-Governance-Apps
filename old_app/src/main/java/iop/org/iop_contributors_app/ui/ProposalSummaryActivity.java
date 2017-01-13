@@ -190,6 +190,16 @@ public class ProposalSummaryActivity extends ContributorBaseActivity implements 
         loadBeneficiaries(proposal.getBeneficiaries());
         txt_total_amount.setText("Total: "+coinToString(proposal.getBlockReward()*proposal.getEndBlock())+" IoPs");
 
+        if (!proposal.isActive()){
+            btn_broadcast_proposal.setText("Back");
+            btn_broadcast_proposal.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    onBackPressed();
+                }
+            });
+        }
+
     }
 
     private void loadBeneficiaries(List<Beneficiary> beneficiaries){
@@ -339,6 +349,9 @@ public class ProposalSummaryActivity extends ContributorBaseActivity implements 
         alertDialog.show();
     }
 
-
-
+    @Override
+    protected void onActionDrawerClicked() {
+        finish();
+        super.onActionDrawerClicked();
+    }
 }

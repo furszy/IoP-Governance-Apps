@@ -18,12 +18,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import org.iop.db.CantGetProposalException;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import iop.org.furszy_lib.utils.SizeUtils;
@@ -44,7 +40,7 @@ import static org.iop.intents.constants.IntentsConstants.COMMON_ERROR_DIALOG;
 import static org.iop.intents.constants.IntentsConstants.INSUFICIENTS_FUNDS_DIALOG;
 import static org.iop.intents.constants.IntentsConstants.INTENTE_BROADCAST_DIALOG_TYPE;
 import static org.iop.intents.constants.IntentsConstants.INTENTE_EXTRA_MESSAGE;
-import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_TRANSACTION_SUCCED;
+import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_PROPOSAL_TRANSACTION_SUCCED;
 import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_TYPE;
 import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_TYPE;
 import static org.iop.intents.constants.IntentsConstants.INTENT_DIALOG;
@@ -218,7 +214,7 @@ public class ProposalSummaryActivity extends ContributorBaseActivity implements 
     @Override
     protected boolean onContributorsBroadcastReceive(Bundle data) {
         if (data.containsKey(INTENT_BROADCAST_DATA_TYPE)) {
-            if (data.getString(INTENT_BROADCAST_DATA_TYPE).equals(INTENT_BROADCAST_DATA_TRANSACTION_SUCCED)) {
+            if (data.getString(INTENT_BROADCAST_DATA_TYPE).equals(INTENT_BROADCAST_DATA_PROPOSAL_TRANSACTION_SUCCED)) {
                 lockBroadcast.set(false);
                 showDoneLoading();
                 Toast.makeText(this, "Proposal broadcasted!", Toast.LENGTH_SHORT).show();

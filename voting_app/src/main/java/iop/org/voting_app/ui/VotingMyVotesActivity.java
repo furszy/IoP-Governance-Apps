@@ -19,7 +19,11 @@ import iop.org.voting_app.base.VotingBaseActivity;
 import iop.org.voting_app.ui.components.my_votes.MyVotesAdapter;
 import iop.org.voting_app.ui.dialogs.VoteDialog;
 import iop_sdk.governance.propose.Proposal;
+import iop_sdk.governance.vote.Vote;
 import iop_sdk.governance.vote.VoteWrapper;
+
+import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_EXTRA_DATA_VOTE;
+import static org.iop.intents.constants.IntentsConstants.INTENT_EXTRA_PROPOSAL;
 
 /**
  * Created by mati on 17/11/16.
@@ -100,6 +104,16 @@ public class VotingMyVotesActivity extends VotingBaseActivity implements FermatL
 
     @Override
     protected boolean onVotingBroadcastReceive(Bundle data) {
+        if (data.containsKey(INTENT_EXTRA_PROPOSAL)) {
+            Proposal proposal = (Proposal) data.getSerializable(INTENT_EXTRA_PROPOSAL);
+            Proposal temp;
+            for (int i=0;i<adapter.getItemCount();i++){
+                if ((temp=adapter.getItem(i).getProposal()).getForumId()==proposal.getForumId()){
+                    temp.setState(proposal.getState());
+                    adapter.notifyItemChanged(i);
+                }
+            }
+        }
         return false;
     }
 

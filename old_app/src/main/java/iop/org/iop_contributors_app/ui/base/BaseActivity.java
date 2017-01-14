@@ -47,7 +47,6 @@ import iop.org.furszy_lib.nav_view.NavMenuItem;
 import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.intents.DialogIntentsBuilder;
 import iop.org.iop_contributors_app.services.BlockchainServiceImpl;
-import iop.org.iop_contributors_app.ui.ProfileActivity;
 import iop.org.iop_contributors_app.utils.Cache;
 
 import static android.graphics.Color.WHITE;
@@ -56,7 +55,7 @@ import static iop.org.furszy_lib.utils.SizeUtils.convertDpToPx;
 import static org.iop.intents.constants.IntentsConstants.ACTION_NOTIFICATION;
 import static org.iop.intents.constants.IntentsConstants.INTENTE_BROADCAST_DIALOG_TYPE;
 import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_ON_COIN_RECEIVED;
-import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_TRANSACTION_SUCCED;
+import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_PROPOSAL_TRANSACTION_SUCCED;
 import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_TYPE;
 import static org.iop.intents.constants.IntentsConstants.INTENT_DATA;
 import static org.iop.intents.constants.IntentsConstants.INTENT_DIALOG;
@@ -248,7 +247,7 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     }
 
-    private void updateBalances(){
+    protected void updateBalances(){
         try {
             if (hasDrawer()) {
                 txt_available_balance.setText(module.getAvailableBalanceStr() + " IoPs");
@@ -510,16 +509,7 @@ public abstract class BaseActivity extends AppCompatActivity {
                                 updateBalances();
                             }else {
                                 if (!onBroadcastReceive(bundle)) {
-
-                                    if (dataType.equals(INTENT_BROADCAST_DATA_TRANSACTION_SUCCED)) {
-                                        android.support.v4.app.NotificationCompat.Builder mBuilder =
-                                                new NotificationCompat.Builder(getApplicationContext())
-                                                        .setSmallIcon(R.drawable.ic__launcher)
-                                                        .setContentTitle("Proposal broadcast succed!")
-                                                        .setContentText(intent.getStringExtra("title"));
-
-                                        notificationManager.notify(3, mBuilder.build());
-                                    }
+                                    // nothing yet.
                                 }
                             }
 

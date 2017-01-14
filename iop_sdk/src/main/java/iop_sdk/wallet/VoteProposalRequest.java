@@ -102,7 +102,7 @@ public class VoteProposalRequest {
         Address lockAddress = wallet.freshReceiveAddress();
         TransactionOutput transactionOutputToLock = voteTransactionBuilder.addLockedAddressOutput(lockAddress,vote.getVotingPower());
         //update locked balance
-        lockedBalance+=vote.getVotingPower();
+        lockedBalance+=Coin.valueOf(vote.getVotingPower()).getValue();
         // op return output
         voteTransactionBuilder.addContract(vote.isYesVote(),vote.getGenesisHash());
         // refunds output

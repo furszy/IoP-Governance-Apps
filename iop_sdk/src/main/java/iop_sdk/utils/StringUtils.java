@@ -25,7 +25,7 @@ public class StringUtils {
             num++;
             char digit = numberStr.charAt(i);
             ret.append(digit);
-            if (num % 3 == 0){
+            if (num % 3 == 0 && i!=0){
                 ret.append(".");
             }
         }

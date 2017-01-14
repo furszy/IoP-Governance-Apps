@@ -345,6 +345,28 @@ public  class ProposalTransactionBuilder {
         return false;
     }
 
+    public static Proposal getProposal(Transaction transaction) {
+        Proposal proposal = null;
+        List<TransactionOutput> list = transaction.getOutputs();
+        if (list.size()>2) {
+            for (int i = 2; i < list.size(); i++) {
+                TransactionOutput transactionOutput = list.get(i);
+                try {
+                    if ((proposal = ProposalTransactionBuilder.decodeContract(transactionOutput)) != null) {
+                        return proposal;
+                    }
+                } catch (DecoderException e) {
+                    // nothing
+                } catch (UnsupportedEncodingException e) {
+                    // nothing
+                } catch (Exception e) {
+                    // nothing
+                }
+            }
+        }
+        return proposal;
+    }
+
 
 }
 

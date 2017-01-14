@@ -62,6 +62,8 @@ public class MyVotesAdapter extends FermatAdapterImproved<VoteWrapper,MyVotesHol
         if (!data.getProposal().isActive()){
             holder.view_proposal_state.setBackgroundResource(R.drawable.gradientecards_rojo);
         }
+
+        holder.txt_state.setText(data.getProposal().getState().toString());
     }
 
     public void setFermatListEventListener(FermatListItemListeners<VoteWrapper> onEventListeners) {

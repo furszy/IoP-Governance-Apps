@@ -177,8 +177,8 @@ public abstract class VotingBaseActivity extends BaseActivity {
         android.support.v4.app.NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(getApplicationContext())
                         .setSmallIcon(R.drawable.ic__launcher)
-                        .setContentTitle("Proposal finished: "+proposal.getTitle())
-                        .setContentText("State: "+proposal.getState()+"\nYour frozen votes are unloked");
+                        .setContentTitle("Proposal with id: "+proposal.getForumId()+" finished")
+                        .setContentText("State: "+proposal.getState()+"\nFrozen votes unloked");
 
         notificationManager.notify(10,mBuilder.build());
     }

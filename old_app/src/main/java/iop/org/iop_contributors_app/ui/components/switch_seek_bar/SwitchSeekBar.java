@@ -89,29 +89,41 @@ public class SwitchSeekBar extends SeekBar implements SeekBar.OnSeekBarChangeLis
     public void onStopTrackingTouch(SeekBar seekBar) {
         int mProgress = seekBar.getProgress();
         if(mProgress >= 0 & mProgress < 31) {
-            seekBar.setProgress(Position.LEFT.getPos());
-            seekBar.setBackgroundResource(R.drawable.img_swicth_rojo);
-            for (SwitchListener listener : switchListeners) {
-                listener.handleLeft();
-            }
+            movePosition(Position.LEFT);
         } else if(mProgress > 25 & mProgress < 70) {
-            seekBar.setBackgroundResource(R.drawable.img_siwcht_gris);
-            seekBar.setProgress(Position.CENTER.getPos());
-            for (SwitchListener listener : switchListeners) {
-                listener.handleCenter();
-            }
+            movePosition(Position.CENTER);
         } else {
-            seekBar.setProgress(Position.RIGHT.getPos());
-            seekBar.setBackgroundResource(R.drawable.img_swicht_verde);
-            for (SwitchListener listener : switchListeners) {
-                listener.handleRight();
-            }
+            movePosition(Position.RIGHT);
+        }
+    }
+
+    private void movePosition(Position position){
+        setProgress(position.getPos());
+        switch(position){
+            case  CENTER:
+                setBackgroundResource(R.drawable.img_siwcht_gris);
+                for (SwitchListener listener : switchListeners) {
+                    listener.handleCenter();
+                }
+                break;
+            case LEFT:
+                setBackgroundResource(R.drawable.img_swicth_rojo);
+                for (SwitchListener listener : switchListeners) {
+                    listener.handleLeft();
+                }
+                break;
+            case RIGHT:
+                setBackgroundResource(R.drawable.img_swicht_verde);
+                for (SwitchListener listener : switchListeners) {
+                    listener.handleRight();
+                }
+                break;
         }
     }
 
     public void setPosition(Position position) {
         this.position = position;
-        setProgress(position.getPos());
+        movePosition(position);
     }
 
 

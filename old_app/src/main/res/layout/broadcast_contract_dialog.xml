@@ -12,13 +12,31 @@
         android:src="@drawable/icon_alert_block_iop"
         android:layout_marginTop="32dp"/>
 
+
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_gravity="center"
         android:layout_marginTop="16dp"
+        android:text="Contract cost"
+        />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="16dp"
+        android:text="* 1 IoP + miner fee"
+        />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="9dp"
         android:layout_gravity="center"
         android:gravity="center"
-        android:text="1000 Voting power will be\nlocked until the contrat ends"/>
+        android:text="* 1000 Voting power will be\nlocked until the contrat ends"/>
+
 
     <View
         android:layout_width="match_parent"

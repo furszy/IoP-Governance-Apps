@@ -58,7 +58,7 @@ import static iop_sdk.governance.ProposalForum.FIELD_START_BLOCK;
 import static iop_sdk.governance.ProposalForum.FIELD_SUBTITLE;
 import static iop_sdk.governance.ProposalForum.FIELD_TITLE;
 import static iop_sdk.governance.ProposalForum.FIELD_VALUE;
-import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_TRANSACTION_SUCCED;
+import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_PROPOSAL_TRANSACTION_SUCCED;
 import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_TYPE;
 
 /**
@@ -290,7 +290,7 @@ public class CreateProposalActivity extends ContributorBaseActivity {
                                 } catch (final CantCreateTopicException e) {
                                     e.printStackTrace();
                                     errorTitle = "Error";
-                                    messageBody = (e.getMessage()!=null && !e.getMessage().equals(""))?getErrorsFromJson(e.getMessage()):"CantCreateTopicException";
+                                    messageBody = (e.getMessage()!=null && !e.getMessage().equals(""))?getErrorsFromJson(e.getMessage()):"Forum fail, please send log to Furszy and contact Markus";
                                 } catch (CantSaveProposalExistException e) {
                                     errorTitle = "Error";
                                     messageBody = "Proposal title already exist";
@@ -512,7 +512,7 @@ public class CreateProposalActivity extends ContributorBaseActivity {
 
     @Override
     protected boolean onContributorsBroadcastReceive(Bundle data) {
-        if (data.getString(INTENT_BROADCAST_DATA_TYPE).equals(INTENT_BROADCAST_DATA_TRANSACTION_SUCCED)){
+        if (data.getString(INTENT_BROADCAST_DATA_TYPE).equals(INTENT_BROADCAST_DATA_PROPOSAL_TRANSACTION_SUCCED)){
             showDoneLoading();
 //            lockBroadcast.set(false);
             Toast.makeText(CreateProposalActivity.this,"Proposal broadcasted!, publishing in the forum..",Toast.LENGTH_SHORT).show();

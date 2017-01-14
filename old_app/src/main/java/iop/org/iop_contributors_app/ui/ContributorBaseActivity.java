@@ -26,6 +26,7 @@ import iop_sdk.governance.vote.Vote;
 
 import static org.iop.intents.constants.IntentsConstants.ACTION_NOTIFICATION;
 import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_PROPOSAL_FROZEN_FUNDS_UNLOCKED;
+import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_PROPOSAL_TRANSACTION_SUCCED;
 import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_TYPE;
 import static org.iop.intents.constants.IntentsConstants.INTENT_EXTRA_PROPOSAL;
 import static org.iop.intents.constants.IntentsConstants.INTENT_NOTIFICATION;
@@ -137,7 +138,20 @@ public abstract class ContributorBaseActivity extends BaseActivity {
         if (data.containsKey(INTENT_BROADCAST_DATA_TYPE)){
             if (data.get(INTENT_BROADCAST_DATA_TYPE).equals(INTENT_BROADCAST_DATA_PROPOSAL_FROZEN_FUNDS_UNLOCKED)){
                 Proposal proposal = (Proposal) data.getSerializable(INTENT_EXTRA_PROPOSAL);
+                onContributorsBroadcastReceive(data);
                 notifyProposalAndFundsUnlocked(proposal);
+            } else if (data.get(INTENT_BROADCAST_DATA_TYPE).equals(INTENT_BROADCAST_DATA_PROPOSAL_TRANSACTION_SUCCED)){
+                //update balances
+                updateBalances();
+
+                // notify user
+                android.support.v4.app.NotificationCompat.Builder mBuilder =
+                        new NotificationCompat.Builder(getApplicationContext())
+                                .setSmallIcon(R.drawable.ic__launcher)
+                                .setContentTitle("Proposal broadcast succed!")
+                                .setContentText(data.getString("title"));
+
+                notificationManager.notify(3, mBuilder.build());
             }
         }
         return onContributorsBroadcastReceive(data);
@@ -153,11 +167,15 @@ public abstract class ContributorBaseActivity extends BaseActivity {
      */
     private void notifyProposalAndFundsUnlocked(Proposal proposal){
         Log.i(TAG,"notifyProposalAndFundsUnlocked, for proposal: "+proposal.toString());
+
+        // update balance
+        updateBalances();
+        // notify user
         android.support.v4.app.NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(getApplicationContext())
                         .setSmallIcon(R.drawable.ic__launcher)
-                        .setContentTitle("Proposal finished: "+proposal.getTitle())
-                        .setContentText("State: "+proposal.getState()+"\nYour frozen power are unloked");
+                        .setContentTitle("Proposal with id "+proposal.getForumId()+" finished")
+                        .setContentText(proposal.getState()+"\nFrozen power unloked");
 
         notificationManager.notify(10,mBuilder.build());
     }

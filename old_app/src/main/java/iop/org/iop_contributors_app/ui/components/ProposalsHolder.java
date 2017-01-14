@@ -1,6 +1,7 @@
 package iop.org.iop_contributors_app.ui.components;
 
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -26,6 +27,8 @@ public class ProposalsHolder extends FermatViewHolder {
     TextView txt_go_forum;
     TextView txt_state;
 
+    ViewGroup progress_yes_container;
+    ViewGroup progress_no_container;
     ProgressBar progressYes;
     TextView txt_vote_yes;
     ProgressBar progressNo;
@@ -53,6 +56,8 @@ public class ProposalsHolder extends FermatViewHolder {
         txt_vote_yes = (TextView) itemView.findViewById(R.id.txt_vote_yes);
         txt_vote_no = (TextView) itemView.findViewById(R.id.txt_vote_no);
 
+        progress_yes_container = (ViewGroup) itemView.findViewById(R.id.progress_yes_container);
+        progress_no_container = (ViewGroup) itemView.findViewById(R.id.progress_no_container);
 
 
     }

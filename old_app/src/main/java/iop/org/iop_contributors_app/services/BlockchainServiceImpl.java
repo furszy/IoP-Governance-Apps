@@ -20,7 +20,8 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 
-import org.bitcoinj.core.Address;
+import com.fasterxml.jackson.core.JsonProcessingException;
+
 import org.bitcoinj.core.Block;
 import org.bitcoinj.core.Coin;
 import org.bitcoinj.core.FilteredBlock;
@@ -33,6 +34,7 @@ import org.bitcoinj.core.listeners.AbstractPeerDataEventListener;
 import org.bitcoinj.core.listeners.PeerConnectedEventListener;
 import org.bitcoinj.core.listeners.PeerDataEventListener;
 import org.bitcoinj.core.listeners.PeerDisconnectedEventListener;
+import org.bitcoinj.core.listeners.TransactionConfidenceEventListener;
 import org.bitcoinj.utils.BtcFormat;
 import org.bitcoinj.wallet.Wallet;
 import org.bitcoinj.wallet.listeners.WalletCoinsReceivedEventListener;
@@ -42,12 +44,15 @@ import org.iop.WalletModule;
 import org.iop.configurations.WalletPreferencesConfiguration;
 import org.iop.db.CantSaveProposalException;
 import org.iop.db.CantSaveProposalExistException;
+import org.iop.db.CantUpdateProposalException;
 import org.iop.exceptions.CantSendProposalException;
 import org.iop.exceptions.CantSendVoteException;
 import org.iop.exceptions.InvalidProposalException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
@@ -58,11 +63,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 import iop.org.iop_contributors_app.R;
-import iop.org.iop_contributors_app.ui.base.BaseActivity;
 import iop_sdk.blockchain.NotConnectedPeersException;
 import iop_sdk.blockchain.explorer.TransactionFinder;
 import iop_sdk.blockchain.explorer.TransactionFinderListener;
-import iop_sdk.crypto.CryptoBytes;
 import iop_sdk.forum.wrapper.ServerWrapper;
 import iop_sdk.governance.propose.Proposal;
 import iop_sdk.governance.vote.Vote;
@@ -70,7 +73,6 @@ import iop_sdk.wallet.BlockchainManager;
 import iop_sdk.wallet.BlockchainManagerListener;
 import iop_sdk.wallet.exceptions.InsuficientBalanceException;
 import iop_sdk.wallet.utils.BlockchainState;
-import iop_sdk.wallet.utils.WalletUtils;
 
 import static org.iop.WalletConstants.BLOCKCHAIN_STATE_BROADCAST_THROTTLE_MS;
 import static org.iop.WalletConstants.CONTEXT;
@@ -84,7 +86,7 @@ import static org.iop.intents.constants.IntentsConstants.INTENTE_EXTRA_MESSAGE;
 import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_ON_COIN_RECEIVED;
 import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_ON_COIN_RECEIVED_IS_TRANSACTION_MINE;
 import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_PROPOSAL_TRANSACTION_ARRIVED;
-import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_TRANSACTION_SUCCED;
+import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_PROPOSAL_TRANSACTION_SUCCED;
 import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_TYPE;
 import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_VOTE_TRANSACTION_SUCCED;
 import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_TYPE;
@@ -316,13 +318,18 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
                     executorService.submit(new Runnable() {
                         @Override
                         public void run() {
-                            // update own contract proposal
-                            List<Proposal> list = walletModule.getActiveProposals();
-                            if (!list.isEmpty()) {
-                                ServerWrapper.RequestProposalsResponse requestProposalsResponse = walletModule.requestProposalsFullTx(list);
-                                if (requestProposalsResponse!=null){
-                                    proposalsArrive(requestProposalsResponse.getProposals());
+                            try {
+                                // update own contract proposal
+                                List<Proposal> list = walletModule.getActiveProposalsInBlockchain();
+                                if (!list.isEmpty()) {
+                                    LOG.info("Active proposals: "+Arrays.toString(list.toArray()));
+                                    ServerWrapper.RequestProposalsResponse requestProposalsResponse = walletModule.requestProposalsFullTx(list);
+                                    if (requestProposalsResponse != null) {
+                                        proposalsArrive(requestProposalsResponse.getProposals());
+                                    }
                                 }
+                            }catch (Exception e){
+                                e.printStackTrace();
                             }
                         }
                     });
@@ -336,15 +343,22 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
         private void proposalsArrive(List<Proposal> proposals){
             for (Proposal proposal : proposals) {
                 try {
+                    Proposal temp = proposal;
                     proposal = walletModule.proposalArrive(proposal);
-                    LOG.info("Proposal saved!");
-                    // notify state
-                    broadcastProposalArrived(proposal);
+                    if (proposal!=null) {
+                        LOG.info("Proposal arrive!");
+                        // notify state
+                        broadcastProposalArrived(proposal);
+                    }else {
+                        LOG.info("Proposal arrive return null, state: "+temp.getState());
+                    }
                 } catch (CantSaveProposalException e) {
                     LOG.info(e.getMessage());
                 } catch (CantSaveProposalExistException e) {
                     // nothing
                     LOG.info("proposal exist! " + proposal.getGenesisTxHash());
+                } catch (Exception e){
+                    e.printStackTrace();
                 }
             }
         }
@@ -403,7 +417,7 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
 
             //todo: acá falta una validación para saber si la transaccion es mia.
 
-            boolean isTransactionMine = walletModule.isProposalTransactionMine(transaction);
+            boolean isTransactionMine = walletModule.isProposalTransaction(transaction);
             int depthInBlocks = transaction.getConfidence().getDepthInBlocks();
 
             Intent intent = new Intent(ACTION_NOTIFICATION);
@@ -548,6 +562,31 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
 
         // coins received
         walletModule.getWalletManager().getWallet().addCoinsReceivedEventListener(coinReceiverListener);
+        walletModule.getWalletManager().getWallet().addTransactionConfidenceEventListener(new TransactionConfidenceEventListener() {
+            @Override
+            public void onTransactionConfidenceChanged(Wallet wallet, Transaction transaction) {
+                try {
+                    org.bitcoinj.core.Context.propagate(WalletConstants.CONTEXT);
+                    if (transaction.getConfidence().getDepthInBlocks() > 1) {
+                        Proposal proposal = null;
+                        if ((proposal = walletModule.decodeProposalTransaction(transaction)) != null) {
+                            try {
+                                if (walletModule.proposalAcceptedInBlockchain(proposal)){
+                                    proposal.setState(Proposal.ProposalState.SUBMITTED);
+                                    broadcastProposalArrived(proposal);
+                                }
+                            } catch (CantUpdateProposalException e) {
+                                e.printStackTrace();
+                            } catch (JsonProcessingException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        });
 
 //        wallet.addCoinsReceivedEventListener(Threading.SAME_THREAD, walletEventListener);
 //        wallet.addCoinsSentEventListener(Threading.SAME_THREAD, walletEventListener);
@@ -555,6 +594,22 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
 
 //        registerReceiver(tickReceiver, new IntentFilter(Intent.ACTION_TIME_TICK));
 
+    }
+
+
+    /**
+     * Create temporary file to save waiting transactions
+     */
+    private void createTempFileForTransactions(){
+        try {
+            File outputDir = getCacheDir(); // context being the Activity pointer
+            File outputFile = new File(outputDir + "transactionsTemp");
+            if (!outputFile.exists()) {
+                outputFile.createNewFile();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -656,7 +711,7 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
         Intent intent = new Intent(ACTION_NOTIFICATION);
         intent.putExtra("title",title);
         intent.putExtra(INTENT_BROADCAST_TYPE,INTENT_DATA+INTENT_NOTIFICATION);
-        intent.putExtra(INTENT_BROADCAST_DATA_TYPE, INTENT_BROADCAST_DATA_TRANSACTION_SUCCED);
+        intent.putExtra(INTENT_BROADCAST_DATA_TYPE, INTENT_BROADCAST_DATA_PROPOSAL_TRANSACTION_SUCCED);
         localBroadcast.sendBroadcast(intent);
     }
 

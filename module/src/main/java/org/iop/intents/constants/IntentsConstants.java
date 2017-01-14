@@ -22,7 +22,7 @@ import android.support.v4.content.IntentCompat;
  *              |
  *              |--> INTENTE_BROADCAST_DIALOG_TYPE
  *                              |
- *                              |--> INTENT_BROADCAST_DATA_TRANSACTION_SUCCED
+ *                              |--> INTENT_BROADCAST_DATA_PROPOSAL_TRANSACTION_SUCCED
  *
  */
 
@@ -75,7 +75,7 @@ public class IntentsConstants {
      * Data
      */
 
-    public static final String INTENT_BROADCAST_DATA_TRANSACTION_SUCCED = IntentsConstants.class.getPackage().toString() + "_broadcast_transaction_succed";
+    public static final String INTENT_BROADCAST_DATA_PROPOSAL_TRANSACTION_SUCCED = IntentsConstants.class.getPackage().toString() + "_broadcast_transaction_succed";
     public static final String INTENT_BROADCAST_DATA_VOTE_TRANSACTION_SUCCED = IntentsConstants.class.getPackage().toString() + "_broadcast_vote_transaction_succed";
     public static final String INTENT_BROADCAST_DATA_ON_PROPOSAL_TRANSACTION_RECEIVED = IntentsConstants.class.getPackage().toString() + "_broadcast_proposal_transaction_received";
 

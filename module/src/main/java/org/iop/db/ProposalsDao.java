@@ -73,6 +73,10 @@ public class ProposalsDao implements ProposalsContractDao {
         return proposalsDatabaseHandler.getAllProposals();
     }
 
+    public List<Proposal> listMyProposals() {
+        return proposalsDatabaseHandler.getMyProposals();
+    }
+
     public boolean exist(String title) {
         return proposalsDatabaseHandler.exist(title);
     }
@@ -166,8 +170,21 @@ public class ProposalsDao implements ProposalsContractDao {
         return proposalsDatabaseHandler.getActiveProposals();
     }
 
+    public List<Proposal> listProposalsActiveInBlockchain(int stateId) {
+        return proposalsDatabaseHandler.getProposalsActiveInBlockchain();
+    }
 
-    public Proposal findProposalByGenesisHash(String genesisTxHash) throws Exception {
+
+    public Proposal findProposalByGenesisHash(String genesisTxHash) throws CantGetProposalException {
         return proposalsDatabaseHandler.getProposalByHash(genesisTxHash);
+    }
+
+
+    public boolean updateProposalByForumId(Proposal proposal) throws JsonProcessingException {
+        return proposalsDatabaseHandler.updateProposalByForumId(proposal)==1;
+    }
+
+    public boolean updateProposalStateByForumId(Proposal proposal){
+        return proposalsDatabaseHandler.updateProposalStateByForumId(proposal.getForumId(),proposal.getState())==1;
     }
 }

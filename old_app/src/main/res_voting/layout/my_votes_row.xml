@@ -143,13 +143,29 @@
 
                 <!--/>-->
 
-            <View
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:id="@+id/view_proposal_state"
-                android:layout_height="14dp"
+                android:layout_height="wrap_content"
                 android:background="@drawable/gradientecards_verde"
+                android:orientation="horizontal"
+                android:layout_gravity="center"
+                android:gravity="center">
 
-                />
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/txt_state"
+                    android:text="Active"
+                    android:textSize="10sp"
+                    android:paddingTop="2dp"
+                    android:paddingBottom="2dp"
+                    android:textColor="#fff"
+                    android:textStyle="bold"
+                    android:gravity="center"/>
+
+
+                </LinearLayout>
 
         </LinearLayout>
 

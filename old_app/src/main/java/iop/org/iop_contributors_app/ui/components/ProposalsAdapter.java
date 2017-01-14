@@ -3,6 +3,7 @@ package iop.org.iop_contributors_app.ui.components;
 import android.content.Context;
 import android.content.Intent;
 import android.view.View;
+import android.view.ViewTreeObserver;
 
 import org.iop.WalletModule;
 
@@ -12,6 +13,7 @@ import iop.org.iop_contributors_app.ui.CreateProposalActivity;
 import iop.org.iop_contributors_app.ui.ForumActivity;
 import iop.org.iop_contributors_app.ui.ProposalSummaryActivity;
 import iop_sdk.governance.propose.Proposal;
+import iop_sdk.utils.StringUtils;
 
 import static iop_sdk.blockchain.utils.CoinUtils.coinToString;
 
@@ -39,7 +41,7 @@ public class ProposalsAdapter extends FermatAdapterImproved<Proposal,ProposalsHo
     }
 
     @Override
-    protected void bindHolder(ProposalsHolder holder, final Proposal data, int position) {
+    protected void bindHolder(final ProposalsHolder holder, final Proposal data, int position) {
 
         holder.txt_title.setText(data.getTitle());
         holder.txt_forum_id.setText(String.valueOf(data.getForumId()));
@@ -72,8 +74,8 @@ public class ProposalsAdapter extends FermatAdapterImproved<Proposal,ProposalsHo
 
         holder.txt_state.setText(data.getState().toString().toLowerCase());
 
-        long voteNo = data.getVoteNo();
-        long voteYes = data.getVoteYes();
+        final long voteNo = data.getVoteNo();
+        final long voteYes = data.getVoteYes();
         long totalValue = voteYes + voteNo;
         int voteYesPorcen = 0;
         int voteNoPorcen = 0;
@@ -85,8 +87,19 @@ public class ProposalsAdapter extends FermatAdapterImproved<Proposal,ProposalsHo
 
         holder.progressYes.setProgress(voteYesPorcen);
         holder.progressNo.setProgress(voteNoPorcen);
-        holder.txt_vote_yes.setText(String.valueOf(data.getVoteYes()));
-        holder.txt_vote_no.setText(String.valueOf(data.getVoteNo()));
+        holder.txt_vote_yes.setText(StringUtils.numberToNumberWithDots(data.getVoteYes()));
+        holder.txt_vote_no.setText(StringUtils.numberToNumberWithDots((data.getVoteNo())));
+
+        holder.progress_yes_container.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                if (voteYes>voteNo){
+                    holder.txt_vote_no.getLayoutParams().width = holder.txt_vote_yes.getLayoutParams().width;
+                    holder.progress_no_container.getLayoutParams().width = holder.progress_yes_container.getLayoutParams().width;
+                }
+            }
+        });
+
     }
 
 

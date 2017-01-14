@@ -350,39 +350,36 @@ public class ServerWrapper {
     public RequestProposalsResponse getProposals(int blockHeight,List<String> hashes) throws CantGetProposalsFromServer {
         String url = this.url+"/requestproposalsnew";
         RequestProposalsResponse requestProposalsResponse = new RequestProposalsResponse();
-        List<RequestParameter> requestParams = new ArrayList<>();
-        if (hashes!=null){
+        JsonObject jsonObjectToSend = new JsonObject();
+        if (hashes!=null && !hashes.isEmpty()){
             JsonArray jsonElements = new JsonArray();
             for (String hash : hashes) {
                 jsonElements.add(hash);
             }
-            requestParams.add(new StringRequestParameter("hashes",jsonElements));
+            jsonObjectToSend.add("hashes",jsonElements);
         }
+
+
+
 
         HttpResponse httpResponse = null;
         String result = null;
         try {
 
-
-            int i = 0;
-            for (RequestParameter requestParam: requestParams) {
-                url += (i==0 && !url.contains("?"))?"?":"&";
-                url += requestParam.format();
-                i++;
-            }
-
             LOG.info("getVotingProposals URL: "+url);
 
-            BasicHttpParams basicHttpParams = new BasicHttpParams();
-            HttpConnectionParams.setSoTimeout(basicHttpParams, (int) TimeUnit.MINUTES.toMillis(1));
-            HttpClient client = new DefaultHttpClient(basicHttpParams);
-            HttpGet httpGet = new HttpGet(url);
+            HttpClient client = new DefaultHttpClient(new BasicHttpParams());
+            HttpPost httpPost = new HttpPost(url);
             //httpPost.setHeader("Content-type", "application/vnd.api+json");
-            httpGet.addHeader("Accept", "text/html,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5");
-            httpGet.setHeader("Content-type", "application/json");
+            httpPost.addHeader("Accept", "text/html,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5");
+            httpPost.setHeader("Content-type", "application/json");
 
+            //passes the results to a string builder/entity
+            StringEntity se = new StringEntity(jsonObjectToSend.toString(), "UTF-8");
+            //sets the post request as the resulting string
+            httpPost.setEntity(se);
             // make GET request to the given URL
-            httpResponse = client.execute(httpGet);
+            httpResponse = client.execute(httpPost);
             InputStream inputStream = null;
             // receive response as inputStream
             inputStream = httpResponse.getEntity().getContent();
@@ -409,7 +406,7 @@ public class ServerWrapper {
                     JsonArray transactions = jsonElement.getAsJsonArray();
 //                JSONObject jsonObject = new JSONObject(result);
 //                JSONArray transactions = jsonObject.getJSONArray("transactions");
-                    for (i = 0; i < transactions.size(); i++) {
+                    for (int i = 0; i < transactions.size(); i++) {
 //                        ret.put(transactions.get(i).getAsString());
 
                         try {

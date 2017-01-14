@@ -31,12 +31,16 @@ import iop.org.iop_contributors_app.ui.dialogs.SimpleDialogs;
 import iop.org.voting_app.base.VotingBaseActivity;
 import iop.org.voting_app.ui.dialogs.BroadcastVoteDialog;
 import iop.org.voting_app.ui.dialogs.CancelLister;
+import iop_sdk.governance.propose.Proposal;
 import iop_sdk.governance.propose.ProposalUtil;
 import iop_sdk.governance.utils.IoPCalculator;
 import iop_sdk.governance.vote.Vote;
 import iop_sdk.governance.vote.VoteWrapper;
 
 import static iop.org.iop_contributors_app.services.BlockchainService.INTENT_EXTRA_PROPOSAL_VOTE;
+import static iop.org.iop_contributors_app.ui.components.switch_seek_bar.SwitchSeekBar.Position.CENTER;
+import static iop.org.iop_contributors_app.ui.components.switch_seek_bar.SwitchSeekBar.Position.LEFT;
+import static iop.org.iop_contributors_app.ui.components.switch_seek_bar.SwitchSeekBar.Position.RIGHT;
 import static iop_sdk.blockchain.utils.CoinUtils.coinToString;
 import static iop_sdk.utils.StringUtils.numberToNumberWithDots;
 import static org.iop.intents.constants.IntentsConstants.COMMON_ERROR_DIALOG;
@@ -47,6 +51,7 @@ import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_T
 import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_VOTE_TRANSACTION_SUCCED;
 import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_TYPE;
 import static org.iop.intents.constants.IntentsConstants.INTENT_DIALOG;
+import static org.iop.intents.constants.IntentsConstants.INTENT_EXTRA_PROPOSAL;
 import static org.iop.intents.constants.IntentsConstants.INVALID_PROPOSAL_DIALOG;
 import static org.iop.intents.constants.IntentsConstants.UNKNOWN_ERROR_DIALOG;
 
@@ -315,17 +320,25 @@ public class VotingVoteSummary extends VotingBaseActivity implements View.OnClic
             txt_vote_result.setText("No votes yet");
         }
 
-        if (voteYesPorcen>voteNoPorcen){
-            txt_vote_no.getLayoutParams().width=txt_vote_yes.getLayoutParams().width;
-            progressNo.getLayoutParams().width=progressYes.getLayoutParams().width;
+        seek_bar_switch.setPosition(getPositionByVoteType(voteWrapper.getVote().getVote()));
 
-        }else {
-            txt_vote_yes.getLayoutParams().width=txt_vote_no.getLayoutParams().width;
-            progressYes.getLayoutParams().width=progressNo.getLayoutParams().width;
-        }
+        txt_vote_quantity.setText(String.valueOf(voteWrapper.getVote().getVotingPower()));
 
         if (!voteWrapper.getProposal().isActive()){
             card_bottom_border.setBackgroundResource(R.drawable.gradientecards_rojo);
+        }
+    }
+
+    private SwitchSeekBar.Position getPositionByVoteType(Vote.VoteType voteType){
+        switch (voteType){
+            case NEUTRAL:
+                return CENTER;
+            case NO:
+                return LEFT;
+            case YES:
+                return RIGHT;
+            default:
+                throw new IllegalArgumentException("Something really bad happen");
         }
     }
 
@@ -385,7 +398,9 @@ public class VotingVoteSummary extends VotingBaseActivity implements View.OnClic
         // loading
         preparateLoading("Vote sent!", R.drawable.icon_done);
 
-        long amountIoPToshis = IoPCalculator.iopToIopToshis(votingAmount);
+        votingAmount = Integer.parseInt(txt_vote_quantity.getText().toString());
+
+        long amountIoPToshis = votingAmount;
 
         // todo: Esto está así hasta que vuelva de las vacaciones..
         if (voteType == Vote.VoteType.NEUTRAL){
@@ -477,6 +492,9 @@ public class VotingVoteSummary extends VotingBaseActivity implements View.OnClic
                     break;
             }
             hideDoneLoading();
+        } else if (bundle.containsKey(INTENT_EXTRA_PROPOSAL)) {
+            Proposal proposal = (Proposal) bundle.getSerializable(INTENT_EXTRA_PROPOSAL);
+            voteWrapper.getProposal().setState(proposal.getState());
         }
 
         return false;

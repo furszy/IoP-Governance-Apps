@@ -14,6 +14,8 @@ import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.ui.components.ProposalsAdapter;
 import iop_sdk.governance.propose.Proposal;
 
+import static org.iop.intents.constants.IntentsConstants.INTENT_EXTRA_PROPOSAL;
+
 /**
  * Created by mati on 17/11/16.
  */
@@ -75,6 +77,17 @@ public class ProposalsActivity extends ContributorBaseActivity {
 
     @Override
     protected boolean onContributorsBroadcastReceive(Bundle data) {
+        if (data.containsKey(INTENT_EXTRA_PROPOSAL)){
+            Proposal proposal = (Proposal) data.getSerializable(INTENT_EXTRA_PROPOSAL);
+            Proposal myProp;
+            for (int i=0;i<adapter.getItemCount();i++){
+                if ((myProp = adapter.getItem(i)).getForumId()==proposal.getForumId()){
+                    myProp.setState(proposal.getState());
+                    adapter.notifyItemChanged(i);
+                }
+            }
+        }
+
         return false;
     }
 
@@ -93,7 +106,7 @@ public class ProposalsActivity extends ContributorBaseActivity {
     Runnable loadProposals = new Runnable() {
         @Override
         public void run() {
-            proposals = module.getProposals();
+            proposals = module.getMyProposals();
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {

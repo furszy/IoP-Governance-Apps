@@ -1,5 +1,7 @@
 package org.iop;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+
 import org.bitcoinj.core.Address;
 import org.bitcoinj.core.Coin;
 import org.bitcoinj.core.Context;
@@ -26,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -63,6 +66,8 @@ import iop_sdk.wallet.exceptions.InsuficientBalanceException;
 
 ;import static iop_sdk.governance.propose.Proposal.ProposalState.EXECUTED;
 import static iop_sdk.governance.propose.Proposal.ProposalState.EXECUTION_CANCELLED;
+import static iop_sdk.governance.propose.Proposal.ProposalState.FORUM;
+import static iop_sdk.governance.propose.Proposal.ProposalState.SUBMITTED;
 import static org.iop.intents.constants.IntentsConstants.ACTION_NOTIFICATION;
 import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_PROPOSAL_FROZEN_FUNDS_UNLOCKED;
 import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_TYPE;
@@ -214,7 +219,7 @@ public class WalletModule {
                     proposalTransactionRequest.broadcast();
 
                     proposal = proposalTransactionRequest.getUpdatedProposal();
-                    // lock contract output
+                    // lock contract output and update genesis hash
                     boolean resp = proposalsDao.lockOutput(proposal.getForumId(), proposalTransactionRequest.getLockedOutputHashHex(), proposalTransactionRequest.getLockedOutputPosition());
                     LOG.info("proposal locked "+resp);
                     // mark proposal sent and put state in "voting"
@@ -336,8 +341,16 @@ public class WalletModule {
         return proposalsDao.listProposals();
     }
 
+    public List<Proposal> getMyProposals() {
+        return proposalsDao.listMyProposals();
+    }
+
     public List<Proposal> getActiveProposals() {
         return proposalsDao.listProposalsActive(EXECUTED.getId()|EXECUTION_CANCELLED.getId());
+    }
+
+    public List<Proposal> getActiveProposalsInBlockchain() {
+        return proposalsDao.listProposalsActiveInBlockchain(EXECUTED.getId()|EXECUTION_CANCELLED.getId()|FORUM.getId());
     }
 
     public String getReceiveAddress() {
@@ -428,6 +441,7 @@ public class WalletModule {
         if (forumId>0) {
             proposal.setForumId(forumId);
             proposal.setState(Proposal.ProposalState.FORUM);
+            proposal.setMine(true);
             proposalsDao.saveProposal(proposal);
         }
         return forumId;
@@ -492,6 +506,8 @@ public class WalletModule {
             } catch (CantSaveProposalException e) {
                 e.printStackTrace();
             } catch (CantSaveProposalExistException e) {
+                e.printStackTrace();
+            } catch (CantGetProposalException e) {
                 e.printStackTrace();
             }
         }
@@ -601,7 +617,7 @@ public class WalletModule {
      */
     public ServerWrapper.RequestProposalsResponse requestProposalsFullTx(List<Proposal> list) {
         try {
-
+            LOG.info("requestProposalsFullTx hashes -> "+ Arrays.toString(list.toArray()));
             List<String> hashes = new ArrayList<>();
             for (Proposal proposal : list) {
                 hashes.add(proposal.getGenesisTxHash());
@@ -655,8 +671,29 @@ public class WalletModule {
         return proposal;
     }
 
-    public Proposal proposalArrive(Proposal proposal) throws CantSaveProposalException, CantSaveProposalExistException {
-        proposal.setMine(false);
+    public boolean proposalAcceptedInBlockchain(Proposal proposal) throws CantUpdateProposalException, JsonProcessingException, CantGetProposalException {
+        if (proposal==null) throw new IllegalArgumentException("Proposal null");
+        boolean ret = false;
+        proposal = proposalsDao.findProposal(proposal.getForumId());
+        if (proposal!=null && proposal.getState()==FORUM) {
+            proposal.setState(SUBMITTED);
+            proposalsDao.updateProposalStateByForumId(proposal);
+            ret = true;
+        }
+        return ret;
+    }
+
+    public Proposal proposalArrive(Proposal proposal) throws CantSaveProposalException, CantSaveProposalExistException, CantGetProposalException {
+
+        // check if the proposal exist and is not in a final state
+        Proposal proposalDb = proposalsDao.findProposal(proposal.getForumId());
+        if (proposalDb!=null){
+            if (!proposalDb.isActive())
+                return null;
+            if (proposalDb.isMine()){
+                proposal.setMine(true);
+            }
+        }
 
         // si el usuario del foro no existe tengo que grabar esto para hacerlo más adelante..
         if (forumClient.getForumProfile()!=null) {
@@ -675,7 +712,8 @@ public class WalletModule {
                 forumProposal.setVoteNo(proposal.getVoteNo());
                 forumProposal.setVoteYes(proposal.getVoteYes());
                 forumProposal.setGenesisTxHash(proposal.getGenesisTxHash());
-
+                forumProposal.setMine(proposal.isMine());
+                forumProposal.setSent(proposal.isSent());
                 proposalsDao.saveProposal(forumProposal);
 
                 // Unlock freeze outputs if the proposal is finished
@@ -731,8 +769,12 @@ public class WalletModule {
         return votesDaoImp.exist(vote);
     }
 
-    public boolean isProposalTransactionMine(Transaction transaction) {
+    public boolean isProposalTransaction(Transaction transaction) {
        return ProposalTransactionBuilder.isProposal(transaction);
+    }
+
+    public Proposal decodeProposalTransaction(Transaction transaction) {
+        return ProposalTransactionBuilder.getProposal(transaction);
     }
 
     public List<VoteWrapper> listMyVotes() {
@@ -773,4 +815,6 @@ public class WalletModule {
     public Vote getVote(String genesisTxHash) {
         return votesDaoImp.getVote(genesisTxHash);
     }
+
+
 }

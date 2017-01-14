@@ -114,7 +114,7 @@ public class ProposalTransactionRequest {
         TransactionOutput transactionOutputToLock = proposalTransactionBuilder.addLockedAddressOutput(lockAddress);
 
         // lock balance
-        lockedBalance += transactionOutputToLock.getValue().value;
+        lockedBalance += Coin.valueOf(1000,0).getValue();
 
         // refund transaction, tengo el fee agregado al totalOutputsValue
         Coin flyingCoins = totalInputsValue.minus(totalOuputsValue);

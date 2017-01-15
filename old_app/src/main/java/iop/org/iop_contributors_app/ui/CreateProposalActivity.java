@@ -318,8 +318,9 @@ public class CreateProposalActivity extends ContributorBaseActivity {
                                             Intent intent = new Intent(CreateProposalActivity.this,ProposalSummaryActivity.class);
                                             intent.setAction(ACTION_PROPOSAL);
                                             intent.putExtra(INTENT_DATA_PROPOSAL,proposal);
-                                            startActivity(intent);
                                             finish();
+                                            startActivity(intent);
+
                                         }else {
                                             container_send.setVisibility(View.INVISIBLE);
                                             showErrorDialog(finalErrorTitle, finalMessageBody);

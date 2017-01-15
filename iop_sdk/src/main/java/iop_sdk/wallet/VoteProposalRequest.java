@@ -5,6 +5,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import org.bitcoinj.core.Address;
 import org.bitcoinj.core.Coin;
 import org.bitcoinj.core.InsufficientMoneyException;
+import org.bitcoinj.core.Sha256Hash;
 import org.bitcoinj.core.Transaction;
 import org.bitcoinj.core.TransactionOutPoint;
 import org.bitcoinj.core.TransactionOutput;
@@ -12,11 +13,13 @@ import org.bitcoinj.wallet.CoinSelection;
 import org.bitcoinj.wallet.DefaultCoinSelector;
 import org.bitcoinj.wallet.SendRequest;
 import org.bitcoinj.wallet.Wallet;
+import org.bitcoinj.wallet.WalletTransaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -55,7 +58,7 @@ public class VoteProposalRequest {
         this.conf = walletManager.getConfigurations();
     }
 
-    public void forVote(Vote vote) throws InsuficientBalanceException {
+    public void forVote(Vote vote) throws InsuficientBalanceException,CantSendVoteException {
 
         if (vote.getVote() == Vote.VoteType.NEUTRAL) throw new IllegalArgumentException("Voto tipo neutral");
 
@@ -74,30 +77,25 @@ public class VoteProposalRequest {
 
         List<TransactionOutput> unspentTransactions = new ArrayList<>();
         Coin totalInputsValue = Coin.ZERO;
-        boolean inputsSatisfiedContractValue = false;
-        for (TransactionOutput transactionOutput : wallet.getUnspents()) {
-            //
-            TransactionOutPoint transactionOutPoint = transactionOutput.getOutPointFor();
-            if (votesDaoImp.isLockedOutput(transactionOutPoint.getHash().toString(), transactionOutPoint.getIndex())) {
-                continue;
-            }
-            if (DefaultCoinSelector.isSelectable(transactionOutput.getParentTransaction())) {
-                LOG.info("adding non locked transaction to spend as an input: postion:" + transactionOutPoint.getIndex() + ", parent hash: " + transactionOutPoint.toString());
-                totalInputsValue = totalInputsValue.add(transactionOutput.getValue());
-                unspentTransactions.add(transactionOutput);
-                if (totalInputsValue.isGreaterThan(totalOuputsValue)) {
-                    inputsSatisfiedContractValue = true;
-                    break;
-                }
-            }
+        // check if the vote is already used, if the wallet have the genesisTx of the vote we reuse the freeze output as input of the new vote.
+        if (vote.getLockedOutputHex()!=null){
+            LOG.info("Reusing the previous vote tx, adding the frozen output as input of the tx");
+            Map<Sha256Hash, Transaction> pool = wallet.getTransactionPool(WalletTransaction.Pool.UNSPENT);
+            TransactionOutput prevFrozenOutput = pool.get(Sha256Hash.wrap(vote.getLockedOutputHex())).getOutput(0);
+            unspentTransactions.add(prevFrozenOutput);
         }
-
-        if (!inputsSatisfiedContractValue)
-            throw new InsuficientBalanceException("Inputs not satisfied vote value");
-
-
+        // fill the tx with valid inputs
+        if (!sumValue(unspentTransactions).isGreaterThan(totalOuputsValue) && !totalOuputsValue.isNegative() && totalOuputsValue.getValue()!=0) {
+            unspentTransactions = getInputsForVote(wallet, totalOuputsValue);
+        }
+        // inputs value
+        totalInputsValue = sumValue(unspentTransactions);
         // put inputs..
         voteTransactionBuilder.addInputs(unspentTransactions);
+        // first check if the value is non dust
+        if (Transaction.MIN_NONDUST_OUTPUT.isGreaterThan(Coin.valueOf(vote.getVotingPower()))){
+            throw new CantSendVoteException("Vote value is to small to be included, min value: "+Transaction.MIN_NONDUST_OUTPUT.toFriendlyString());
+        }
         // freeze address -> voting power
         Address lockAddress = wallet.freshReceiveAddress();
         TransactionOutput transactionOutputToLock = voteTransactionBuilder.addLockedAddressOutput(lockAddress,vote.getVotingPower());
@@ -121,9 +119,17 @@ public class VoteProposalRequest {
         sendRequest.shuffleOutputs = false;
         sendRequest.coinSelector = new MyCoinSelector();
 
+        StringBuilder outputsValue = new StringBuilder();
+        int i=0;
+        for (TransactionOutput transactionOutput : sendRequest.tx.getOutputs()) {
+            outputsValue.append("Output "+i+" value "+transactionOutput.getValue().getValue());
+            outputsValue.append("\n");
+            i++;
+        }
+
+        LOG.info(" *Outpus value:\n "+outputsValue.toString());
         LOG.info("Total outputs sum: "+sendRequest.tx.getOutputSum());
         LOG.info("Total inputs sum sum: "+sendRequest.tx.getInputSum());
-
 
         // complete transaction
         try {
@@ -135,6 +141,53 @@ public class VoteProposalRequest {
 
         LOG.info("inputs value: " + tran.getInputSum().toFriendlyString() + ", outputs value: " + tran.getOutputSum().toFriendlyString() + ", fee: " + tran.getFee().toFriendlyString());
         LOG.info("total en el aire: " + tran.getInputSum().minus(tran.getOutputSum().minus(tran.getFee())).toFriendlyString());
+    }
+
+    /**
+     * Return a list of unspent transaction satisfasing the total param amount
+     *
+     * @param totalAmount
+     * @return
+     */
+    private List<TransactionOutput> getInputsForVote(Wallet wallet,Coin totalAmount) throws InsuficientBalanceException {
+        List<TransactionOutput> unspentTransactions = new ArrayList<>();
+        Coin totalInputsValue = Coin.ZERO;
+        boolean inputsSatisfiedContractValue = false;
+
+        for (TransactionOutput transactionOutput : wallet.getUnspents()) {
+            //
+            TransactionOutPoint transactionOutPoint = transactionOutput.getOutPointFor();
+            if (votesDaoImp.isLockedOutput(transactionOutPoint.getHash().toString(), transactionOutPoint.getIndex())) {
+                continue;
+            }
+            if (DefaultCoinSelector.isSelectable(transactionOutput.getParentTransaction())) {
+                LOG.info("adding non locked transaction to spend as an input: postion:" + transactionOutPoint.getIndex() + ", parent hash: " + transactionOutPoint.toString());
+                totalInputsValue = totalInputsValue.add(transactionOutput.getValue());
+                unspentTransactions.add(transactionOutput);
+                if (totalInputsValue.isGreaterThan(totalAmount)) {
+                    inputsSatisfiedContractValue = true;
+                    break;
+                }
+            }
+        }
+
+        if (!inputsSatisfiedContractValue)
+            throw new InsuficientBalanceException("Inputs not satisfied vote value");
+
+        return unspentTransactions;
+    }
+
+    /**
+     * // todo algo pasa acá que no suma el value..
+     * @param list
+     * @return
+     */
+    private Coin sumValue(List<TransactionOutput> list){
+        Coin ret = Coin.ZERO;
+        for (TransactionOutput transactionOutput : list) {
+            ret = ret.add(transactionOutput.getValue());
+        }
+        return ret;
     }
 
     public void broadcast() throws NotConnectedPeersException {

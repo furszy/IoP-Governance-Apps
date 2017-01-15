@@ -279,9 +279,13 @@ public class WalletModule {
 
     }
 
-    public boolean sendVote(Vote vote) throws InsuficientBalanceException, NotConnectedPeersException, CantSendVoteException {
+    public boolean sendVote(Vote vote) throws InsuficientBalanceException, NotConnectedPeersException, CantSendVoteException, iop_sdk.wallet.CantSendVoteException {
 
         try {
+            if (vote.getVotingPower()==0 && vote.getVote()== Vote.VoteType.NEUTRAL){
+                throw new IllegalArgumentException("Vote with illegal arguments: "+vote.toString());
+            }
+
             // save vote
             votesDaoImp.addUpdateIfExistVote(vote);
             // send vote
@@ -305,6 +309,9 @@ public class WalletModule {
             rollbackVote(vote);
             throw e;
         } catch (NotConnectedPeersException e){
+            rollbackVote(vote);
+            throw e;
+        } catch (iop_sdk.wallet.CantSendVoteException e){
             rollbackVote(vote);
             throw e;
         } catch (Exception e){

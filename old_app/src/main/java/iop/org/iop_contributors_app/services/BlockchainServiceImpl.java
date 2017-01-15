@@ -671,6 +671,8 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
                             showDialogException(COMMON_ERROR_DIALOG,"Not connected peers, please try again later");
                         } catch (CantSendVoteException e) {
                             showDialogException(UNKNOWN_ERROR_DIALOG, e.getMessage());
+                        } catch (iop_sdk.wallet.CantSendVoteException e) {
+                            showDialogException(COMMON_ERROR_DIALOG,e.getMessage());
                         }
 
                     }

@@ -16,6 +16,8 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.bitcoinj.core.Coin;
+import org.bitcoinj.core.Transaction;
 import org.w3c.dom.Text;
 
 import java.math.BigDecimal;
@@ -402,11 +404,19 @@ public class VotingVoteSummary extends VotingBaseActivity implements View.OnClic
 
         long amountIoPToshis = votingAmount;
 
+
+
         // todo: Esto está así hasta que vuelva de las vacaciones..
         if (voteType == Vote.VoteType.NEUTRAL){
             Toast.makeText(this,"Neutral votes not allowed by now\nplease contact Furszy :)",Toast.LENGTH_LONG).show();
             hideDoneLoading();
             return;
+        }else {
+            if (Transaction.MIN_NONDUST_OUTPUT.isGreaterThan(Coin.valueOf(amountIoPToshis))){
+                SimpleDialogs.showErrorDialog(this,"Error", "Votes not allowed, min votes value: "+Transaction.MIN_NONDUST_OUTPUT.getValue());
+                hideDoneLoading();
+                return;
+            }
         }
 
         if (amountIoPToshis==0){

@@ -13,6 +13,8 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.bitcoinj.core.Coin;
+import org.bitcoinj.core.Transaction;
 import org.iop.db.CantGetProposalException;
 
 import java.util.Arrays;
@@ -305,6 +307,12 @@ public class VotingProposalActivity extends VotingBaseActivity implements View.O
             Toast.makeText(this,"Neutral votes not allowed by now\nplease contact Furszy :)",Toast.LENGTH_LONG).show();
             unlockAndHideLoading();
             return;
+        }else {
+            if (Transaction.MIN_NONDUST_OUTPUT.isGreaterThan(Coin.valueOf(amountIoPToshis))){
+                SimpleDialogs.showErrorDialog(this,"Error", "Votes not allowed, min votes value: "+Transaction.MIN_NONDUST_OUTPUT.getValue());
+                hideDoneLoading();
+                return;
+            }
         }
 
         // check if the proposal is in a valid state

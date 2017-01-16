@@ -41,7 +41,13 @@ public class BroadcastContractDialog extends DialogFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-        View root = inflater.inflate(R.layout.broadcast_contract_dialog,null);
+        if (proposal.isSent()){
+            proposal.setState(Proposal.ProposalState.CANCELED_BY_OWNER);
+        }
+
+        View root = inflater.inflate(
+                (proposal.getState()== Proposal.ProposalState.CANCELED_BY_OWNER)?R.layout.broadcast_contract_cancel_dialog:R.layout.broadcast_contract_dialog,
+                null);
 
         TextView txt_send = (TextView) root.findViewById(R.id.txt_send);
         TextView txt_cancel = (TextView) root.findViewById(R.id.txt_cancel);
@@ -69,7 +75,9 @@ public class BroadcastContractDialog extends DialogFragment {
     private void handleSend(){
         Bundle bundle = new Bundle();
         bundle.putSerializable(INTENT_EXTRA_PROPOSAL, proposal);
-        ((ProposalSummaryActivity)getActivity()).sendWorkToBlockchainService(BlockchainService.ACTION_BROADCAST_PROPOSAL_TRANSACTION, bundle);
+        ((ProposalSummaryActivity)getActivity()).sendWorkToBlockchainService(
+                (proposal.getState()== Proposal.ProposalState.CANCELED_BY_OWNER)?BlockchainService.ACTION_BROADCAST_CANCEL_PROPOSAL_TRANSACTION:BlockchainService.ACTION_BROADCAST_PROPOSAL_TRANSACTION,
+                bundle);
     }
 
     @Override
@@ -85,5 +93,9 @@ public class BroadcastContractDialog extends DialogFragment {
     public DialogFragment setCancelListener(CancelLister cancelListener) {
         this.cancelListener = cancelListener;
         return this;
+    }
+
+    public Proposal getProposal() {
+        return proposal;
     }
 }

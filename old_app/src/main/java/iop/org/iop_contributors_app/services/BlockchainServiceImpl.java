@@ -436,31 +436,42 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
 
             if (!isTransactionMine ){//&& depthInBlocks>1) {
 
+                if (amount.isGreaterThan(Coin.ZERO)) {
 
-                Intent resultIntent = new Intent(getApplicationContext(),BlockchainServiceImpl.this.getClass());
-                resultIntent.setAction(ACTION_CANCEL_COINS_RECEIVED);
-                deleteIntent = PendingIntent.getService(BlockchainServiceImpl.this, 0, resultIntent,PendingIntent.FLAG_CANCEL_CURRENT);
+                    Intent resultIntent = new Intent(getApplicationContext(), BlockchainServiceImpl.this.getClass());
+                    resultIntent.setAction(ACTION_CANCEL_COINS_RECEIVED);
+                    deleteIntent = PendingIntent.getService(BlockchainServiceImpl.this, 0, resultIntent, PendingIntent.FLAG_CANCEL_CURRENT);
 
 
-                 mBuilder =
-                        new NotificationCompat.Builder(getApplicationContext())
-                                .setSmallIcon(R.drawable.ic__launcher)
-                                .setContentTitle("IoPs received!")
-                                .setContentText("Transaction received for a value of " + BtcFormat.getInstance().format(notificationAccumulatedAmount.getValue()))
-                                .setAutoCancel(false)
-                                .setDeleteIntent(deleteIntent);
+                    mBuilder =
+                            new NotificationCompat.Builder(getApplicationContext())
+                                    .setSmallIcon(R.drawable.ic__launcher)
+                                    .setContentTitle("IoPs received!")
+                                    .setContentText("Transaction received for a value of " + BtcFormat.getInstance().format(notificationAccumulatedAmount.getValue()))
+                                    .setAutoCancel(false)
+                                    .setDeleteIntent(deleteIntent);
 
-                nm.notify(1, mBuilder.build());
+                    nm.notify(1, mBuilder.build());
+
+                }else {
+                    LOG.error("transaction with a value lesser than zero arrives..");
+                }
             } else {
-                android.support.v4.app.NotificationCompat.Builder mBuilder =
-                        new NotificationCompat.Builder(getApplicationContext())
-                                .setSmallIcon(R.drawable.ic__launcher)
-                                .setContentTitle("IoPs received!")
-                                .setContentText("Transaction received for a value of " + amount.toFriendlyString())
-                                .setSubText("This transaction is not confirmed yet, will be confirmed in the next 10 minutes")
-                                .setDeleteIntent(deleteIntent);
 
-                nm.notify(5, mBuilder.build());
+                if (amount.isGreaterThan(Coin.ZERO)) {
+
+                    android.support.v4.app.NotificationCompat.Builder mBuilder =
+                            new NotificationCompat.Builder(getApplicationContext())
+                                    .setSmallIcon(R.drawable.ic__launcher)
+                                    .setContentTitle("IoPs received!")
+                                    .setContentText("Transaction received for a value of " + amount.toFriendlyString())
+                                    .setSubText("This transaction is not confirmed yet, will be confirmed in the next 10 minutes")
+                                    .setDeleteIntent(deleteIntent);
+
+                    nm.notify(5, mBuilder.build());
+                }else {
+                    LOG.error("transaction with a value lesser than zero arrives..");
+                }
             }
         }
     };
@@ -629,32 +640,42 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
                     public void run() {
                         try {
                             Proposal proposal = (Proposal) intent.getSerializableExtra(INTENT_EXTRA_PROPOSAL);
-                            if (walletModule.sendProposal(proposal)){
+                            if (walletModule.sendProposal(proposal)) {
                                 broadcastProposalSuced(proposal.getTitle());
                             }
-                        }catch (InsuficientBalanceException e){
+                        } catch (InsuficientBalanceException e) {
                             e.printStackTrace();
-                            showDialogException(INSUFICIENTS_FUNDS_DIALOG,null);
-                        }catch (CantSendProposalException e) {
+                            showDialogException(INSUFICIENTS_FUNDS_DIALOG, null);
+                        } catch (CantSendProposalException e) {
                             e.printStackTrace();
                             showDialogException(UNKNOWN_ERROR_DIALOG, e.getMessage());
-                        }catch (CantSaveProposalException e){
+                        } catch (CantSaveProposalException e) {
                             e.printStackTrace();
-                            showDialogException(CANT_SAVE_PROPOSAL_DIALOG,e.getMessage());
+                            showDialogException(CANT_SAVE_PROPOSAL_DIALOG, e.getMessage());
                         } catch (InvalidProposalException e) {
                             e.printStackTrace();
-                            showDialogException(INVALID_PROPOSAL_DIALOG, e.getMessage()+".\n\nEdit in the forum first if you want any change.");
+                            showDialogException(INVALID_PROPOSAL_DIALOG, e.getMessage() + ".\n\nEdit in the forum first if you want any change.");
                         } catch (NotConnectedPeersException e) {
                             e.printStackTrace();
-                            showDialogException(COMMON_ERROR_DIALOG,"Not connected peers, please try again later");
+                            showDialogException(COMMON_ERROR_DIALOG, "Not connected peers, please try again later");
                             check();
-                        } catch (Exception e){
+                        } catch (Exception e) {
                             e.printStackTrace();
                         }
                     }
                 });
 
-
+            } else if (ACTION_BROADCAST_CANCEL_PROPOSAL_TRANSACTION.equals(action)){
+                try{
+                    LOG.info("ACTION_BROADCAST_CANCEL_PROPOSAL_TRANSACTION arrive");
+                    Proposal proposal = (Proposal) intent.getSerializableExtra(INTENT_EXTRA_PROPOSAL);
+                    if (walletModule.cancelProposalContract(proposal)){
+                        LOG.info("contract cancelled");
+                        broadcastProposalSuced(proposal.getTitle());
+                    }
+                }catch (Exception e){
+                    showDialogException(UNKNOWN_ERROR_DIALOG, e.getMessage());
+                }
             } else if(ACTION_BROADCAST_VOTE_PROPOSAL_TRANSACTION.equals(action)){
                 executorService.submit(new Runnable() {
                     @Override

@@ -7,6 +7,8 @@ import org.bitcoinj.core.Address;
 import org.bitcoinj.core.Coin;
 import org.bitcoinj.core.InsufficientMoneyException;
 import org.bitcoinj.core.Transaction;
+import org.bitcoinj.core.TransactionInput;
+import org.bitcoinj.core.TransactionOutput;
 import org.bitcoinj.crypto.MnemonicCode;
 import org.bitcoinj.wallet.Protos;
 import org.bitcoinj.wallet.SendRequest;
@@ -14,6 +16,7 @@ import org.bitcoinj.wallet.UnreadableWalletException;
 import org.bitcoinj.wallet.Wallet;
 import org.bitcoinj.wallet.WalletFiles;
 import org.bitcoinj.wallet.WalletProtobufSerializer;
+import org.bitcoinj.wallet.WalletTransaction;
 import org.bitcoinj.wallet.listeners.WalletCoinsReceivedEventListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +35,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import iop_sdk.crypto.Crypto;
@@ -424,6 +428,33 @@ public class WalletManager {
         wallet.commitTx(sendRequest.tx);
 
         return sendRequest.tx;
+    }
+
+    public Transaction changeAddressOfTx(String txHash,int outputIndex) throws InsufficientMoneyException {
+
+        LOG.info("changeAddressOfTx, txHash: "+txHash+", outputIndex: "+outputIndex);
+        Address to = wallet.freshReceiveAddress();
+        TransactionOutput transactionOutput = wallet.getTransactionPool(WalletTransaction.Pool.UNSPENT).get(txHash).getOutput(outputIndex);
+
+        Transaction transaction = new Transaction(walletConfiguration.getNetworkParams());
+        // add prev output
+        transaction.addInput(transactionOutput);
+        // change address
+        Coin value = transactionOutput.getValue().minus(Transaction.DEFAULT_TX_FEE);
+        TransactionOutput changeAddressOutput = new TransactionOutput(walletConfiguration.getNetworkParams(),transaction,value,to);
+
+        transaction.addOutput(changeAddressOutput);
+
+        SendRequest sendRequest = SendRequest.to(to,value);
+
+        sendRequest.signInputs = true;
+
+        wallet.completeTx(sendRequest);
+
+        wallet.commitTx(sendRequest.tx);
+
+        return sendRequest.tx;
+
     }
 
     public WalletPreferenceConfigurations getConfigurations() {

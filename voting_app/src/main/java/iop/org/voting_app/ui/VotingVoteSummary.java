@@ -406,24 +406,13 @@ public class VotingVoteSummary extends VotingBaseActivity implements View.OnClic
 
 
 
-        // todo: Esto está así hasta que vuelva de las vacaciones..
-        if (voteType == Vote.VoteType.NEUTRAL){
-            Toast.makeText(this,"Neutral votes not allowed by now\nplease contact Furszy :)",Toast.LENGTH_LONG).show();
+
+        if (Transaction.MIN_NONDUST_OUTPUT.isGreaterThan(Coin.valueOf(amountIoPToshis))){
+            SimpleDialogs.showErrorDialog(this,"Error", "Votes not allowed, min votes value: "+Transaction.MIN_NONDUST_OUTPUT.getValue());
             hideDoneLoading();
             return;
-        }else {
-            if (Transaction.MIN_NONDUST_OUTPUT.isGreaterThan(Coin.valueOf(amountIoPToshis))){
-                SimpleDialogs.showErrorDialog(this,"Error", "Votes not allowed, min votes value: "+Transaction.MIN_NONDUST_OUTPUT.getValue());
-                hideDoneLoading();
-                return;
-            }
         }
 
-        if (amountIoPToshis==0){
-            Toast.makeText(this,"Zero votes not allowed",Toast.LENGTH_LONG).show();
-            hideDoneLoading();
-            return;
-        }
 
         Vote vote = voteWrapper.getVote();
         vote.setVoteType(voteType);

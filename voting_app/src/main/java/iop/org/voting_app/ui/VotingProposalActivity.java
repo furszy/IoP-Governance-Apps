@@ -88,7 +88,7 @@ public class VotingProposalActivity extends VotingBaseActivity implements View.O
 
     private Button btn_minus_voting;
     private Button btn_plus_voting;
-    private EditText txt_vote_quantity;
+    private EditText edit_vote_quantity;
 
     // loading ui
     private View container_send;
@@ -133,7 +133,7 @@ public class VotingProposalActivity extends VotingBaseActivity implements View.O
 
         switchSeekBar = (SwitchSeekBar) root.findViewById(R.id.seek_bar_switch);
 
-        txt_vote_quantity = (EditText) root.findViewById(R.id.txt_vote_quantity);
+        edit_vote_quantity = (EditText) root.findViewById(R.id.edit_vote_quantity);
         btn_minus_voting = (Button) root.findViewById(R.id.btn_minus_voting);
         btn_plus_voting = (Button) root.findViewById(R.id.btn_plus_voting);
 
@@ -183,6 +183,7 @@ public class VotingProposalActivity extends VotingBaseActivity implements View.O
         if (vote!=null){
             voteType = vote.getVote();
             switchSeekBar.setPosition(getPositionByVoteType(vote.getVote()));
+            edit_vote_quantity.setText(String.valueOf(vote.getVotingPower()));
         }
     }
 
@@ -285,12 +286,12 @@ public class VotingProposalActivity extends VotingBaseActivity implements View.O
 
     private void updateVotesAmount(){
         if (voteType== Vote.VoteType.YES)
-            txt_vote_quantity.setText(String.valueOf(votingAmount));
+            edit_vote_quantity.setText(String.valueOf(votingAmount));
         else if (voteType== Vote.VoteType.NO){
-            txt_vote_quantity.setText(String.valueOf(votingAmount*5));
+            edit_vote_quantity.setText(String.valueOf(votingAmount*5));
         }
         else if (voteType == Vote.VoteType.NEUTRAL){
-            txt_vote_quantity.setText("0");
+            edit_vote_quantity.setText("0");
         }
     }
 
@@ -302,29 +303,17 @@ public class VotingProposalActivity extends VotingBaseActivity implements View.O
 
         vote = new Vote(proposal.getGenesisTxHash(),voteType,amountIoPToshis);
 
-        // todo: Esto está así hasta que vuelva de las vacaciones..
-        if (voteType == Vote.VoteType.NEUTRAL){
-            Toast.makeText(this,"Neutral votes not allowed by now\nplease contact Furszy :)",Toast.LENGTH_LONG).show();
-            unlockAndHideLoading();
+
+        if (Transaction.MIN_NONDUST_OUTPUT.isGreaterThan(Coin.valueOf(amountIoPToshis))){
+            SimpleDialogs.showErrorDialog(this,"Error", "Votes not allowed, min votes value: "+Transaction.MIN_NONDUST_OUTPUT.getValue());
+            hideDoneLoading();
             return;
-        }else {
-            if (Transaction.MIN_NONDUST_OUTPUT.isGreaterThan(Coin.valueOf(amountIoPToshis))){
-                SimpleDialogs.showErrorDialog(this,"Error", "Votes not allowed, min votes value: "+Transaction.MIN_NONDUST_OUTPUT.getValue());
-                hideDoneLoading();
-                return;
-            }
         }
 
         // check if the proposal is in a valid state
         if (voteType == Vote.VoteType.YES && (proposal.getState() == QUEUED_FOR_EXECUTION || proposal.getState() == IN_EXECUTION ) ){
             Toast.makeText(this,"No more positive votes are allowed\nProposal is already in execution",Toast.LENGTH_LONG).show();
             unlockAndHideLoading();
-        }
-
-        if (amountIoPToshis==0){
-            Toast.makeText(this,"Zero votes not allowed",Toast.LENGTH_LONG).show();
-            unlockAndHideLoading();
-            return;
         }
 
         if (checkVote(vote)){

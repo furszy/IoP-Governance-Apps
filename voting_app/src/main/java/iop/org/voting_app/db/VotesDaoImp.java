@@ -89,4 +89,9 @@ public class VotesDaoImp implements VotesDao{
     public Vote getVote(String genesisTxHash) {
         return handler.getVote(genesisTxHash);
     }
+
+    @Override
+    public long getTotalLockedBalance() {
+        return handler.sumActiveVotesLockedBalance();
+    }
 }

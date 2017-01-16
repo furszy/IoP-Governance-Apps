@@ -1,6 +1,7 @@
 package org.iop;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.util.concurrent.ListenableFuture;
 
 import org.bitcoinj.core.Address;
 import org.bitcoinj.core.Coin;
@@ -33,6 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import iop.org.iop_sdk_android.core.profile_server.Profile;
 import iop.org.iop_sdk_android.core.wrappers.IntentWrapperAndroid;
@@ -119,16 +121,6 @@ public class WalletModule {
     // esto no va a quedar acá..
     private TransactionStorage transactionStorage;
 
-    public WalletModule(android.content.Context context, WalletPreferenceConfigurations configuration, ForumConfigurations forumConfigurations) {
-        this.context = (AppController) context;
-        this.configuration = configuration;
-        this.forumConfigurations = forumConfigurations;
-        proposalsDao = new ProposalsDao(context);
-        // locked outputs
-        lockedBalance = proposalsDao.getTotalLockedBalance();
-        forumConfigurations.getWrapperUrl();
-        serverWrapper = new ServerWrapper(forumConfigurations.getWrapperUrl());
-    }
 
     public WalletModule(android.content.Context context, WalletPreferenceConfigurations configuration, ForumConfigurations forumConfigurations, VotesDao votesDao) {
         this.context = (AppController) context;
@@ -137,9 +129,13 @@ public class WalletModule {
         proposalsDao = new ProposalsDao(context);
         votesDaoImp = votesDao;
         // locked outputs
-        lockedBalance = proposalsDao.getTotalLockedBalance();
+        lockedBalance = (this.context.isVotingApp())? votesDao.getTotalLockedBalance():proposalsDao.getTotalLockedBalance();
         forumConfigurations.getWrapperUrl();
         serverWrapper = new ServerWrapper(forumConfigurations.getWrapperUrl());
+    }
+
+    public WalletModule(android.content.Context context, WalletPreferenceConfigurations configuration, ForumConfigurations forumConfigurations) {
+        this(context,configuration,forumConfigurations,null);
     }
 
     public void start(){
@@ -226,7 +222,7 @@ public class WalletModule {
                     resp = proposalsDao.markSentBroadcastedProposal(proposal.getForumId());
                     LOG.info("proposal mark sent "+resp);
                     // locked balance
-                    lockedBalance += proposalTransactionRequest.getLockedBalance();
+                    addLockedBalance(proposalTransactionRequest.getLockedBalance());
                     LOG.info("locked balance acumulated: "+lockedBalance);
 
                     LOG.info("sendProposal finished");
@@ -270,7 +266,7 @@ public class WalletModule {
         resp = proposalsDao.markSentBroadcastedProposal(proposal.getForumId());
         LOG.info("proposal mark sent "+resp);
         // locked balance
-        lockedBalance += proposalTransactionRequest.getLockedBalance();
+        addLockedBalance(proposalTransactionRequest.getLockedBalance());
         LOG.info("locked balance acumulated: "+lockedBalance);
 
         LOG.info("sendProposal finished");
@@ -279,11 +275,55 @@ public class WalletModule {
 
     }
 
+    private boolean cancelVote(Vote vote){
+        LOG.info("cancelVote request: "+vote.toString());
+        try {
+            Transaction tx = walletManager.changeAddressOfTx(vote.getLockedOutputHex(),0);
+            ListenableFuture<Transaction> future = blockchainManager.broadcastTransaction(tx.getHash().getBytes());
+            future.get(1, TimeUnit.MINUTES);
+
+            votesDaoImp.addUpdateIfExistVote(vote);
+
+            LOG.info("cancelVote succed: "+vote.toString());
+
+            return true;
+
+        } catch (InsufficientMoneyException e) {
+            e.printStackTrace();
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean cancelProposalContract(Proposal proposal) throws CantCancelProsalException{
+        LOG.info("cancelProposalContract : "+proposal.toString());
+        try {
+            Transaction tx = walletManager.changeAddressOfTx(proposal.getGenesisTxHash(),0);
+            ListenableFuture<Transaction> future = blockchainManager.broadcastTransaction(tx.getHash().getBytes());
+            future.get(1, TimeUnit.MINUTES);
+
+            proposalsDao.updateProposalByForumId(proposal);
+
+            LOG.info("cancelProposalContract succed: "+proposal.toString());
+
+            return true;
+
+        } catch (InsufficientMoneyException e) {
+            e.printStackTrace();
+            throw new CantCancelProsalException("Insufficient money");
+        } catch (Exception e){
+            e.printStackTrace();
+            throw new CantCancelProsalException(e.getMessage());
+        }
+    }
+
     public boolean sendVote(Vote vote) throws InsuficientBalanceException, NotConnectedPeersException, CantSendVoteException, iop_sdk.wallet.CantSendVoteException {
 
         try {
-            if (vote.getVotingPower()==0 && vote.getVote()== Vote.VoteType.NEUTRAL){
-                throw new IllegalArgumentException("Vote with illegal arguments: "+vote.toString());
+
+            if (vote.getVotingPower()==0 && vote.getVote() == Vote.VoteType.NEUTRAL){
+                return cancelVote(vote);
             }
 
             // save vote
@@ -298,7 +338,7 @@ public class WalletModule {
             boolean resp = votesDaoImp.lockOutput(vote.getGenesisHashHex(),vote.getLockedOutputHex(),vote.getLockedOutputIndex());
             LOG.info("vote locked "+resp);
             // locked balance
-            lockedBalance += proposalVoteRequest.getLockedBalance();
+            addLockedBalance(proposalVoteRequest.getLockedBalance());
             LOG.info("locked balance acumulated: "+lockedBalance);
 
             LOG.info("sendVote finished");
@@ -340,9 +380,6 @@ public class WalletModule {
         }
     }
 
-    public void cancelProposalOnBLockchain(Proposal proposal) {
-        LOG.info("cancelProposalOnBLockchain");
-    }
 
     public List<Proposal> getProposals() {
         return proposalsDao.listProposals();
@@ -699,6 +736,7 @@ public class WalletModule {
                 return null;
             if (proposalDb.isMine()){
                 proposal.setMine(true);
+                proposal.setSent(true);
             }
         }
 
@@ -725,12 +763,13 @@ public class WalletModule {
 
                 // Unlock freeze outputs if the proposal is finished
                 if(context.isVotingApp()){
-                    if (forumProposal.getState() == EXECUTED || forumProposal.getState()== EXECUTION_CANCELLED){
+                    if (forumProposal.getState() == EXECUTED || forumProposal.getState() == EXECUTION_CANCELLED){
                         // unlock funds
                         if (votesDaoImp.unlockOutput(proposal.getGenesisTxHash())){
 
                             Vote vote = votesDaoImp.getVote(proposal.getGenesisTxHash());
-                            lockedBalance-=vote.getVotingPower();
+                            // update locked balance
+                            minusLockedValue(vote.getVotingPower());
                             // notify unlocked funds
                             IntentWrapper intentWrapper = new IntentWrapperAndroid(ACTION_NOTIFICATION);
                             intentWrapper.put(INTENT_BROADCAST_TYPE,INTENT_DATA+INTENT_NOTIFICATION);
@@ -742,10 +781,10 @@ public class WalletModule {
 
                     }
                 }else {
-                    if (forumProposal.getState() == EXECUTED || forumProposal.getState()== EXECUTION_CANCELLED){
+                    if (forumProposal.getState() == EXECUTED || forumProposal.getState() == EXECUTION_CANCELLED){
                         // No tengo que desloquear los fondos aquí ya que se lokean por el estado de la propuesta
                         // así que solamente tengo que notificar al usuario que sus fondos fueron desbloqueados
-                        lockedBalance-=ProposalTransactionBuilder.FREEZE_VALUE.getValue();
+                        minusLockedValue(ProposalTransactionBuilder.FREEZE_VALUE.getValue());
 
                         IntentWrapper intentWrapper = new IntentWrapperAndroid(ACTION_NOTIFICATION);
                         intentWrapper.put(INTENT_BROADCAST_TYPE,INTENT_DATA+INTENT_NOTIFICATION);
@@ -823,5 +862,12 @@ public class WalletModule {
         return votesDaoImp.getVote(genesisTxHash);
     }
 
+    private void addLockedBalance(Long value){
+        lockedBalance+=value;
+    }
+
+    private void minusLockedValue(Long value){
+        lockedBalance-=value;
+    }
 
 }

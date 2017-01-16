@@ -150,11 +150,7 @@ public class ProposalSummaryActivity extends ContributorBaseActivity implements 
 
         loadProposal();
 
-        if (proposal.isSent()){
-            proposalSent();
-        }else {
-            btn_broadcast_proposal.setText("Broadcast");
-        }
+
 
     }
 
@@ -175,18 +171,18 @@ public class ProposalSummaryActivity extends ContributorBaseActivity implements 
 //        }
     }
 
-    private void loadProposal(){
+    private void loadProposal() {
         txt_title.setText(proposal.getTitle());
         txt_forum_id.setText(String.valueOf(proposal.getForumId()));
         txt_sub_title.setText(proposal.getSubTitle());
         txt_categories.setText(proposal.getCategory());
         txt_body.setText(proposal.getBody());
-        txt_start_block.setText(Html.fromHtml(transformToHtmlWithColor("Start block: ","#cccccc")+transformToHtmlWithColor(String.valueOf(proposal.getStartBlock()),"#ffffff")));
-        txt_end_block.setText(Html.fromHtml(transformToHtmlWithColor("End block: ","#cccccc")+transformToHtmlWithColor(String.valueOf(proposal.getEndBlock()),"#ffffff")));
+        txt_start_block.setText(Html.fromHtml(transformToHtmlWithColor("Start block: ", "#cccccc") + transformToHtmlWithColor(String.valueOf(proposal.getStartBlock()), "#ffffff")));
+        txt_end_block.setText(Html.fromHtml(transformToHtmlWithColor("End block: ", "#cccccc") + transformToHtmlWithColor(String.valueOf(proposal.getEndBlock()), "#ffffff")));
         loadBeneficiaries(proposal.getBeneficiaries());
-        txt_total_amount.setText("Total: "+coinToString(proposal.getBlockReward()*proposal.getEndBlock())+" IoPs");
+        txt_total_amount.setText("Total: " + coinToString(proposal.getBlockReward() * proposal.getEndBlock()) + " IoPs");
 
-        if (!proposal.isActive()){
+        if (!proposal.isActive()) {
             btn_broadcast_proposal.setText("Back");
             btn_broadcast_proposal.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -194,6 +190,10 @@ public class ProposalSummaryActivity extends ContributorBaseActivity implements 
                     onBackPressed();
                 }
             });
+        } else if (proposal.isSent()) {
+            proposalSent();
+        } else {
+            btn_broadcast_proposal.setText("Broadcast");
         }
 
     }
@@ -256,16 +256,14 @@ public class ProposalSummaryActivity extends ContributorBaseActivity implements 
     public void onClick(View v) {
         int id = v.getId();
         if (id == R.id.btn_broadcast_proposal){
-            if (!proposal.isSent()) {
-                if (lockBroadcast.compareAndSet(false, true)) {
 
-                    showBroadcastDialog();
+            if (lockBroadcast.compareAndSet(false, true)) {
 
-                } else
-                    Log.e(TAG, "Toco dos veces el broadcast..");
-            }else {
-                Toast.makeText(v.getContext(),"Method not implemented yet\nThanks for use the app!!",Toast.LENGTH_LONG).show();
-            }
+                showBroadcastDialog();
+
+            } else
+                Log.e(TAG, "Toco dos veces el broadcast..");
+
         } else if(id == R.id.txt_forum){
             Log.i(TAG,"redirecting to forum");
             redirectToForum(proposal);
@@ -301,12 +299,6 @@ public class ProposalSummaryActivity extends ContributorBaseActivity implements 
 
     private void proposalSent() {
         btn_broadcast_proposal.setText("Cancel");
-        btn_broadcast_proposal.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(v.getContext(),"Great!, good job testing!",Toast.LENGTH_LONG).show();
-            }
-        });
     }
 
 
@@ -321,12 +313,15 @@ public class ProposalSummaryActivity extends ContributorBaseActivity implements 
     private void showBroadcastDialog() {
         // loading
         preparateLoading("Proposal broadcasted!", R.drawable.icon_done);
-        BroadcastContractDialog.newinstance(module,proposal).setCancelListener(new CancelLister() {
+        final BroadcastContractDialog dialog = BroadcastContractDialog.newinstance(module,proposal);
+        dialog.setCancelListener(new CancelLister() {
             @Override
             public void cancel(boolean isActionCompleted) {
                 if (!isActionCompleted) {
                     hideDoneLoading();
                     lockBroadcast.set(false);
+                }else {
+                    proposal = dialog.getProposal();
                 }
             }
         }).show(getSupportFragmentManager(),"broadcastContractDialog");

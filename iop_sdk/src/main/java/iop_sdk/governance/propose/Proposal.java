@@ -498,6 +498,18 @@ public class Proposal implements Serializable {
         return true;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof Proposal)) return false;
+        else {
+            if (this.getForumId()==((Proposal) o).getForumId()){
+                return true;
+            }else {
+                return false;
+            }
+        }
+    }
+
     public String toStringBlockchain(){
         return  "Proposal{" +
                 ", startBlock=" + startBlock +

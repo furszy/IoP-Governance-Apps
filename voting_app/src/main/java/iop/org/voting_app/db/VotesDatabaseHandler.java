@@ -188,6 +188,18 @@ public class VotesDatabaseHandler extends SQLiteOpenHelper {
         return contactList;
     }
 
+    public long sumActiveVotesLockedBalance() {
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        long amount = 0;
+        Cursor c = db.rawQuery("select sum("+KEY_VOTING_POWER+") from "+TABLE_VOTES+" where "+KEY_IS_VOTE_LOCKED+" = 1 ;", null);
+        if (c.moveToFirst())
+            amount = c.getLong(0);
+        c.close();
+        return amount;
+    }
+
 //    // Updating single contact
 //    public int updateContact(Vote contact) {
 //        SQLiteDatabase db = this.getWritableDatabase();
@@ -266,5 +278,6 @@ public class VotesDatabaseHandler extends SQLiteOpenHelper {
         db.delete(TABLE_VOTES, null,null);
         db.close();
     }
+
 
 }

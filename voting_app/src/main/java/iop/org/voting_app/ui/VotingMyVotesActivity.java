@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
+import android.support.v4.view.ViewCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -17,6 +18,7 @@ import iop.org.furszy_lib.utils.AnimationUtils;
 import iop.org.voting_app.R;
 import iop.org.voting_app.base.VotingBaseActivity;
 import iop.org.voting_app.ui.components.my_votes.MyVotesAdapter;
+import iop.org.voting_app.ui.components.my_votes.MyVotesHolder;
 import iop.org.voting_app.ui.dialogs.VoteDialog;
 import iop_sdk.governance.propose.Proposal;
 import iop_sdk.governance.vote.Vote;
@@ -171,9 +173,12 @@ public class VotingMyVotesActivity extends VotingBaseActivity implements FermatL
         Intent intent = new Intent(this,VotingVoteSummary.class);
         intent.putExtra(VotingVoteSummary.INTENT_VOTE_WRAPPER,data);
         String transitionName = getString(R.string.transition_card);
+        MyVotesHolder holder = (MyVotesHolder) recyclerView.findViewHolderForAdapterPosition(position);
+//        ViewCompat.setTransitionName(view, transitionName);
         ActivityOptionsCompat options =
-                ActivityOptionsCompat.makeSceneTransitionAnimation(this,
-                        recyclerView.getChildAt(position),//albumCoverImageView,   // The view which starts the transition
+                ActivityOptionsCompat.makeSceneTransitionAnimation(
+                        this,
+                        holder.itemView,//albumCoverImageView,   // The view which starts the transition
                         transitionName    // The transitionName of the view we’re transitioning to
                 );
         ActivityCompat.startActivity(this, intent, options.toBundle());

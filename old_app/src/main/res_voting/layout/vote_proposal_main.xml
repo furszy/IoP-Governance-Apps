@@ -227,7 +227,7 @@
                     android:inputType="number"
                     android:text="0"
                     android:gravity="center"
-                    android:id="@+id/txt_vote_quantity"
+                    android:id="@+id/edit_vote_quantity"
                     android:background="@drawable/rectangle_border" />
 
 

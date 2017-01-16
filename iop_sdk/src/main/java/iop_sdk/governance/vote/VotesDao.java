@@ -40,4 +40,6 @@ public interface VotesDao {
 
 
     Vote getVote(String genesisTxHash);
+
+    long getTotalLockedBalance();
 }

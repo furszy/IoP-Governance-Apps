@@ -44,6 +44,9 @@ public class BroadcastVoteDialog extends DialogFragment {
         TextView txt_send = (TextView) root.findViewById(R.id.txt_send);
         TextView txt_cancel = (TextView) root.findViewById(R.id.txt_cancel);
 
+        TextView txt_broadcast_dialog = (TextView) root.findViewById(R.id.txt_broadcast_dialog);
+        txt_broadcast_dialog.setText(voteText());
+
         txt_send.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -64,6 +67,22 @@ public class BroadcastVoteDialog extends DialogFragment {
 
 
         return root;
+    }
+
+    private String voteText() {
+        StringBuilder stringBuilder = new StringBuilder();
+        switch (vote.getVote()){
+            case NEUTRAL:
+                stringBuilder.append("Neutral Vote\nPrevious votes will be canceled");
+                break;
+            case NO:
+                stringBuilder.append("Voting power will be locked\nuntil the contracts ends:\n"+vote.getVotingPower());
+                break;
+            case YES:
+                stringBuilder.append("Voting power will be locked\nuntil the contracts ends:\n"+vote.getVotingPower());
+                break;
+        }
+        return stringBuilder.toString();
     }
 
     @Override

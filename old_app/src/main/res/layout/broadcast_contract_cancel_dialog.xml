@@ -12,14 +12,25 @@
         android:src="@drawable/icon_alert_block_iop"
         android:layout_marginTop="32dp"/>
 
+
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/txt_broadcast_dialog"
+        android:layout_gravity="center"
         android:layout_marginTop="16dp"
+        android:text="Cancel contract"
+        />
+
+
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="9dp"
         android:layout_gravity="center"
         android:gravity="center"
-        android:text="XXX Voting power will be\nlocked until the contrat ends"/>
+        android:text="You are going to cancel the contract\nYour locked funds will be unlocked"/>
+
 
     <View
         android:layout_width="match_parent"

@@ -71,8 +71,6 @@ public class VotingMyVotesActivity extends VotingBaseActivity implements FermatL
         layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
 
-        // specify an adapter (see also next example)
-        // todo: adapter
         adapter = new MyVotesAdapter(this,module);
         recyclerView.setAdapter(adapter);
         adapter.setFermatListEventListener(this);

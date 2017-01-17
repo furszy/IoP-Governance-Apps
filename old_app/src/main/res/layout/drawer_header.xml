@@ -26,6 +26,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:id="@+id/container_balance"
         android:layout_alignParentBottom="true"
         android:background="#Ca000000"
         android:orientation="vertical"

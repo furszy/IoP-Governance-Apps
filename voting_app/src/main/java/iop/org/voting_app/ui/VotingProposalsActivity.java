@@ -135,12 +135,13 @@ public class VotingProposalsActivity extends VotingBaseActivity {
             if (proposals==null || proposals.isEmpty()) {
                 adapter.changeDataSet(proposals);
                 hideEmptyScreen();
-            }else
+            }else {
                 if (!proposals.contains(proposal)) {
                     //proposals.put(proposal);
                     adapter.addItem(proposal);
                     adapter.notifyDataSetChanged();
                 }
+            }
             return true;
         }
 

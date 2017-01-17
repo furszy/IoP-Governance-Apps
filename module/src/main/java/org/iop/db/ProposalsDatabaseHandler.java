@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -594,6 +595,26 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
         String countQuery = "SELECT  * FROM " + TABLE_PROPOSALS + " WHERE "+KEY_PROPOSAL_IS_SENT+"=?";
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery(countQuery, new String[]{String.valueOf(1)});
+        int count = cursor.getCount();
+        cursor.close();
+        //db.close();
+
+        Log.d(TAG,"Sent proposals count: "+count);
+        // return count
+        return count;
+    }
+//type NOT IN ('connect','answer')
+    public long getSentAndActiveProposalsCount() {
+        String countQuery = "SELECT  * FROM " + TABLE_PROPOSALS + " WHERE "+KEY_PROPOSAL_IS_SENT+"=? AND "+KEY_PROPOSAL_STATE+" NOT IN (?,?,?,?)";
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery(
+                countQuery,
+                new String[]{
+                        String.valueOf(1),
+                        Proposal.ProposalState.EXECUTED.toString(),
+                        Proposal.ProposalState.EXECUTION_CANCELLED.toString(),
+                        Proposal.ProposalState.DRAFT.toString(),
+                        Proposal.ProposalState.CANCELED_BY_OWNER.toString()});
         int count = cursor.getCount();
         cursor.close();
         //db.close();

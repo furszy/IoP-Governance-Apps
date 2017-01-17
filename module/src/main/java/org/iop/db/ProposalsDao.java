@@ -86,7 +86,7 @@ public class ProposalsDao implements ProposalsContractDao {
     }
 
     public long getTotalLockedBalance() {
-        return proposalsDatabaseHandler.getSentProposalsCount()* ProposalTransactionBuilder.FREEZE_VALUE.getValue();
+        return proposalsDatabaseHandler.getSentAndActiveProposalsCount()* ProposalTransactionBuilder.FREEZE_VALUE.getValue();
     }
 
     public Proposal findProposal(String forumTitle) throws CantGetProposalException {

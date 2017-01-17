@@ -54,6 +54,7 @@ import iop_sdk.global.ContextWrapper;
 import iop_sdk.global.IntentWrapper;
 import iop_sdk.global.exceptions.ConnectionRefusedException;
 import iop_sdk.global.exceptions.NotValidParametersException;
+import iop_sdk.governance.propose.CantCompleteProposalException;
 import iop_sdk.governance.propose.Proposal;
 import iop_sdk.governance.propose.ProposalTransactionBuilder;
 import iop_sdk.governance.propose.ProposalTransactionRequest;
@@ -189,7 +190,7 @@ public class WalletModule {
     }
 
 
-    public boolean sendProposal(Proposal proposal) throws CantSendProposalException, InsuficientBalanceException, CantSaveProposalException, InvalidProposalException, NotConnectedPeersException {
+    public boolean sendProposal(Proposal proposal) throws CantSendProposalException, InsuficientBalanceException, CantSaveProposalException, InvalidProposalException, NotConnectedPeersException, CantCompleteProposalException {
 
         LOG.info("SendProposal, title: "+proposal.getTitle());
         // lock to not to spend the same UTXO twice for error.
@@ -235,6 +236,9 @@ public class WalletModule {
                 }catch (NotConnectedPeersException e) {
                     LOG.error("Not connected peers",e);
                     throw e;
+                } catch (CantCompleteProposalException e) {
+                    LOG.error("CantCompleteProposalException",e);
+                    throw e;
                 }
             }catch (CantSendProposalException e){
                 throw e;
@@ -248,7 +252,7 @@ public class WalletModule {
 
     }
 
-    public boolean sendProposal(Proposal proposal,byte[] transactionHashDest) throws InsuficientBalanceException, InsufficientMoneyException, NotConnectedPeersException {
+    public boolean sendProposal(Proposal proposal,byte[] transactionHashDest) throws InsuficientBalanceException, InsufficientMoneyException, NotConnectedPeersException, CantCompleteProposalException {
 
         ProposalTransactionRequest proposalTransactionRequest = new ProposalTransactionRequest(blockchainManager, walletManager, proposalsDao);
         proposalTransactionRequest.forProposal(proposal);
@@ -411,6 +415,12 @@ public class WalletModule {
         long balance = walletManager.getWallet().getBalance(Wallet.BalanceType.AVAILABLE_SPENDABLE).value-lockedBalance;
         return BtcFormat.getCoinInstance().format(balance);
     }
+
+    public CharSequence getUnnavailableBalanceStr() {
+        long balance = walletManager.getWallet().getBalance(Wallet.BalanceType.ESTIMATED_SPENDABLE).value-walletManager.getWallet().getBalance(Wallet.BalanceType.AVAILABLE_SPENDABLE).value;
+        return BtcFormat.getCoinInstance().format(balance);
+    }
+
     public long getAvailableBalance() {
         return walletManager.getWallet().getBalance(Wallet.BalanceType.AVAILABLE_SPENDABLE).value-lockedBalance;
     }
@@ -869,5 +879,6 @@ public class WalletModule {
     private void minusLockedValue(Long value){
         lockedBalance-=value;
     }
+
 
 }

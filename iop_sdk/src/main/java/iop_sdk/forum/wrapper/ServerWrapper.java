@@ -368,7 +368,9 @@ public class ServerWrapper {
 
             LOG.info("getVotingProposals URL: "+url);
 
-            HttpClient client = new DefaultHttpClient(new BasicHttpParams());
+            BasicHttpParams basicHttpParams = new BasicHttpParams();
+            HttpConnectionParams.setConnectionTimeout(basicHttpParams, (int) TimeUnit.SECONDS.toMillis(30));
+            HttpClient client = new DefaultHttpClient(basicHttpParams);
             HttpPost httpPost = new HttpPost(url);
             //httpPost.setHeader("Content-type", "application/vnd.api+json");
             httpPost.addHeader("Accept", "text/html,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5");
@@ -468,6 +470,8 @@ public class ServerWrapper {
             e.printStackTrace();
         } catch (IllegalStateException e){
             throw new CantGetProposalsFromServer("Something fail, server return: "+result+", status code: "+httpResponse.getStatusLine().getStatusCode());
+        } catch (Exception e){
+            throw new CantGetProposalsFromServer(e.getMessage());
         }
         return requestProposalsResponse;
 

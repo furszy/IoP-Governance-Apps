@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.Html;
+import android.text.Spanned;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,6 +30,7 @@ import iop.org.iop_contributors_app.ui.dialogs.CancelLister;
 import iop.org.iop_contributors_app.ui.dialogs.SimpleDialogs;
 import iop_sdk.governance.propose.Beneficiary;
 import iop_sdk.governance.propose.Proposal;
+import iop_sdk.governance.utils.TextUtils;
 
 import static iop.org.iop_contributors_app.ui.CreateProposalActivity.INTENT_DATA_FORUM_ID;
 import static iop.org.iop_contributors_app.ui.CreateProposalActivity.INTENT_DATA_FORUM_TITLE;
@@ -73,7 +75,12 @@ public class ProposalSummaryActivity extends ContributorBaseActivity implements 
     private TextView txt_end_block;
     private TextView txt_total_amount;
     private TextView txt_forum;
+    private View img_more_data;
     private LinearLayout containerBeneficiaries;
+
+    // more data
+    private ViewGroup container_more_data;
+    private TextView txt_genesis_hash;
 
     private Button btn_broadcast_proposal;
 //    private ImageButton btn_edit;
@@ -137,10 +144,16 @@ public class ProposalSummaryActivity extends ContributorBaseActivity implements 
 //        btn_edit = (ImageButton) root.findViewById(R.id.btn_edit);
         container_arrow = root.findViewById(R.id.container_arrow);
 
+        img_more_data = root.findViewById(R.id.img_more_data);
+
         container_send = root.findViewById(R.id.container_send);
         img_done = (ImageView) root.findViewById(R.id.img_done);
         txt_done = (TextView) root.findViewById(R.id.txt_done);
         progressBar = (ProgressBar) root.findViewById(R.id.progressBar);
+
+        // extra data
+        container_more_data = (ViewGroup) root.findViewById(R.id.container_more_data);
+        txt_genesis_hash = (TextView) root.findViewById(R.id.txt_genesis_hash);
 
 
         container_arrow.setAnimation(AnimationUtils.loadAnimation(this, iop.org.furszy_lib.R.anim.float_anim));
@@ -194,6 +207,7 @@ public class ProposalSummaryActivity extends ContributorBaseActivity implements 
             proposalSent();
         } else {
             btn_broadcast_proposal.setText("Broadcast");
+            img_more_data.setVisibility(View.GONE);
         }
 
     }
@@ -299,6 +313,29 @@ public class ProposalSummaryActivity extends ContributorBaseActivity implements 
 
     private void proposalSent() {
         btn_broadcast_proposal.setText("Cancel");
+        img_more_data.setVisibility(View.VISIBLE);
+        img_more_data.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (container_more_data.getVisibility()==View.VISIBLE){
+                    hideMoreData();
+                }else {
+                    showMoreData();
+
+                }
+
+            }
+        });
+    }
+
+    private void showMoreData(){
+        Spanned hashText = Html.fromHtml(transformToHtmlWithColor("Tx id: ", "#ffffff") + transformToHtmlWithColor(proposal.getGenesisTxHash(), "#CCCCCC"));
+        txt_genesis_hash.setText(hashText);
+        iop.org.furszy_lib.utils.AnimationUtils.expand(container_more_data);
+    }
+
+    private void hideMoreData(){
+        iop.org.furszy_lib.utils.AnimationUtils.collapse(container_more_data);
     }
 
 

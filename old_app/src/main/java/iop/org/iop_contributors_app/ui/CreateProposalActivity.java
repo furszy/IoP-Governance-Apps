@@ -513,7 +513,8 @@ public class CreateProposalActivity extends ContributorBaseActivity {
 
     @Override
     protected boolean onContributorsBroadcastReceive(Bundle data) {
-        if (data.getString(INTENT_BROADCAST_DATA_TYPE).equals(INTENT_BROADCAST_DATA_PROPOSAL_TRANSACTION_SUCCED)){
+        String dataType = data.getString(INTENT_BROADCAST_DATA_TYPE);
+        if (dataType!=null && dataType.equals(INTENT_BROADCAST_DATA_PROPOSAL_TRANSACTION_SUCCED)){
             showDoneLoading();
 //            lockBroadcast.set(false);
             Toast.makeText(CreateProposalActivity.this,"Proposal broadcasted!, publishing in the forum..",Toast.LENGTH_SHORT).show();
@@ -690,10 +691,7 @@ public class CreateProposalActivity extends ContributorBaseActivity {
         int startBlock = Integer.parseInt(edit_start_block.getText().toString());
         int endBlock = Integer.parseInt(edit_end_block.getText().toString());
         long blockReward = Long.parseLong(edit_block_reward.getText().toString());
-//        String addressBen1 = edit_beneficiary_address_1.getText().toString();
-//        long value = Long.parseLong(edit_beneficiary_value_1.getText().toString());
 
-        //todo: faltan los beneficiarios y las validaciones..
         proposal.setTitle(validator.validateTitle(title));
         proposal.setSubTitle(validator.validateSubTitle(subtitle));
 //        proposal.setCategory(validator.validatCategory(category));

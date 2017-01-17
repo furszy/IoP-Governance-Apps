@@ -59,7 +59,7 @@ public class ProposalTransactionRequest {
         this.conf = walletManager.getConfigurations();
     }
 
-    public void forProposal(Proposal proposal) throws InsuficientBalanceException {
+    public void forProposal(Proposal proposal) throws InsuficientBalanceException,CantCompleteProposalException {
 
         this.proposal = proposal;
 
@@ -81,7 +81,9 @@ public class ProposalTransactionRequest {
         // locked coins 1000 IoPs
         totalOuputsValue = totalOuputsValue.add(Coin.valueOf(1000, 0));
         // 1 IoP minimum contract fee
-        totalOuputsValue = totalOuputsValue.add(Coin.valueOf(proposal.getExtraFeeValue()));
+        Coin extraFee = Coin.valueOf(proposal.getExtraFeeValue());
+        if (extraFee.isLessThan(Coin.COIN)) throw new CantCompleteProposalException("Proposal fee is lesser than 1 IoP");
+        totalOuputsValue = totalOuputsValue.add(extraFee);
 
         List<TransactionOutput> unspentTransactions = new ArrayList<>();
         Coin totalInputsValue = Coin.ZERO;

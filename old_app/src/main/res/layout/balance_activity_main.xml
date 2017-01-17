@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+
+    >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:paddingTop="20dp"
+        android:paddingBottom="20dp"
+        >
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/img_photo"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_marginLeft="@dimen/spacing_large"
+            android:elevation="4dp"
+            android:src="@drawable/profile"
+            app:civ_border_color="#fff"
+            app:civ_border_width="1dp"
+            android:layout_marginRight="6dp"
+            />
+
+
+    </LinearLayout>
+    
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/container_available"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:paddingTop="7dp"
+        android:paddingBottom="7dp">
+        
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/txt_available"
+            android:text="202.00 IoPs"
+            android:textColor="#fff"
+            android:textSize="24sp"/>
+        
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="Available"
+            android:textColor="#f6f6f6"
+            android:textSize="15sp"/>
+        
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/container_unnavailable"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:paddingTop="7dp"
+        android:paddingBottom="7dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/txt_unnavailable"
+            android:text="150.00 IoPs"
+            android:textColor="#fff"
+            android:textSize="24sp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="Unnavailable"
+            android:textColor="#f6f6f6"
+
+            android:textSize="15sp"/>
+
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/container_locked"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:paddingTop="7dp"
+        android:paddingBottom="7dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/txt_locked"
+            android:text="150.00 IoPs"
+            android:textColor="#fff"
+
+            android:textSize="24sp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="Locked"
+            android:textColor="#f6f6f6"
+
+            android:textSize="15sp"/>
+
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:paddingTop="20dp"
+        android:paddingBottom="16dp"
+        >
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/triangulo_qr_drawer"
+            android:layout_gravity="center"
+            />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/txt_increase_voting_power"
+            android:text="Increase voting power"
+            android:textColor="@color/text_blue"
+            android:paddingBottom="3dp"
+            android:textSize="11sp"/>
+
+        <ImageView
+            android:layout_width="92dp"
+            android:layout_height="92dp"
+            android:id="@+id/img_qr"
+            android:src="@drawable/img_test"
+            android:background="@null"
+            />
+
+
+    </LinearLayout>
+    
+    
+
+</LinearLayout>

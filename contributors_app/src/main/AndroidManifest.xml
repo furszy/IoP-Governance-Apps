@@ -44,6 +44,9 @@
         <activity android:name="iop.org.iop_contributors_app.ui.settings.IoPBalanceActivity"/>
         <activity android:name="iop.org.iop_contributors_app.ui.settings.DevActivity" android:theme="@style/PreferenceScreen"/>
 
+        <activity android:name="iop.org.iop_contributors_app.ui.BalanceActivity"/>
+        <activity android:name="iop.org.iop_contributors_app.ui.TransactionsActivity"/>
+
         <service android:name="iop.org.iop_contributors_app.services.BlockchainServiceImpl"/>
 
     </application>

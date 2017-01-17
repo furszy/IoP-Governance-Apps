@@ -67,6 +67,7 @@ import iop_sdk.blockchain.NotConnectedPeersException;
 import iop_sdk.blockchain.explorer.TransactionFinder;
 import iop_sdk.blockchain.explorer.TransactionFinderListener;
 import iop_sdk.forum.wrapper.ServerWrapper;
+import iop_sdk.governance.propose.CantCompleteProposalException;
 import iop_sdk.governance.propose.Proposal;
 import iop_sdk.governance.vote.Vote;
 import iop_sdk.wallet.BlockchainManager;
@@ -659,6 +660,8 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
                             e.printStackTrace();
                             showDialogException(COMMON_ERROR_DIALOG, "Not connected peers, please try again later");
                             check();
+                        } catch (CantCompleteProposalException e){
+                            showDialogException(COMMON_ERROR_DIALOG, e.getMessage());
                         } catch (Exception e) {
                             e.printStackTrace();
                         }

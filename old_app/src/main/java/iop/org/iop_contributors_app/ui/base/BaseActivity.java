@@ -47,6 +47,8 @@ import iop.org.furszy_lib.nav_view.NavMenuItem;
 import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.intents.DialogIntentsBuilder;
 import iop.org.iop_contributors_app.services.BlockchainServiceImpl;
+import iop.org.iop_contributors_app.ui.BalanceActivity;
+import iop.org.iop_contributors_app.ui.TransactionsActivity;
 import iop.org.iop_contributors_app.utils.Cache;
 
 import static android.graphics.Color.WHITE;
@@ -81,6 +83,7 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     private NavViewHelper navViewHelper;
 
+    private ViewGroup container_balance;
     private TextView txt_available_balance;
     private TextView txt_lock_balance;
     private TextView txt_drawer_name;
@@ -204,6 +207,7 @@ public abstract class BaseActivity extends AppCompatActivity {
         if (appColor!=-1){
             ((TextView)navigationView.findViewById(R.id.txt_increase_voting_power)).setTextColor(appColor);
         }
+        container_balance = (ViewGroup) headerView.findViewById(R.id.container_balance);
         txt_available_balance = (TextView) headerView.findViewById(R.id.txt_available_balance);
         txt_lock_balance = (TextView) headerView.findViewById(R.id.txt_lock_balance);
         txt_drawer_name = (TextView) headerView.findViewById(R.id.txt_drawer_name);
@@ -215,6 +219,13 @@ public abstract class BaseActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 showQrDialog(BaseActivity.this);
+            }
+        });
+
+        container_balance.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(v.getContext(), BalanceActivity.class));
             }
         });
 

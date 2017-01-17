@@ -83,6 +83,8 @@ public class ProposalsActivity extends ContributorBaseActivity {
             for (int i=0;i<adapter.getItemCount();i++){
                 if ((myProp = adapter.getItem(i)).getForumId()==proposal.getForumId()){
                     myProp.setState(proposal.getState());
+                    myProp.setVoteYes(proposal.getVoteYes());
+                    myProp.setVoteNo(proposal.getVoteNo());
                     adapter.notifyItemChanged(i);
                 }
             }

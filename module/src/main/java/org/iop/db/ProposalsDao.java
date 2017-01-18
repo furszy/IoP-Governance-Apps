@@ -187,4 +187,8 @@ public class ProposalsDao implements ProposalsContractDao {
     public boolean updateProposalStateByForumId(Proposal proposal){
         return proposalsDatabaseHandler.updateProposalStateByForumId(proposal.getForumId(),proposal.getState())==1;
     }
+
+    public boolean beneficiaryAddressExist(String addressBen) {
+        return proposalsDatabaseHandler.addressBeneficiaryExist(addressBen);
+    }
 }

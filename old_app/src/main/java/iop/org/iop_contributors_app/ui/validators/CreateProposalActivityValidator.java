@@ -3,6 +3,7 @@ package iop.org.iop_contributors_app.ui.validators;
 import org.bitcoinj.core.Address;
 import org.bitcoinj.core.AddressFormatException;
 import org.iop.WalletConstants;
+import org.iop.WalletModule;
 
 import java.util.List;
 import java.util.Map;
@@ -15,6 +16,12 @@ import iop_sdk.governance.propose.Proposal;
  */
 
 public class CreateProposalActivityValidator {
+
+    private WalletModule module;
+
+    public CreateProposalActivityValidator(WalletModule module) {
+        this.module = module;
+    }
 
     public String validateTitle(String title) throws ValidationException{
         if (title==null){
@@ -55,6 +62,7 @@ public class CreateProposalActivityValidator {
 
     public boolean validateBeneficiary(String addressBen1, long value) throws ValidationException {
         if (!checkAddress(addressBen1)) throwValidationException("Address not valid");
+        if (module.proposalBeneficiaryAddressExist(addressBen1)) throwValidationException("Address "+addressBen1+" is already used in other proposal,\nfor your privacy please use another address");
         return true;
     }
 

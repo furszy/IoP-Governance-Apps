@@ -418,13 +418,13 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
 
             //todo: acá falta una validación para saber si la transaccion es mia.
 
-            boolean isTransactionMine = walletModule.isProposalTransaction(transaction);
+            boolean isProposalMine = walletModule.isProposalTransaction(transaction);
             int depthInBlocks = transaction.getConfidence().getDepthInBlocks();
 
             Intent intent = new Intent(ACTION_NOTIFICATION);
             intent.putExtra(INTENT_BROADCAST_TYPE, INTENT_DATA + INTENT_NOTIFICATION);
             intent.putExtra(INTENT_BROADCAST_DATA_TYPE, INTENT_BROADCAST_DATA_ON_COIN_RECEIVED);
-            intent.putExtra(INTENT_BROADCAST_DATA_ON_COIN_RECEIVED_IS_TRANSACTION_MINE,isTransactionMine);
+            intent.putExtra(INTENT_BROADCAST_DATA_ON_COIN_RECEIVED_IS_TRANSACTION_MINE,isProposalMine);
 
             localBroadcast.sendBroadcast(intent);
 
@@ -432,12 +432,12 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
             final Coin amount = transaction.getValue(wallet);
             final TransactionConfidence.ConfidenceType confidenceType = transaction.getConfidence().getConfidenceType();
 
-            notificationCount++;
-            notificationAccumulatedAmount = notificationAccumulatedAmount.add(amount);
-
-            if (!isTransactionMine ){//&& depthInBlocks>1) {
+            if (!isProposalMine){//&& depthInBlocks>1) {
 
                 if (amount.isGreaterThan(Coin.ZERO)) {
+
+                    notificationCount++;
+                    notificationAccumulatedAmount = notificationAccumulatedAmount.add(amount);
 
                     Intent resultIntent = new Intent(getApplicationContext(), BlockchainServiceImpl.this.getClass());
                     resultIntent.setAction(ACTION_CANCEL_COINS_RECEIVED);

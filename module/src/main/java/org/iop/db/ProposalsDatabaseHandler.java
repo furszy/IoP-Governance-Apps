@@ -641,6 +641,22 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
         }
     }
 
+    /**
+     * Nasty nasty method.., i hate rodrigo.
+     * @param addressBen
+     * @return
+     */
+    public boolean addressBeneficiaryExist(String addressBen) {
+        List<Proposal> list = getAllProposals();
+        for (Proposal proposal : list) {
+            for (Beneficiary beneficiary : proposal.getBeneficiaries()) {
+                if (beneficiary.getAddress().equals(addressBen)){
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
     public boolean exist(String title) {
         return checkExistense(new Object[]{title},KEY_PROPOSAL_TITLE);

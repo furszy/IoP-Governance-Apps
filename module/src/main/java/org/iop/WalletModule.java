@@ -899,4 +899,7 @@ public class WalletModule {
     }
 
 
+    public boolean proposalBeneficiaryAddressExist(String addressBen) {
+        return proposalsDao.beneficiaryAddressExist(addressBen);
+    }
 }

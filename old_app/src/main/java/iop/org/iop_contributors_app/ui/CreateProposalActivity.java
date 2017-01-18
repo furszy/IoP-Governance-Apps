@@ -88,7 +88,7 @@ public class CreateProposalActivity extends ContributorBaseActivity {
 
     private AtomicBoolean lock = new AtomicBoolean(false);
 
-    private CreateProposalActivityValidator validator = new CreateProposalActivityValidator();
+    private CreateProposalActivityValidator validator;
 
     private Map<Integer,ChromeHelpPopup> popups;
 
@@ -164,6 +164,8 @@ public class CreateProposalActivity extends ContributorBaseActivity {
 
     @Override
     protected void onCreateView(final ViewGroup container, Bundle savedInstance) {
+
+        this.validator = new CreateProposalActivityValidator(module);
 
         if (getIntent().getAction()!=null) {
             if (getIntent().getAction().equals(ACTION_EDIT_PROPOSAL)) {

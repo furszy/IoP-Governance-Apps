@@ -46,6 +46,7 @@ import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_P
 import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_TYPE;
 import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_TYPE;
 import static org.iop.intents.constants.IntentsConstants.INTENT_DIALOG;
+import static org.iop.intents.constants.IntentsConstants.INTENT_EXTRA_PROPOSAL;
 import static org.iop.intents.constants.IntentsConstants.INVALID_PROPOSAL_DIALOG;
 import static org.iop.intents.constants.IntentsConstants.UNKNOWN_ERROR_DIALOG;
 
@@ -58,7 +59,6 @@ public class ProposalSummaryActivity extends ContributorBaseActivity implements 
     private static final String TAG = "ProposalSummaryActivity";
 
     public static final String ACTION_PROPOSAL = "action_proposal";
-    public static final String INTENT_DATA_PROPOSAL = "proposal";
     public static final String ACTION_SUMMARY_PROPOSAL = "summary_proposal";
 
     private Proposal proposal;
@@ -112,8 +112,8 @@ public class ProposalSummaryActivity extends ContributorBaseActivity implements 
         super.onCreateView(container, savedInstance);
 
 
-        if (getIntent().getExtras().containsKey(INTENT_DATA_PROPOSAL)) {
-            proposal = (Proposal) getIntent().getSerializableExtra(INTENT_DATA_PROPOSAL);
+        if (getIntent().getExtras().containsKey(INTENT_EXTRA_PROPOSAL)) {
+            proposal = (Proposal) getIntent().getSerializableExtra(INTENT_EXTRA_PROPOSAL);
         }else if (getIntent().getAction().equals(ACTION_SUMMARY_PROPOSAL)){
             int forumId = getIntent().getIntExtra(INTENT_DATA_FORUM_ID, -1);
             String forumTitle = getIntent().getStringExtra(INTENT_DATA_FORUM_TITLE);
@@ -229,6 +229,7 @@ public class ProposalSummaryActivity extends ContributorBaseActivity implements 
     protected boolean onContributorsBroadcastReceive(Bundle data) {
         if (data.containsKey(INTENT_BROADCAST_DATA_TYPE)) {
             if (data.getString(INTENT_BROADCAST_DATA_TYPE).equals(INTENT_BROADCAST_DATA_PROPOSAL_TRANSACTION_SUCCED)) {
+                proposal = (Proposal) data.get(INTENT_EXTRA_PROPOSAL);
                 lockBroadcast.set(false);
                 showDoneLoading();
                 Toast.makeText(this, "Proposal broadcasted!", Toast.LENGTH_SHORT).show();
@@ -302,7 +303,11 @@ public class ProposalSummaryActivity extends ContributorBaseActivity implements 
             @Override
             public void onClick(View v) {
                 hideDoneLoading();
-                proposalSent();
+                if (proposal.isSent()) {
+                    proposalSent();
+                }else {
+                    Log.e(TAG,"proposal is no sent");
+                }
             }
         });
     }

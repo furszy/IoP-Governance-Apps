@@ -486,6 +486,7 @@
                     android:orientation="horizontal"
                     android:layout_gravity="end"
                     android:layout_marginTop="15dp"
+                    android:id="@+id/container_add_beneficiary"
                     android:gravity="end">
 
                     <ImageView

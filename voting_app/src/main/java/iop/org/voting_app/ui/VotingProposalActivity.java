@@ -37,7 +37,7 @@ import static iop.org.iop_contributors_app.services.BlockchainService.INTENT_EXT
 import static iop.org.iop_contributors_app.ui.CreateProposalActivity.INTENT_DATA_FORUM_ID;
 import static iop.org.iop_contributors_app.ui.CreateProposalActivity.INTENT_DATA_FORUM_TITLE;
 import static iop.org.iop_contributors_app.ui.ProposalSummaryActivity.ACTION_SUMMARY_PROPOSAL;
-import static iop.org.iop_contributors_app.ui.ProposalSummaryActivity.INTENT_DATA_PROPOSAL;
+
 import static iop.org.iop_contributors_app.ui.components.switch_seek_bar.SwitchSeekBar.Position.CENTER;
 import static iop.org.iop_contributors_app.ui.components.switch_seek_bar.SwitchSeekBar.Position.LEFT;
 import static iop.org.iop_contributors_app.ui.components.switch_seek_bar.SwitchSeekBar.Position.RIGHT;
@@ -52,6 +52,7 @@ import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_T
 import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_VOTE_TRANSACTION_SUCCED;
 import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_TYPE;
 import static org.iop.intents.constants.IntentsConstants.INTENT_DIALOG;
+import static org.iop.intents.constants.IntentsConstants.INTENT_EXTRA_PROPOSAL;
 import static org.iop.intents.constants.IntentsConstants.INVALID_PROPOSAL_DIALOG;
 import static org.iop.intents.constants.IntentsConstants.UNKNOWN_ERROR_DIALOG;
 
@@ -104,8 +105,8 @@ public class VotingProposalActivity extends VotingBaseActivity implements View.O
     protected void onCreateView(ViewGroup container, Bundle savedInstance) {
         super.onCreateView(container,savedInstance);
 
-        if (getIntent().getExtras().containsKey(INTENT_DATA_PROPOSAL)) {
-            proposal = (Proposal) getIntent().getSerializableExtra(INTENT_DATA_PROPOSAL);
+        if (getIntent().getExtras().containsKey(INTENT_EXTRA_PROPOSAL)) {
+            proposal = (Proposal) getIntent().getSerializableExtra(INTENT_EXTRA_PROPOSAL);
         }else if (getIntent().getAction().equals(ACTION_SUMMARY_PROPOSAL)){
             int forumId = getIntent().getIntExtra(INTENT_DATA_FORUM_ID, -1);
             String forumTitle = getIntent().getStringExtra(INTENT_DATA_FORUM_TITLE);

@@ -67,7 +67,8 @@ import iop_sdk.wallet.WalletManager;
 import iop_sdk.wallet.WalletPreferenceConfigurations;
 import iop_sdk.wallet.exceptions.InsuficientBalanceException;
 
-;import static iop_sdk.governance.propose.Proposal.ProposalState.EXECUTED;
+;import static iop_sdk.governance.propose.Proposal.ProposalState.CANCELED_BY_OWNER;
+import static iop_sdk.governance.propose.Proposal.ProposalState.EXECUTED;
 import static iop_sdk.governance.propose.Proposal.ProposalState.EXECUTION_CANCELLED;
 import static iop_sdk.governance.propose.Proposal.ProposalState.FORUM;
 import static iop_sdk.governance.propose.Proposal.ProposalState.SUBMITTED;
@@ -190,7 +191,7 @@ public class WalletModule {
     }
 
 
-    public boolean sendProposal(Proposal proposal) throws CantSendProposalException, InsuficientBalanceException, CantSaveProposalException, InvalidProposalException, NotConnectedPeersException, CantCompleteProposalException {
+    public Proposal sendProposal(Proposal proposal) throws CantSendProposalException, InsuficientBalanceException, CantSaveProposalException, InvalidProposalException, NotConnectedPeersException, CantCompleteProposalException {
 
         LOG.info("SendProposal, title: "+proposal.getTitle());
         // lock to not to spend the same UTXO twice for error.
@@ -220,6 +221,7 @@ public class WalletModule {
                     boolean resp = proposalsDao.lockOutput(proposal.getForumId(), proposalTransactionRequest.getLockedOutputHashHex(), proposalTransactionRequest.getLockedOutputPosition());
                     LOG.info("proposal locked "+resp);
                     // mark proposal sent and put state in "voting"
+                    proposal.setSent(true);
                     resp = proposalsDao.markSentBroadcastedProposal(proposal.getForumId());
                     LOG.info("proposal mark sent "+resp);
                     // locked balance
@@ -228,7 +230,7 @@ public class WalletModule {
 
                     LOG.info("sendProposal finished");
 
-                    return true;
+                    return proposal;
 
                 } catch (InsuficientBalanceException e) {
                     LOG.error("Insuficient funds",e);
@@ -300,18 +302,21 @@ public class WalletModule {
         return false;
     }
 
-    public boolean cancelProposalContract(Proposal proposal) throws CantCancelProsalException{
+    public Proposal cancelProposalContract(Proposal proposal) throws CantCancelProsalException{
         LOG.info("cancelProposalContract : "+proposal.toString());
         try {
+            if (proposal.getState()==FORUM && proposal.isSent()) throw new CantCancelProsalException("Proposal is sent but not confirmed in the blockchain,\nplease wait until is accepted");
             Transaction tx = walletManager.changeAddressOfTx(proposal.getGenesisTxHash(),0);
             ListenableFuture<Transaction> future = blockchainManager.broadcastTransaction(tx.getHash().getBytes());
             future.get(1, TimeUnit.MINUTES);
 
             proposalsDao.updateProposalByForumId(proposal);
 
+            proposal.setState(CANCELED_BY_OWNER);
+
             LOG.info("cancelProposalContract succed: "+proposal.toString());
 
-            return true;
+            return proposal;
 
         } catch (InsufficientMoneyException e) {
             e.printStackTrace();
@@ -326,9 +331,18 @@ public class WalletModule {
 
         try {
 
-            if (vote.getVotingPower()==0 && vote.getVote() == Vote.VoteType.NEUTRAL){
-                return cancelVote(vote);
+            Vote temp = null;
+            if ((temp = votesDaoImp.getVote(vote.getGenesisHashHex()))!=null){
+
+
+                if (vote.getVotingPower()==0 && vote.getVote() == Vote.VoteType.NEUTRAL){
+                    return cancelVote(vote);
+                }else
+                    if (vote.getVotingPower()>0 && vote.getVote()== Vote.VoteType.NEUTRAL)throw new CantSendVoteException("Voting power is greater than 0 in a NEUTRAL vote");
+
             }
+
+
 
             // save vote
             votesDaoImp.addUpdateIfExistVote(vote);
@@ -341,6 +355,10 @@ public class WalletModule {
             // lock contract output
             boolean resp = votesDaoImp.lockOutput(vote.getGenesisHashHex(),vote.getLockedOutputHex(),vote.getLockedOutputIndex());
             LOG.info("vote locked "+resp);
+            // resto el voto anteriorque reutilicé de lo loqueado
+            if (temp!=null) {
+                minusLockedValue(temp.getVotingPower());
+            }
             // locked balance
             addLockedBalance(proposalVoteRequest.getLockedBalance());
             LOG.info("locked balance acumulated: "+lockedBalance);

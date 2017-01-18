@@ -86,12 +86,8 @@ public class BalanceActivity extends BaseActivity {
     private void loadQr() throws WriterException {
         final String address = module.getReceiveAddress();
         // qr
-        Bitmap qrBitmap = null;
-        if (qrBitmap == null) {
-            Resources r = getResources();
-            int px = convertDpToPx(getResources(),175);
-            qrBitmap = encodeAsBitmap(address, px, px, Color.parseColor("#CCCCCC"), Color.TRANSPARENT );
-        }
+        int px = convertDpToPx(getResources(),225);
+        Bitmap qrBitmap = encodeAsBitmap(address, px, px, Color.parseColor("#CCCCCC"), Color.TRANSPARENT );
         img_qr.setImageBitmap(qrBitmap);
     }
 

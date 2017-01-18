@@ -87,7 +87,8 @@ public class BeneficiariesAdapter extends FermatAdapterImproved<Beneficiary,Bene
 
             @Override
             public void afterTextChanged(Editable s) {
-                data.setAmount(Long.parseLong(s.toString()));
+                if (!s.toString().equals(""))
+                    data.setAmount(Long.parseLong(s.toString()));
             }
         });
     }

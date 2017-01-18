@@ -52,41 +52,45 @@ public class CreateProposalWatcher implements TextWatcher {
     @Override
     public void afterTextChanged(Editable s) {
         String text = s.toString();
-        try {
-            switch (idWatcher) {
-                case FIELD_TITLE:
-                    validator.validateTitle(text);
-                    break;
-                case FIELD_SUBTITLE:
-                    validator.validateSubTitle(text);
-                    break;
-                case FIELD_BODY:
-                    validator.validateBody(text);
-                    break;
-                case FIELD_CATEGORY:
-                    validator.validatCategory(text);
-                    break;
-                case FIELD_START_BLOCK:
-                    validator.validateStartBlock(Integer.parseInt(text));
-                    break;
-                case FIELD_END_BLOCK:
-                    validator.validateEndBlock(Integer.parseInt(text));
-                    break;
-                case FIELD_BLOCK_REWARD:
-                    validator.validateBlockReward(Long.parseLong(text));
-                    break;
-                case FIELD_ADDRESS:
-                    validator.validateAddress(text);
-                    break;
-                case FIELD_VALUE:
-                    // nothing por ahora
-                    break;
+        if (text!=null && !text.equals("")) {
+            try {
+                switch (idWatcher) {
+                    case FIELD_TITLE:
+                        validator.validateTitle(text);
+                        break;
+                    case FIELD_SUBTITLE:
+                        validator.validateSubTitle(text);
+                        break;
+                    case FIELD_BODY:
+                        validator.validateBody(text);
+                        break;
+                    case FIELD_CATEGORY:
+                        validator.validatCategory(text);
+                        break;
+                    case FIELD_START_BLOCK:
+                        validator.validateStartBlock(Integer.parseInt(text));
+                        break;
+                    case FIELD_END_BLOCK:
+                        validator.validateEndBlock(Integer.parseInt(text));
+                        break;
+                    case FIELD_BLOCK_REWARD:
+                        validator.validateBlockReward(Long.parseLong(text));
+                        break;
+                    case FIELD_ADDRESS:
+                        validator.validateAddress(text);
+                        break;
+                    case FIELD_VALUE:
+                        // nothing por ahora
+                        break;
+                }
+                isValid = true;
+            } catch (ValidationException e) {
+                errorToShow = e.getMessage();
+                isValid = false;
+            } catch (Exception e) {
+                isValid = false;
             }
-            isValid = true;
-        } catch (ValidationException e) {
-            errorToShow = e.getMessage();
-            isValid = false;
-        } catch (Exception e){
+        }else {
             isValid = false;
         }
     }

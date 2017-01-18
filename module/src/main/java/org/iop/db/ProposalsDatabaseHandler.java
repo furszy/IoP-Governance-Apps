@@ -658,23 +658,18 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
 
         Log.d(TAG,"isOutputLocked: "+hashHex);
 
-        Object[] dataToCompare = new Object[]{hashHex, Proposal.ProposalState.EXECUTED.toString(),Proposal.ProposalState.EXECUTION_CANCELLED.toString()};
+        String[] dataToCompare = new String[]{hashHex, String.valueOf(position), Proposal.ProposalState.EXECUTED.toString(),Proposal.ProposalState.EXECUTION_CANCELLED.toString()};
 
-        String[] keyToCompare = new String[]{KEY_PROPOSAL_LOCKED_OUTPUT_HASH, KEY_PROPOSAL_LOCKED_OUTPUT_POSITION};
+//        String[] keyToCompare = new String[]{KEY_PROPOSAL_LOCKED_OUTPUT_HASH, KEY_PROPOSAL_LOCKED_OUTPUT_POSITION};
 
         SQLiteDatabase db = this.getReadableDatabase();
 
         StringBuilder stringBuilder = new StringBuilder();
-        String[] valuesToCompare = new String[dataToCompare.length];
 
-        for (int i = 0; i < dataToCompare.length; i++) {
-            //build the values
-            valuesToCompare[i]=String.valueOf(dataToCompare[i]);
-        }
 
-        stringBuilder.append(KEY_PROPOSAL_LOCKED_OUTPUT_HASH+" LIKE ?"+" AND "+KEY_PROPOSAL_STATE+" NOT LIKE ? AND "+KEY_PROPOSAL_STATE+" NOT LIKE ? ");
+        stringBuilder.append(KEY_PROPOSAL_LOCKED_OUTPUT_HASH+" = ? AND "+KEY_PROPOSAL_LOCKED_OUTPUT_POSITION+" = ?"+" AND "+KEY_PROPOSAL_STATE+" NOT IN (?,?) ");
 
-        Cursor cursor = db.query(TABLE_PROPOSALS, tableNames(), stringBuilder.toString(), valuesToCompare, null, null, null, null);
+        Cursor cursor = db.query(TABLE_PROPOSALS, tableNames(), stringBuilder.toString(), dataToCompare, null, null, null, null);
         if (cursor != null)
             cursor.moveToFirst();
 

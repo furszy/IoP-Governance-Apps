@@ -16,6 +16,7 @@ import iop_sdk.governance.propose.Proposal;
 import iop_sdk.utils.StringUtils;
 
 import static iop_sdk.blockchain.utils.CoinUtils.coinToString;
+import static org.iop.intents.constants.IntentsConstants.INTENT_EXTRA_PROPOSAL;
 
 /**
  * Created by mati on 17/11/16.
@@ -53,7 +54,7 @@ public class ProposalsAdapter extends FermatAdapterImproved<Proposal,ProposalsHo
             public void onClick(View v) {
                 Intent intent1 = new Intent(context,ProposalSummaryActivity.class);
                 intent1.setAction(CreateProposalActivity.ACTION_EDIT_PROPOSAL);
-                intent1.putExtra(ProposalSummaryActivity.INTENT_DATA_PROPOSAL,data);
+                intent1.putExtra(INTENT_EXTRA_PROPOSAL,data);
                 context.startActivity(intent1);
             }
         });

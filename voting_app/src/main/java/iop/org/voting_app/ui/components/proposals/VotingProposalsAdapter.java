@@ -15,10 +15,10 @@ import iop.org.voting_app.ui.VotingProposalActivity;
 import iop.org.voting_app.ui.VotingProposalsActivity;
 import iop_sdk.governance.propose.Proposal;
 
-import static iop.org.iop_contributors_app.ui.ProposalSummaryActivity.INTENT_DATA_PROPOSAL;
 import static iop_sdk.blockchain.utils.CoinUtils.coinToString;
 import static iop_sdk.governance.propose.Proposal.ProposalState.EXECUTED;
 import static iop_sdk.governance.propose.Proposal.ProposalState.EXECUTION_CANCELLED;
+import static org.iop.intents.constants.IntentsConstants.INTENT_EXTRA_PROPOSAL;
 
 /**
  * Created by mati on 17/11/16.
@@ -87,7 +87,7 @@ public class VotingProposalsAdapter extends FermatAdapterImproved<Proposal,Votin
                 @Override
                 public void onClick(View v) {
                     Intent intent = new Intent(v.getContext(), VotingProposalActivity.class);
-                    intent.putExtra(INTENT_DATA_PROPOSAL, data);
+                    intent.putExtra(INTENT_EXTRA_PROPOSAL, data);
                     context.startActivity(intent);
                 }
             });

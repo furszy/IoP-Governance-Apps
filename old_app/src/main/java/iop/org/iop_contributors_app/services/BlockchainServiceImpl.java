@@ -641,8 +641,8 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
                     public void run() {
                         try {
                             Proposal proposal = (Proposal) intent.getSerializableExtra(INTENT_EXTRA_PROPOSAL);
-                            if (walletModule.sendProposal(proposal)) {
-                                broadcastProposalSuced(proposal.getTitle());
+                            if ((proposal = walletModule.sendProposal(proposal))!=null) {
+                                broadcastProposalSuced(proposal);
                             }
                         } catch (InsuficientBalanceException e) {
                             e.printStackTrace();
@@ -672,9 +672,9 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
                 try{
                     LOG.info("ACTION_BROADCAST_CANCEL_PROPOSAL_TRANSACTION arrive");
                     Proposal proposal = (Proposal) intent.getSerializableExtra(INTENT_EXTRA_PROPOSAL);
-                    if (walletModule.cancelProposalContract(proposal)){
+                    if ((proposal=walletModule.cancelProposalContract(proposal))!=null){
                         LOG.info("contract cancelled");
-                        broadcastProposalSuced(proposal.getTitle());
+                        broadcastProposalSuced(proposal);
                     }
                 }catch (Exception e){
                     showDialogException(UNKNOWN_ERROR_DIALOG, e.getMessage());
@@ -733,9 +733,9 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
         localBroadcast.sendBroadcast(intent);
     }
 
-    private void broadcastProposalSuced(String title){
+    private void broadcastProposalSuced(Proposal proposal){
         Intent intent = new Intent(ACTION_NOTIFICATION);
-        intent.putExtra("title",title);
+        intent.putExtra(INTENT_EXTRA_PROPOSAL,proposal);
         intent.putExtra(INTENT_BROADCAST_TYPE,INTENT_DATA+INTENT_NOTIFICATION);
         intent.putExtra(INTENT_BROADCAST_DATA_TYPE, INTENT_BROADCAST_DATA_PROPOSAL_TRANSACTION_SUCCED);
         localBroadcast.sendBroadcast(intent);

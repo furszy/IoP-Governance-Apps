@@ -41,6 +41,7 @@ import org.iop.WalletConstants;
 import org.iop.WalletModule;
 import org.iop.exceptions.InvalidAddressException;
 
+import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -329,17 +330,27 @@ public class DevSettingsFragment extends PreferenceFragment implements Preferenc
     public boolean onPreferenceChange(Preference preference, Object newValue) {
 
         if (preference.getKey().equals("id_node_host")){
-            module.setNewNode(newValue.toString());
-            Toast.makeText(getActivity(),"Node changed to: "+newValue.toString()+", now touch reset and close the process please",Toast.LENGTH_LONG).show();
-            return true;
+            String ip = newValue.toString();
+            if(new InetSocketAddress(ip,7685).getAddress()!=null){
+                module.setNewNode(newValue.toString());
+                Toast.makeText(getActivity(),"Node changed to: "+newValue.toString()+", now touch reset and close the process please",Toast.LENGTH_LONG).show();
+                return true;
+            }else {
+                Toast.makeText(getActivity(),"Error, ip is wrong. you write -> "+newValue.toString(),Toast.LENGTH_LONG).show();
+            }
+
         }
         else if (preference.getKey().equals("id_forum_host")){
             Toast.makeText(getActivity(),"Metodo no implementado",Toast.LENGTH_LONG).show();
         }
         else if (preference.getKey().equals("id_forum_wrapper_host")){
-            module.setWrapperHost(newValue.toString());
-            preference.setDefaultValue(newValue.toString());
-            Toast.makeText(getActivity(),"Wrapper changed",Toast.LENGTH_LONG).show();
+            if (validIP(newValue.toString())) {
+                module.setWrapperHost(newValue.toString());
+                preference.setDefaultValue(newValue.toString());
+                Toast.makeText(getActivity(), "Wrapper changed", Toast.LENGTH_LONG).show();
+            }else {
+                Toast.makeText(getActivity(),"Error, ip is wrong. you write -> "+newValue.toString(),Toast.LENGTH_LONG).show();
+            }
         }
 
 
@@ -428,5 +439,33 @@ public class DevSettingsFragment extends PreferenceFragment implements Preferenc
 
     public void setModule(WalletModule module) {
         this.module = module;
+    }
+
+
+    public static boolean validIP (String ip) {
+        try {
+            if ( ip == null || ip.isEmpty() ) {
+                return false;
+            }
+
+            String[] parts = ip.split( "\\." );
+            if ( parts.length != 4 ) {
+                return false;
+            }
+
+            for ( String s : parts ) {
+                int i = Integer.parseInt( s );
+                if ( (i < 0) || (i > 255) ) {
+                    return false;
+                }
+            }
+            if ( ip.endsWith(".") ) {
+                return false;
+            }
+
+            return true;
+        } catch (NumberFormatException nfe) {
+            return false;
+        }
     }
 }

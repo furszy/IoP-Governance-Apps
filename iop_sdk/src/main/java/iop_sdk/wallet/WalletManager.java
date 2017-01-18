@@ -6,6 +6,7 @@ import com.google.common.base.Stopwatch;
 import org.bitcoinj.core.Address;
 import org.bitcoinj.core.Coin;
 import org.bitcoinj.core.InsufficientMoneyException;
+import org.bitcoinj.core.Sha256Hash;
 import org.bitcoinj.core.Transaction;
 import org.bitcoinj.core.TransactionInput;
 import org.bitcoinj.core.TransactionOutput;
@@ -36,6 +37,7 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import iop_sdk.crypto.Crypto;
@@ -434,7 +436,7 @@ public class WalletManager {
 
         LOG.info("changeAddressOfTx, txHash: "+txHash+", outputIndex: "+outputIndex);
         Address to = wallet.freshReceiveAddress();
-        TransactionOutput transactionOutput = wallet.getTransactionPool(WalletTransaction.Pool.UNSPENT).get(txHash).getOutput(outputIndex);
+        TransactionOutput transactionOutput = wallet.getTransactionPool(WalletTransaction.Pool.UNSPENT).get(Sha256Hash.wrap(txHash)).getOutput(outputIndex);
 
         Transaction transaction = new Transaction(walletConfiguration.getNetworkParams());
         // add prev output

@@ -4,6 +4,7 @@ import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.core.PeerAddress;
 import org.bitcoinj.params.RegTestParams;
 
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +25,8 @@ public class RegtestUtil {
 
         List<PeerAddress> list = new ArrayList<>();
         // peers
-        list.add(new PeerAddress(params,new InetSocketAddress(host,7685)));
+        InetSocketAddress inetSocketAddress = new InetSocketAddress(host,7685);
+        list.add(new PeerAddress(params,inetSocketAddress));
 //        list.put(new PeerAddress(params,new InetSocketAddress(LOCAL_PC,7686)));
         list.add(new PeerAddress(params,new InetSocketAddress(host,7684)));
         return list;

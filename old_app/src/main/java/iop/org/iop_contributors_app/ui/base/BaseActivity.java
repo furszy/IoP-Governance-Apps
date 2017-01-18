@@ -140,7 +140,6 @@ public abstract class BaseActivity extends AppCompatActivity {
         }catch (Exception e){
             e.printStackTrace();
         }
-
         updateBalances();
     }
 

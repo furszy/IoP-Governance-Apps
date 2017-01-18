@@ -48,7 +48,6 @@ import iop_sdk.governance.propose.Beneficiary;
 import iop_sdk.governance.propose.Proposal;
 
 import static iop.org.iop_contributors_app.ui.ProposalSummaryActivity.ACTION_PROPOSAL;
-import static iop.org.iop_contributors_app.ui.ProposalSummaryActivity.INTENT_DATA_PROPOSAL;
 import static iop_sdk.governance.ProposalForum.FIELD_ADDRESS;
 import static iop_sdk.governance.ProposalForum.FIELD_BLOCK_REWARD;
 import static iop_sdk.governance.ProposalForum.FIELD_BODY;
@@ -60,6 +59,7 @@ import static iop_sdk.governance.ProposalForum.FIELD_TITLE;
 import static iop_sdk.governance.ProposalForum.FIELD_VALUE;
 import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_PROPOSAL_TRANSACTION_SUCCED;
 import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_TYPE;
+import static org.iop.intents.constants.IntentsConstants.INTENT_EXTRA_PROPOSAL;
 
 /**
  * Created by mati on 17/11/16.
@@ -108,8 +108,7 @@ public class CreateProposalActivity extends ContributorBaseActivity {
     private EditText edit_start_block;
     private EditText edit_end_block;
     private EditText edit_block_reward;
-//    private EditText edit_beneficiary_address_1;
-//    private EditText edit_beneficiary_value_1;
+    private View container_add_beneficiary;
     private TextView txt_add_beneficiary;
     private Button btn_create_proposal;
 
@@ -190,8 +189,8 @@ public class CreateProposalActivity extends ContributorBaseActivity {
         edit_start_block = (EditText) root.findViewById(R.id.edit_start_block);
         edit_end_block = (EditText) root.findViewById(R.id.edit_end_block);
         edit_block_reward = (EditText) root.findViewById(R.id.edit_block_reward);
-//        edit_beneficiary_address_1 = (EditText) root.findViewById(R.id.edit_beneficiary_1_address);
-//        edit_beneficiary_value_1 = (EditText) root.findViewById(R.id.edit_beneficiary_1_value);
+
+        container_add_beneficiary = root.findViewById(R.id.container_add_beneficiary);
         txt_add_beneficiary = (TextView) root.findViewById(R.id.txt_add_beneficiary);
         btn_create_proposal = (Button) root.findViewById(R.id.btn_create_proposal);
 
@@ -317,7 +316,7 @@ public class CreateProposalActivity extends ContributorBaseActivity {
                                             Toast.makeText(CreateProposalActivity.this, finalMessageBody, Toast.LENGTH_SHORT).show();
                                             Intent intent = new Intent(CreateProposalActivity.this,ProposalSummaryActivity.class);
                                             intent.setAction(ACTION_PROPOSAL);
-                                            intent.putExtra(INTENT_DATA_PROPOSAL,proposal);
+                                            intent.putExtra(INTENT_EXTRA_PROPOSAL,proposal);
                                             finish();
                                             startActivity(intent);
 
@@ -342,7 +341,7 @@ public class CreateProposalActivity extends ContributorBaseActivity {
             initBeneficiaryRecycler();
 
 
-            txt_add_beneficiary.setOnClickListener(new View.OnClickListener() {
+            container_add_beneficiary.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
 
@@ -711,7 +710,16 @@ public class CreateProposalActivity extends ContributorBaseActivity {
                 }
             }
             if (validator.validateBeneficiary(extraBeneficiary.getAddress(),extraBeneficiary.getAmount())){
-                proposal.addBeneficiary(extraBeneficiary.getAddress(),extraBeneficiary.getAmount());
+                // check if the address already exist and add it
+                boolean exist = false;
+                for (Beneficiary beneficiary : proposal.getBeneficiaries()) {
+                    exist = beneficiary.getAddress().equals(extraBeneficiary.getAddress());
+                }
+                if (!exist)
+                    proposal.addBeneficiary(extraBeneficiary.getAddress(),extraBeneficiary.getAmount());
+                else {
+                    throw new ValidationException("Beneficiary address is repited, use different addresses as beneficiaries");
+                }
             }
         }
 

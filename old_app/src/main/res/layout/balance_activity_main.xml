@@ -87,7 +87,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:text="Unnavailable"
+            android:text="Unspendable"
             android:textColor="#f6f6f6"
             android:gravity="center"
             android:textSize="15sp"/>
@@ -151,7 +151,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/txt_increase_voting_power"
-            android:text="Increase voting power"
+            android:text="Increase your voting power"
             android:textColor="@color/text_blue"
             android:paddingBottom="3dp"
             android:textSize="11sp"/>

@@ -53,6 +53,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
@@ -326,7 +327,25 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
                                     LOG.info("Active proposals: "+Arrays.toString(list.toArray()));
                                     ServerWrapper.RequestProposalsResponse requestProposalsResponse = walletModule.requestProposalsFullTx(list);
                                     if (requestProposalsResponse != null) {
+                                        // arribo de propuestas
                                         proposalsArrive(requestProposalsResponse.getProposals());
+                                        // check if a fork occur
+                                        // If the node doesn't send me the exact number of proposals that i sent, i have to put the remaining proposals in a UKNOWN state because they are not in the blockchain for some reason
+                                        List<Proposal> remainingProposals = new ArrayList<Proposal>();
+                                        for (Proposal proposal : list) {
+                                            boolean exist = false;
+                                            for (Proposal proposal1 : requestProposalsResponse.getProposals()) {
+                                                if (proposal.getGenesisTxHash().equals(proposal1.getGenesisTxHash())){
+                                                    exist=true;
+                                                    break;
+                                                }
+                                            }
+                                            if (!exist){
+                                                remainingProposals.add(proposal);
+                                            }
+                                        }
+                                        // now i put the remaining proposals to UKNOWN STATE
+                                        walletModule.saveUnknownProposals(remainingProposals);
                                     }
                                 }
                             }catch (Exception e){
@@ -814,7 +833,7 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
     private void check(){
 
         org.bitcoinj.core.Context.propagate(WalletConstants.CONTEXT);
-
+        LOG.info("check");
         try {
 
             if (!isChecking.getAndSet(true)) {
@@ -884,15 +903,50 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
                         blockchainDownloadListener);
 
                 //todo: ver si conviene esto..
-//        broadcastBlockchainState();
+                broadcastBlockchainState();
 
                 isChecking.set(false);
             } else {
                 LOG.error("algo malo pasa");
-                Log.e(TAG, "algo malo pasa..");
+                broadcastBlockchainState();
             }
         }catch (Exception e){
             e.printStackTrace();
+            isChecking.set(false);
+            broadcastBlockchainState();
+        }
+    }
+
+    private void broadcastBlockchainState() {
+
+
+        if (!impediments.isEmpty()) {
+
+            StringBuilder stringBuilder = new StringBuilder();
+            for (BlockchainState.Impediment impediment : impediments) {
+                if (stringBuilder.length()!=0){
+                    stringBuilder.append(",");
+                }
+                stringBuilder.append(impediment.toString());
+
+            }
+
+            android.support.v4.app.NotificationCompat.Builder mBuilder =
+                    new NotificationCompat.Builder(getApplicationContext())
+                            .setSmallIcon(R.drawable.ic__launcher)
+                            .setContentTitle("Impediment")
+                            .setContentText("Fail: "+stringBuilder.toString());
+
+            nm.notify(15, mBuilder.build());
+        }
+        if (blockchainManager.getConnectedPeers().isEmpty()){
+            android.support.v4.app.NotificationCompat.Builder mBuilder =
+                    new NotificationCompat.Builder(getApplicationContext())
+                            .setSmallIcon(R.drawable.ic__launcher)
+                            .setContentTitle("Impediment")
+                            .setContentText("No peer connection");
+
+            nm.notify(16, mBuilder.build());
         }
     }
 

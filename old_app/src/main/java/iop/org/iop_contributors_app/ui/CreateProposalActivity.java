@@ -291,7 +291,7 @@ public class CreateProposalActivity extends ContributorBaseActivity {
                                 } catch (final CantCreateTopicException e) {
                                     e.printStackTrace();
                                     errorTitle = "Error";
-                                    messageBody = (e.getMessage()!=null && !e.getMessage().equals(""))?getErrorsFromJson(e.getMessage()):"Forum fail, please send log to Furszy and contact Markus";
+                                    messageBody = (e.getMessage()!=null && !e.getMessage().equals(""))?getErrorsFromJson(e.getMessage()):"Forum fail, server code 500\n please send log to Furszy and contact Markus";
                                 } catch (CantSaveProposalExistException e) {
                                     errorTitle = "Error";
                                     messageBody = "Proposal title already exist";
@@ -350,9 +350,10 @@ public class CreateProposalActivity extends ContributorBaseActivity {
 
                     int beneficiariesSize = extraBeneficiaries.size();
 
-                    // check if the address and amount are loaded in the previous beneficiary
-                    Beneficiary lastBeneficiary = beneficiariesAdapter.getItem(beneficiariesSize-1);
+
                     try {
+                        // check if the address and amount are loaded in the previous beneficiary
+                        Beneficiary lastBeneficiary = getBeneficiaryFromRecycler(beneficiariesSize-1);
                         validator.validateBeneficiary(lastBeneficiary.getAddress(), lastBeneficiary.getAmount());
                     } catch (ValidationException e) {
                         Toast.makeText(v.getContext(),e.getMessage(),Toast.LENGTH_LONG).show();
@@ -362,11 +363,12 @@ public class CreateProposalActivity extends ContributorBaseActivity {
                         return;
                     }
 
-//                        ben_container.getLayoutParams().height = recycler_beneficiaries.getLayoutParams().height+SizeUtils.convertDpToPx(getResources(),32);
-//                        recycler_beneficiaries.getLayoutParams().height = recycler_beneficiaries.getLayoutParams().height+SizeUtils.convertDpToPx(getResources(),32);
+
                     Beneficiary beneficiary = new Beneficiary();
                     beneficiariesAdapter.addItem(beneficiary);
-                    beneficiariesAdapter.notifyDataSetChanged();
+//                    beneficiariesAdapter.notifyDataSetChanged();
+
+
 
 
                 }
@@ -705,30 +707,45 @@ public class CreateProposalActivity extends ContributorBaseActivity {
 //        }
 
         for (int i = 0; i < extraBeneficiaries.size(); i++) {
-            Beneficiary extraBeneficiary = beneficiariesAdapter.getItem(i);
-            if (i>0){
-                if (extraBeneficiary.getAddress()==null || extraBeneficiary.getAddress().equals("") && extraBeneficiary.getAmount()==0){
+            Beneficiary extraBeneficiary = getBeneficiaryFromRecycler(i);
+            if (i > 0) {
+                if (extraBeneficiary.getAddress() == null || extraBeneficiary.getAddress().equals("") && extraBeneficiary.getAmount() == 0) {
                     continue;
                 }
             }
-            if (validator.validateBeneficiary(extraBeneficiary.getAddress(),extraBeneficiary.getAmount())){
-                // check if the address already exist and add it
-                boolean exist = false;
-                for (Beneficiary beneficiary : proposal.getBeneficiaries()) {
-                    exist = beneficiary.getAddress().equals(extraBeneficiary.getAddress());
-                }
-                if (!exist)
-                    proposal.addBeneficiary(extraBeneficiary.getAddress(),extraBeneficiary.getAmount());
-                else {
-                    throw new ValidationException("Beneficiary address is repited, use different addresses as beneficiaries");
+            if (extraBeneficiary.getAddress() != null) {
+                if (validator.validateBeneficiary(extraBeneficiary.getAddress(), extraBeneficiary.getAmount())) {
+                    // check if the address already exist and add it
+                    boolean exist = false;
+                    for (Beneficiary beneficiary : proposal.getBeneficiaries()) {
+                        exist = beneficiary.getAddress().equals(extraBeneficiary.getAddress());
+                    }
+                    if (!exist)
+                        proposal.addBeneficiary(extraBeneficiary.getAddress(), extraBeneficiary.getAmount());
+                    else {
+                        throw new ValidationException("Beneficiary address is repited, use different addresses as beneficiaries");
+                    }
                 }
             }
+
         }
 
 
         validator.validateBeneficiaries(proposal.getBeneficiaries(),proposal.getBlockReward());
 
         return proposal;
+    }
+
+    private Beneficiary getBeneficiaryFromRecycler(int pos) throws ValidationException {
+        BeneficiaryHolder beneficiaryHolder = (BeneficiaryHolder) recycler_beneficiaries.findViewHolderForAdapterPosition(pos);
+        String address = beneficiaryHolder.edit_beneficiary_address.getText().toString();
+        String value = beneficiaryHolder.edit_beneficiary_value.getText().toString();
+        if (address!=null && !address.equals("") && value!=null && !value.equals("")) {
+            validator.validateAddress(address);
+            return new Beneficiary(address, Long.valueOf(value));
+        }else {
+            return null;
+        }
     }
 
     @Override

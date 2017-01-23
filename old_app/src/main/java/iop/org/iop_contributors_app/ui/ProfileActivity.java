@@ -184,7 +184,7 @@ public class ProfileActivity extends ContributorBaseActivity implements View.OnC
 
     @Override
     protected boolean hasDrawer() {
-        return isRegistered;
+        return false;
     }
 
     @Override

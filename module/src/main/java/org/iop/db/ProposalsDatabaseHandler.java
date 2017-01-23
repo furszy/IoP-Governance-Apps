@@ -29,7 +29,7 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
 
     // All Static variables
     // Database Version
-    private static final int DATABASE_VERSION = 19;
+    private static final int DATABASE_VERSION = 20;
 
     // Database Name
     private static final String DATABASE_NAME = "walletManager";
@@ -454,6 +454,40 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
         return proposals;
     }
 
+
+    public List<Proposal> getActiveProposalsWithTitle() {
+        Log.d(TAG,"getActiveProposals");
+        List<Proposal> proposals = new ArrayList<>();
+        try {
+
+            SQLiteDatabase db = this.getReadableDatabase();
+            Cursor cursor = db.query(TABLE_PROPOSALS, tableNames(), KEY_PROPOSAL_STATE+" !=? AND "+KEY_PROPOSAL_STATE+" !=?", new String[]{Proposal.ProposalState.EXECUTED.toString(),Proposal.ProposalState.EXECUTION_CANCELLED.toString()}, null, null, null, null);
+
+            if (cursor.moveToFirst()) {
+                do {
+                    Proposal proposal = null;
+                    try {
+                        proposal = buildProposal(cursor);
+                        if (proposal.getTitle()!=null && !proposal.getTitle().equals(""))
+                        // Adding contact to list
+                            proposals.add(proposal);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                } while (cursor.moveToNext());
+            }
+
+            Log.d(TAG,"Proposal list return with: "+proposals.size()+" results");
+
+
+            cursor.close();
+//            db.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return proposals;
+    }
 
     public List<Proposal> getProposalsEmptyTitle() {
         Log.d(TAG,"getProposals with empty title");

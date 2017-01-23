@@ -39,6 +39,7 @@ import org.bitcoinj.wallet.SendRequest;
 import org.bitcoinj.wallet.Wallet;
 import org.iop.WalletConstants;
 import org.iop.WalletModule;
+import org.iop.exceptions.CantSendTransactionException;
 import org.iop.exceptions.InvalidAddressException;
 
 import java.util.concurrent.ExecutionException;
@@ -161,7 +162,7 @@ public class DevSettingsFragment extends PreferenceFragment implements Preferenc
                     proposal.setForumId(1);
                     proposal.addBeneficiary(module.getReceiveAddress(),proposal.getBlockReward());
 
-                    String message;
+                    String message = null;
                     try {
                         module.sendProposal(proposal,transactionHash);
                         proposalSended = true;
@@ -172,6 +173,8 @@ public class DevSettingsFragment extends PreferenceFragment implements Preferenc
                     } catch (Exception e){
                         e.printStackTrace();
                         message = e.getMessage();
+                    } catch (CantSendTransactionException e) {
+                        e.printStackTrace();
                     }
 
                     final String finalMessage = message;

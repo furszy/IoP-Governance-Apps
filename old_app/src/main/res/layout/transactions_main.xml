@@ -2,25 +2,12 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent" android:layout_height="match_parent">
 
-    <android.support.v4.widget.SwipeRefreshLayout
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/swipe_refresh">
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:paddingRight="12dp"
-        android:id="@+id/txt_block_height"
-        android:text="Block height: 200"/>
-
-    <android.support.v7.widget.RecyclerView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:scrollbars="vertical"
-        android:id="@+id/recycler_transactions"
-        ></android.support.v7.widget.RecyclerView>
+        android:id="@+id/container_tx"
+        android:orientation="vertical"></LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -45,7 +32,6 @@
     </LinearLayout>
 
 
-    </android.support.v4.widget.SwipeRefreshLayout>
 
 
 </RelativeLayout>

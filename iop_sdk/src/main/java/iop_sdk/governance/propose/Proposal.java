@@ -66,9 +66,10 @@ public class Proposal implements Serializable {
         // todo: faltan estados..
         QUEUED_FOR_EXECUTION(106),	// YES > NO. Current height  < (BlockStart + 1000 blocks).
         IN_EXECUTION(107),			// YES > NO. Current height  > BlockStart  and Current height  < BlockEnd
-        EXECUTION_CANCELLED(108), 	// NO > YES. Current height  > BlockStart  and Current height  < BlockEnd
-        EXECUTED(109),				// YES > NO. Current height  > BlockEnd
-        UNKNOWN(110);
+        QUEUED(108),                     //
+        EXECUTION_CANCELLED(109), 	// NO > YES. Current height  > BlockStart  and Current height  < BlockEnd
+        EXECUTED(110),				// YES > NO. Current height  > BlockEnd
+        UNKNOWN(111);
 
         private int id;
 

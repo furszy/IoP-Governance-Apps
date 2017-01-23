@@ -241,6 +241,9 @@ public class WalletModule {
                 } catch (CantCompleteProposalException e) {
                     LOG.error("CantCompleteProposalException",e);
                     throw e;
+                } catch (CantSendTransactionException e) {
+                    LOG.error("CantSendTransactionException",e);
+                    throw new CantSendProposalException(e.getMessage());
                 }
             }catch (CantSendProposalException e){
                 throw e;
@@ -254,7 +257,7 @@ public class WalletModule {
 
     }
 
-    public boolean sendProposal(Proposal proposal,byte[] transactionHashDest) throws InsuficientBalanceException, InsufficientMoneyException, NotConnectedPeersException, CantCompleteProposalException {
+    public boolean sendProposal(Proposal proposal,byte[] transactionHashDest) throws InsuficientBalanceException, InsufficientMoneyException, NotConnectedPeersException, CantCompleteProposalException, CantSendTransactionException {
 
         ProposalTransactionRequest proposalTransactionRequest = new ProposalTransactionRequest(blockchainManager, walletManager, proposalsDao);
         proposalTransactionRequest.forProposal(proposal);
@@ -305,7 +308,7 @@ public class WalletModule {
     public Proposal cancelProposalContract(Proposal proposal) throws CantCancelProsalException{
         LOG.info("cancelProposalContract : "+proposal.toString());
         try {
-            if (proposal.getState()==FORUM && proposal.isSent()) throw new CantCancelProsalException("Proposal is sent but not confirmed in the blockchain,\nplease wait until is accepted");
+            if (proposal.getState()==CANCELED_BY_OWNER && proposal.isSent()) throw new CantCancelProsalException("Proposal is sent but not confirmed in the blockchain,\nplease wait until is accepted");
             Transaction tx = walletManager.changeAddressOfTx(proposal.getGenesisTxHash(),0);
             ListenableFuture<Transaction> future = blockchainManager.broadcastTransaction(tx.getHash().getBytes());
             future.get(1, TimeUnit.MINUTES);
@@ -415,15 +418,19 @@ public class WalletModule {
         return proposalsDao.listProposalsActive(EXECUTED.getId()|EXECUTION_CANCELLED.getId());
     }
 
+    public List<Proposal> getActiveLoadedProposals() {
+        return proposalsDao.listProposalsActiveWithTitle(EXECUTED.getId()|EXECUTION_CANCELLED.getId());
+    }
+
     public List<Proposal> getActiveProposalsInBlockchain() {
         return proposalsDao.listProposalsActiveInBlockchain(EXECUTED.getId()|EXECUTION_CANCELLED.getId()|FORUM.getId());
     }
 
     public String getReceiveAddress() {
-        String address = configuration.getReceiveAddress();
+        String address = null;//configuration.getReceiveAddress();
         if (address==null){
             address = walletManager.getWallet().freshReceiveAddress().toBase58();
-            configuration.saveReceiveAddress(address);
+//            configuration.saveReceiveAddress(address);
         }
         LOG.info("Fresh new address: "+address);
         return address;
@@ -901,5 +908,12 @@ public class WalletModule {
 
     public boolean proposalBeneficiaryAddressExist(String addressBen) {
         return proposalsDao.beneficiaryAddressExist(addressBen);
+    }
+
+    public void saveUnknownProposals(List<Proposal> remainingProposals) {
+        LOG.info("saveUnknownProposals, List: "+Arrays.toString(remainingProposals.toArray()));
+        for (Proposal remainingProposal : remainingProposals) {
+            proposalsDao.updateProposalStateByForumId(remainingProposal.getForumId(), Proposal.ProposalState.UNKNOWN);
+        }
     }
 }

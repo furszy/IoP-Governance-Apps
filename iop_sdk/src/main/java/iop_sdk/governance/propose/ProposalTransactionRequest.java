@@ -5,6 +5,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import org.bitcoinj.core.Address;
 import org.bitcoinj.core.Coin;
 import org.bitcoinj.core.InsufficientMoneyException;
+import org.bitcoinj.core.RejectedTransactionException;
 import org.bitcoinj.core.Transaction;
 import org.bitcoinj.core.TransactionOutPoint;
 import org.bitcoinj.core.TransactionOutput;
@@ -12,6 +13,7 @@ import org.bitcoinj.wallet.CoinSelection;
 import org.bitcoinj.wallet.DefaultCoinSelector;
 import org.bitcoinj.wallet.SendRequest;
 import org.bitcoinj.wallet.Wallet;
+import org.iop.exceptions.CantSendTransactionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -94,7 +96,8 @@ public class ProposalTransactionRequest {
             if (proposalsDao.isLockedOutput(transactionOutPoint.getHash().toString(), transactionOutPoint.getIndex())) {
                 continue;
             }
-            if (DefaultCoinSelector.isSelectable(transactionOutput.getParentTransaction())) {
+            // todo: agregué el isMature para validar que lo esté tomando..
+            if (DefaultCoinSelector.isSelectable(transactionOutput.getParentTransaction()) && transactionOutput.getParentTransaction().isMature()) {
                 LOG.info("adding non locked transaction to spend as an input: postion:" + transactionOutPoint.getIndex() + ", parent hash: " + transactionOutPoint.toString());
                 totalInputsValue = totalInputsValue.add(transactionOutput.getValue());
                 unspentTransactions.add(transactionOutput);
@@ -172,7 +175,7 @@ public class ProposalTransactionRequest {
 
     }
 
-    public void broadcast() throws NotConnectedPeersException {
+    public void broadcast() throws NotConnectedPeersException,CantSendTransactionException {
         Wallet wallet = walletManager.getWallet();
         try {
 
@@ -182,7 +185,8 @@ public class ProposalTransactionRequest {
             wallet.commitTx(sendRequest.tx);
 
             ListenableFuture<Transaction> future = blockchainManager.broadcastTransaction(sendRequest.tx.getHash().getBytes());
-            future.get(1,TimeUnit.MINUTES);
+            Transaction tx = future.get(1,TimeUnit.MINUTES);
+
 
             // now that the transaction is complete lock the output
             // lock address
@@ -197,11 +201,16 @@ public class ProposalTransactionRequest {
 
         } catch (InterruptedException e) {
             e.printStackTrace();
+            throw new CantSendTransactionException(e.getMessage());
         } catch (ExecutionException e) {
             e.printStackTrace();
+            throw new CantSendTransactionException(e.getMessage());
         } catch (TimeoutException e) {
             e.printStackTrace();
             throw new NotConnectedPeersException(e);
+        } catch (Exception e){
+            e.printStackTrace();
+            throw new CantSendTransactionException(e.getMessage());
         }
     }
 

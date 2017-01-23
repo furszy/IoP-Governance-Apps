@@ -34,7 +34,7 @@ public class BeneficiariesAdapter extends FermatAdapterImproved<Beneficiary,Bene
 
     @Override
     protected BeneficiaryHolder createHolder(View itemView, int type) {
-        return new BeneficiaryHolder(itemView,type);
+        return new BeneficiaryHolder(itemView,type,validator);
     }
 
     @Override
@@ -46,50 +46,60 @@ public class BeneficiariesAdapter extends FermatAdapterImproved<Beneficiary,Bene
     protected void bindHolder(BeneficiaryHolder holder, final Beneficiary data, int position) {
 
         holder.edit_beneficiary_address.setText(data.getAddress());
-        holder.edit_beneficiary_address.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                try {
-                    if (!s.toString().equals("")) {
-                        validator.validateAddress(s.toString());
-                        data.setAddress(s.toString());
-                    }
-                } catch (ValidationException e) {
-                    // nothing
-                }
-            }
-        });
 
         if (data.getAmount()!=0) {
             holder.edit_beneficiary_value.setText(String.valueOf(data.getAmount()));
         }
 
-        holder.edit_beneficiary_value.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                if (!s.toString().equals(""))
-                    data.setAmount(Long.parseLong(s.toString()));
-            }
-        });
+//        holder.edit_beneficiary_value.addTextChangedListener(new TextWatcher() {
+//            @Override
+//            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+//
+//            }
+//
+//            @Override
+//            public void onTextChanged(CharSequence s, int start, int before, int count) {
+//
+//            }
+//
+//            @Override
+//            public void afterTextChanged(Editable s) {
+//                if (!s.toString().equals(""))
+//                    data.setAmount(Long.parseLong(s.toString()));
+//            }
+//        });
     }
+
+
+//    public static class AddressWatcher implements TextWatcher{
+//
+//        String address;
+//        private CreateProposalActivityValidator validator;
+//
+//        public AddressWatcher(CreateProposalActivityValidator validator) {
+//            this.validator = validator;
+//        }
+//
+//        @Override
+//        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+//
+//        }
+//
+//        @Override
+//        public void onTextChanged(CharSequence s, int start, int before, int count) {
+//
+//        }
+//
+//        @Override
+//        public void afterTextChanged(Editable s) {
+//            try {
+//                if (!s.toString().equals("")) {
+//                    validator.validateAddress(s.toString());
+//                    address = s.toString();
+//                }
+//            } catch (ValidationException e) {
+//                // nothing
+//            }
+//        }
+//    }
 }

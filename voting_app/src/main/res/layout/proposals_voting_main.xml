@@ -39,7 +39,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="12dp"
                     android:gravity="center"
-                    android:text="No active contracts yet"
+                    android:text="No active contribution\ncontracts yet"
                     android:textColor="#818181"
                     android:textSize="15sp" />
 

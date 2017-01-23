@@ -170,7 +170,7 @@ public class VotingProposalsActivity extends VotingBaseActivity {
         @Override
         public void run() {
             try {
-                proposals = (allProposals)? module.getProposals() : module.getActiveProposals();
+                proposals = (allProposals)? module.getProposals() : module.getActiveLoadedProposals();
                 Log.d(TAG,"Proposals loaded: "+proposals.size());
                 runOnUiThread(new Runnable() {
                     @Override

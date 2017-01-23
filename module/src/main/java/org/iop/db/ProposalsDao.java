@@ -170,6 +170,10 @@ public class ProposalsDao implements ProposalsContractDao {
         return proposalsDatabaseHandler.getActiveProposals();
     }
 
+    public List<Proposal> listProposalsActiveWithTitle(int i) {
+        return proposalsDatabaseHandler.getActiveProposalsWithTitle();
+    }
+
     public List<Proposal> listProposalsActiveInBlockchain(int stateId) {
         return proposalsDatabaseHandler.getProposalsActiveInBlockchain();
     }
@@ -191,4 +195,10 @@ public class ProposalsDao implements ProposalsContractDao {
     public boolean beneficiaryAddressExist(String addressBen) {
         return proposalsDatabaseHandler.addressBeneficiaryExist(addressBen);
     }
+
+    public void updateProposalStateByForumId(int forumId, Proposal.ProposalState proposalState) {
+        proposalsDatabaseHandler.updateProposalStateByForumId(forumId,proposalState);
+    }
+
+
 }

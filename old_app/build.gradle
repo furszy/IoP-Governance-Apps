@@ -81,6 +81,7 @@ dependencies {
 
 //    compile group: 'com.github.joshjdevl.libsodiumjni', name: 'libsodium-jni-aar', version: '1.0.3-SNAPSHOT'
 
+    compile 'io.github.luizgrp.sectionedrecyclerviewadapter:sectionedrecyclerviewadapter:1.0.4'
 
     // circle image view
     compile 'de.hdodenhof:circleimageview:2.1.0'

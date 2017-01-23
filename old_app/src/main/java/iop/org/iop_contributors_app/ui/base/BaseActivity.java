@@ -233,23 +233,23 @@ public abstract class BaseActivity extends AppCompatActivity {
             public void run() {
 
                 Context.propagate(WalletConstants.CONTEXT);
-
+                Bitmap qrBitmap = null;//Cache.getQrLittleBitmapCache();
                 try {
 
                     // qr
-                    Bitmap qrBitmap = Cache.getQrLittleBitmapCache();
                     if (qrBitmap==null){
                         qrBitmap = encodeAsBitmap(module.getReceiveAddress(),imgQr.getWidth(),imgQr.getHeight(),WHITE,Color.parseColor("#1A1A1A"));
-                        Cache.setQrLittleBitmapCache(qrBitmap);
+                        //Cache.setQrLittleBitmapCache(qrBitmap);
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
 
+                final Bitmap finalQrBitmap = qrBitmap;
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        imgQr.setImageBitmap(Cache.getQrLittleBitmapCache());
+                        imgQr.setImageBitmap(finalQrBitmap);
                     }
                 });
             }

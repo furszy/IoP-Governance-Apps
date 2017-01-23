@@ -232,6 +232,8 @@ public class IoPBalanceActivity extends AppCompatActivity {
                             }
                         });
 
+                        executorService.shutdown();
+
                     }else {
                         showErrorDialog("Error","Invalid amount");
                     }

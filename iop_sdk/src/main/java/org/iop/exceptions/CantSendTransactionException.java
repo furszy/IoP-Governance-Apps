@@ -9,4 +9,8 @@ public class CantSendTransactionException extends Throwable {
     public CantSendTransactionException(String s, Wallet.DustySendRequested e) {
         super(s,e);
     }
+
+    public CantSendTransactionException(String message) {
+        super(message);
+    }
 }

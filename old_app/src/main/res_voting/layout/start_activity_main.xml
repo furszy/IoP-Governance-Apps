@@ -4,8 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="?colorPrimary"
     android:orientation="vertical"
-    android:background="#171519"
     >
 
     <LinearLayout
@@ -20,30 +20,30 @@
         >
 
         <!--<TextView-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:layout_gravity="center_horizontal"-->
-            <!--android:layout_marginTop="16dp"-->
-            <!--android:alpha="0"-->
-            <!--android:text="Hello world"-->
-            <!--android:textAppearance="@style/TextAppearance.AppCompat.Widget.ActionBar.Title.Inverse"-->
-            <!--android:textColor="@android:color/white"-->
-            <!--android:textSize="22sp"-->
-            <!--tools:alpha="1"-->
-            <!--/>-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_gravity="center_horizontal"-->
+        <!--android:layout_marginTop="16dp"-->
+        <!--android:alpha="0"-->
+        <!--android:text="Hello world"-->
+        <!--android:textAppearance="@style/TextAppearance.AppCompat.Widget.ActionBar.Title.Inverse"-->
+        <!--android:textColor="@android:color/white"-->
+        <!--android:textSize="22sp"-->
+        <!--tools:alpha="1"-->
+        <!--/>-->
 
         <!--<TextView-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:layout_gravity="center_horizontal"-->
-            <!--android:layout_marginTop="8dp"-->
-            <!--android:alpha="0"-->
-            <!--android:gravity="center"-->
-            <!--android:text="This a nice text"-->
-            <!--android:textAppearance="@style/TextAppearance.AppCompat.Widget.ActionBar.Subtitle.Inverse"-->
-            <!--android:textSize="20sp"-->
-            <!--tools:alpha="1"-->
-            <!--/>-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_gravity="center_horizontal"-->
+        <!--android:layout_marginTop="8dp"-->
+        <!--android:alpha="0"-->
+        <!--android:gravity="center"-->
+        <!--android:text="This a nice text"-->
+        <!--android:textAppearance="@style/TextAppearance.AppCompat.Widget.ActionBar.Subtitle.Inverse"-->
+        <!--android:textSize="20sp"-->
+        <!--tools:alpha="1"-->
+        <!--/>-->
 
 
         <LinearLayout
@@ -102,6 +102,8 @@
                 android:backgroundTint="#fff"
                 android:digits="0123456789 abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ñÑ .,@-_"
                 android:ems="10"
+                android:inputType="textPassword"
+                android:password="true"
                 android:foregroundTint="#808080"
                 android:gravity="center"
                 android:hint="Password"
@@ -120,6 +122,14 @@
                 android:src="@drawable/ic_check_profile" />
 
         </LinearLayout>
+
+        <ProgressBar
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:id="@+id/progressBar"
+            android:layout_marginRight="5dp"
+            android:layout_gravity="center"
+            android:visibility="gone" />
 
 
         <LinearLayout
@@ -151,6 +161,7 @@
                 android:gravity="center"
                 android:paddingTop="12dp"
                 android:text="Forgot Password?"
+                android:visibility="invisible"
                 android:textSize="11sp"
                 android:textColor="@color/text_blue" />
 
@@ -187,24 +198,24 @@
 
 
         <!--<Button-->
-            <!--android:id="@+id/btn_choice1"-->
-            <!--android:layout_width="200dp"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:layout_marginTop="48dp"-->
-            <!--android:scaleX="0"-->
-            <!--android:scaleY="0"-->
-            <!--android:text="A nice choice"-->
-            <!--/>-->
+        <!--android:id="@+id/btn_choice1"-->
+        <!--android:layout_width="200dp"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_marginTop="48dp"-->
+        <!--android:scaleX="0"-->
+        <!--android:scaleY="0"-->
+        <!--android:text="A nice choice"-->
+        <!--/>-->
 
         <!--<Button-->
-            <!--android:id="@+id/btn_choice2"-->
-            <!--android:layout_width="200dp"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:layout_marginTop="4dp"-->
-            <!--android:scaleX="0"-->
-            <!--android:scaleY="0"-->
-            <!--android:text="Far better!"-->
-            <!--/>-->
+        <!--android:id="@+id/btn_choice2"-->
+        <!--android:layout_width="200dp"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_marginTop="4dp"-->
+        <!--android:scaleX="0"-->
+        <!--android:scaleY="0"-->
+        <!--android:text="Far better!"-->
+        <!--/>-->
 
     </LinearLayout>
 
@@ -218,12 +229,5 @@
         android:layout_marginBottom="32dp"
         />
 
-    <ProgressBar
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:id="@+id/progressBar"
-        android:layout_gravity="center"
-        android:visibility="invisible"
-        android:layout_marginTop="125dp"
-        />
+
 </FrameLayout>

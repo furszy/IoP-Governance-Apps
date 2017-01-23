@@ -169,6 +169,9 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
 
             nm.notify(2,mBuilder.build());
 
+            // cancel the peer not connected notification
+            nm.cancel(16);
+
             this.peerCount = peerCount;
             changed(peerCount);
         }
@@ -947,6 +950,8 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
                             .setContentText("No peer connection");
 
             nm.notify(16, mBuilder.build());
+
+
         }
     }
 

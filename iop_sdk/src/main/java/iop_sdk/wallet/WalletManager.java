@@ -334,8 +334,12 @@ public class WalletManager {
 
     public void replaceWallet(final Wallet newWallet) {
         resetBlockchain();
-        wallet.shutdownAutosaveAndWait();
 
+        try {
+            wallet.shutdownAutosaveAndWait();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
         wallet = newWallet;
         walletConfiguration.maybeIncrementBestChainHeightEver(newWallet.getLastBlockSeenHeight());
         afterLoadWallet();

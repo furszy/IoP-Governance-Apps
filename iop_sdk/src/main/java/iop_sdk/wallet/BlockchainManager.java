@@ -180,7 +180,8 @@ public class BlockchainManager {
 //            peerGroup.removeDisconnectedEventListener(peerConnectivityListener);
 //            peerGroup.removeConnectedEventListener(peerConnectivityListener);
             peerGroup.removeWallet(walletManager.getWallet());
-            peerGroup.stopAsync();
+            if (peerGroup.isRunning())
+                peerGroup.stopAsync();
 
             LOG.info("peergroup stopped");
 

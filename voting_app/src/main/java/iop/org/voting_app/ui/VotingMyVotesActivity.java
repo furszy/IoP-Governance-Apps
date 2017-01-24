@@ -119,9 +119,7 @@ public class VotingMyVotesActivity extends VotingBaseActivity implements FermatL
 
     @Override
     protected void onResume() {
-        if (votes==null){
-            executor.execute(loadMyVotes);
-        }
+        executor.execute(loadMyVotes);
         super.onResume();
     }
 

@@ -16,6 +16,10 @@
             android:summary="Broadcastea a la red una transaccion de propuesta pre armada"
             android:key="id_broadcast_transaction"/>
 
+        <Preference android:title="Broadcast 10 proposals"
+            android:summary="Broadcastea 10 propuesta seguidas un titulo randonm"
+            android:key="id_broadcast_10_transaction"/>
+
         <Preference android:title="Broadcast voting YES (para la ultima transaccion broadcasteada)"
             android:summary="Broadcastea a la red una transaccion de voting pre armada"
             android:key="id_broadcasting_yes"/>

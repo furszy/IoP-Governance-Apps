@@ -128,6 +128,21 @@ public class Proposal implements Serializable {
         return proposal;
     }
 
+    public static Proposal buildRandomProposal(String title){
+        Proposal proposal = new Proposal();
+        proposal.setMine(true);
+        proposal.setSent(false);
+        proposal.setState(ProposalState.DRAFT);
+        proposal.setTitle(title);
+        proposal.setSubTitle("subTitulo4");
+        proposal.setCategory("categoria");
+        proposal.setBody("Esta es una propuesta para crear propuestas, por lo cual debo poner cosas locas acá. Asi que voy a poner lo que se me dé la gana. y voy a llenar todo esto con cosas para probar su funcionamiento es bueno");
+        proposal.setStartBlock(10);
+        proposal.setEndBlock(100);
+        proposal.setBlockReward(10000000);
+        return proposal;
+    }
+
     /**
      * StringBuilder stringBuilder = new StringBuilder()
      .append("<h1>"+title+"</h1>")

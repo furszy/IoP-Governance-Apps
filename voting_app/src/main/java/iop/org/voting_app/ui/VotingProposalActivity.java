@@ -319,6 +319,8 @@ public class VotingProposalActivity extends VotingBaseActivity implements View.O
         // loading
         preparateLoading("Vote sent!", R.drawable.icon_done);
 
+        votingAmount = Integer.parseInt(edit_vote_quantity.getText().toString());
+
         long amountIoPToshis = votingAmount; //IoPCalculator.iopToIopToshis(votingAmount);
 
         vote = new Vote(proposal.getGenesisTxHash(),voteType,amountIoPToshis);
@@ -326,7 +328,7 @@ public class VotingProposalActivity extends VotingBaseActivity implements View.O
 
         if (Transaction.MIN_NONDUST_OUTPUT.isGreaterThan(Coin.valueOf(amountIoPToshis))){
             SimpleDialogs.showErrorDialog(this,"Error", "Votes not allowed, min votes value: "+Transaction.MIN_NONDUST_OUTPUT.getValue());
-            hideDoneLoading();
+            unlockAndHideLoading();
             return;
         }
 

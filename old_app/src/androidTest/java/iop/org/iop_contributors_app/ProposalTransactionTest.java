@@ -1,5 +1,7 @@
 package iop.org.iop_contributors_app;
 
+import android.app.Application;
+
 import junit.framework.Assert;
 
 import org.apache.commons.codec.DecoderException;
@@ -16,6 +18,8 @@ import iop_sdk.blockchain.OpReturnOutputTransaction;
 import iop_sdk.crypto.CryptoBytes;
 import iop_sdk.governance.propose.Proposal;
 import iop_sdk.governance.propose.ProposalTransactionBuilder;
+
+import static android.support.test.InstrumentationRegistry.getInstrumentation;
 
 /**
  * Created by mati on 18/11/16.
@@ -34,6 +38,9 @@ public class ProposalTransactionTest {
     private short endBlock = 0x03e8;
     // 2
     private int blockReward = 20000;
+
+
+
 
 
     // El problema era el endian, rodri lo puso en big endian (es como se lee), little endian es al reves.

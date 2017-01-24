@@ -39,8 +39,12 @@ import org.bitcoinj.wallet.SendRequest;
 import org.bitcoinj.wallet.Wallet;
 import org.iop.WalletConstants;
 import org.iop.WalletModule;
+import org.iop.db.CantSaveProposalException;
+import org.iop.db.CantSaveProposalExistException;
+import org.iop.exceptions.CantSendProposalException;
 import org.iop.exceptions.CantSendTransactionException;
 import org.iop.exceptions.InvalidAddressException;
+import org.iop.exceptions.InvalidProposalException;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -49,7 +53,10 @@ import java.util.concurrent.TimeUnit;
 
 import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.utils.Cache;
+import iop_sdk.blockchain.NotConnectedPeersException;
 import iop_sdk.blockchain.OpReturnOutputTransaction;
+import iop_sdk.forum.CantCreateTopicException;
+import iop_sdk.governance.propose.CantCompleteProposalException;
 import iop_sdk.governance.propose.Proposal;
 import iop_sdk.wallet.exceptions.InsuficientBalanceException;
 
@@ -72,6 +79,7 @@ public class DevSettingsFragment extends PreferenceFragment implements Preferenc
     private boolean proposalSended;
 
     private Handler handler = new Handler();
+    private String TAG = "DevSettingsFragment";
 
 
     public final static DevSettingsFragment newInstance(WalletModule module) {
@@ -127,6 +135,8 @@ public class DevSettingsFragment extends PreferenceFragment implements Preferenc
         preferenceManager.findPreference("id_forum_wrapper_host")
                 .setOnPreferenceChangeListener(this);
 
+        preferenceManager.findPreference("id_broadcast_10_transaction").setOnPreferenceChangeListener(this);
+
         executorService = Executors.newSingleThreadExecutor();
 
         return root;
@@ -153,24 +163,24 @@ public class DevSettingsFragment extends PreferenceFragment implements Preferenc
                     System.exit(0);
                 }
             }, TimeUnit.SECONDS.toMillis(5));
-        }else if(preference.getKey().equals("id_broadcast_transaction")){
+        }else if(preference.getKey().equals("id_broadcast_transaction")) {
             executorService.submit(new Runnable() {
                 @Override
                 public void run() {
                     Context.propagate(WalletConstants.CONTEXT);
                     Proposal proposal = Proposal.buildRandomProposal();
                     proposal.setForumId(1);
-                    proposal.addBeneficiary(module.getReceiveAddress(),proposal.getBlockReward());
+                    proposal.addBeneficiary(module.getReceiveAddress(), proposal.getBlockReward());
 
                     String message = null;
                     try {
-                        module.sendProposal(proposal,transactionHash);
+                        module.sendProposal(proposal, transactionHash);
                         proposalSended = true;
                         message = "Proposal Broadcasted";
                     } catch (InsuficientBalanceException e) {
                         e.printStackTrace();
                         message = e.getMessage();
-                    } catch (Exception e){
+                    } catch (Exception e) {
                         e.printStackTrace();
                         message = e.getMessage();
                     } catch (CantSendTransactionException e) {
@@ -181,7 +191,50 @@ public class DevSettingsFragment extends PreferenceFragment implements Preferenc
                     getActivity().runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            Toast.makeText(getActivity(), finalMessage,Toast.LENGTH_LONG).show();
+                            Toast.makeText(getActivity(), finalMessage, Toast.LENGTH_LONG).show();
+                        }
+                    });
+                }
+            });
+
+        }else if(preference.getKey().equals("id_broadcast_10_transaction")){
+            executorService.submit(new Runnable() {
+                @Override
+                public void run() {
+                    Context.propagate(WalletConstants.CONTEXT);
+                    String message = "";
+
+                    for (int i=0;i<11;i++){
+
+                        String title = "Propuesta para el peladito más tiernos "+i;
+
+                        Proposal proposal = Proposal.buildRandomProposal(title);
+                        proposal.addBeneficiary(module.getReceiveAddress(),10000000);
+
+                        try {
+                            module.createForumProposal(proposal);
+                            module.sendProposal(proposal);
+                            message = "Sent ok";
+                            Log.d(TAG,"proposal sent: "+proposal.toString());
+                            TimeUnit.SECONDS.sleep(15);
+                        } catch (Exception e){
+                            e.printStackTrace();
+                            message = e.getMessage();
+                        } catch (CantSaveProposalExistException e) {
+                            e.printStackTrace();
+                            message = e.getMessage();
+                        } catch (CantCreateTopicException e) {
+                            e.printStackTrace();
+                            message = e.getMessage();
+                        }
+
+                    }
+
+                    final String finalMessage = message;
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(getActivity(), finalMessage, Toast.LENGTH_LONG).show();
                         }
                     });
                 }
@@ -343,6 +396,7 @@ public class DevSettingsFragment extends PreferenceFragment implements Preferenc
             module.setWrapperHost(newValue.toString());
             preference.setDefaultValue(newValue.toString());
             Toast.makeText(getActivity(),"Wrapper changed",Toast.LENGTH_LONG).show();
+            return true;
         }
 
 

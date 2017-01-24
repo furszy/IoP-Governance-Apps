@@ -113,7 +113,8 @@ public class VotingProposalsActivity extends VotingBaseActivity {
         // ...
 
         // Stop refresh animation
-        swipeRefreshLayout.setRefreshing(false);
+        if(swipeRefreshLayout!=null)
+            swipeRefreshLayout.setRefreshing(false);
 
         if (proposals.isEmpty()){
             showEmptyScreen();
@@ -133,8 +134,10 @@ public class VotingProposalsActivity extends VotingBaseActivity {
         if (data.getString(INTENT_BROADCAST_DATA_TYPE).equals(INTENT_BROADCAST_DATA_PROPOSAL_TRANSACTION_ARRIVED)){
             Proposal proposal = (Proposal) data.get(INTENT_EXTRA_PROPOSAL);
             if (proposals==null || proposals.isEmpty()) {
-                adapter.changeDataSet(proposals);
-                hideEmptyScreen();
+                if (adapter!=null) {
+                    adapter.changeDataSet(proposals);
+                    hideEmptyScreen();
+                }
             }else {
                 if (!proposals.contains(proposal)) {
                     //proposals.put(proposal);
@@ -190,11 +193,13 @@ public class VotingProposalsActivity extends VotingBaseActivity {
 
 
     private void showEmptyScreen(){
-        AnimationUtils.fadeInView(container_empty_screen,300);
+        if (container_empty_screen!=null)
+            AnimationUtils.fadeInView(container_empty_screen,300);
     }
 
-    private void hideEmptyScreen(){
-        AnimationUtils.fadeOutView(container_empty_screen,300);
+    private void hideEmptyScreen() {
+        if (container_empty_screen!=null)
+            AnimationUtils.fadeOutView(container_empty_screen,300);
     }
 
 

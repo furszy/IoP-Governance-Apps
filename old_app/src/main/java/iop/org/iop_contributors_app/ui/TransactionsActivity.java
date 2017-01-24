@@ -3,11 +3,8 @@ package iop.org.iop_contributors_app.ui;
 import android.app.FragmentManager;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import org.bitcoinj.core.Context;
 import org.bitcoinj.core.Transaction;
@@ -19,9 +16,6 @@ import java.util.List;
 
 import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.ui.base.BaseActivity;
-import iop.org.iop_contributors_app.ui.settings.fragments.DevSettingsFragment;
-import iop.org.iop_contributors_app.ui.transactions.TransactionAdapter;
-import iop.org.iop_contributors_app.ui.transactions.ProposalTransactionsWrapper;
 
 /**
  * Created by mati on 17/01/17.
@@ -104,10 +98,10 @@ public class TransactionsActivity extends BaseActivity implements SwipeRefreshLa
         container_tx = root.findViewById(R.id.container_tx);
 
 
-        Example1Fragment example1Fragment = Example1Fragment.newInstance(module);
+        UnconfirmedTransactionFragment unconfirmedTransactionFragment = UnconfirmedTransactionFragment.newInstance(module);
         FragmentManager fragmentManager = getFragmentManager();
         fragmentManager.beginTransaction()
-                .add(container_tx.getId(),example1Fragment)
+                .add(container_tx.getId(), unconfirmedTransactionFragment)
                 .commit();
 
 

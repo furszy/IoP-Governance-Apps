@@ -29,7 +29,7 @@ public class TransactionAdapter extends FermatAdapterImproved<Transaction,Transa
 
     @Override
     protected int getCardViewResource(int type) {
-        return R.layout.unnavailable_transaction_row;
+        return R.layout.unconfirmed_transactions_row;
     }
 
     @Override

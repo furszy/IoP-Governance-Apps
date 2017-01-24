@@ -78,6 +78,7 @@ public class VotingProposalsAdapter extends FermatAdapterImproved<Proposal,Votin
 
             }
         });
+        holder.txt_state.setText(data.getState().toString());
         if (!data.isActive()) {
             holder.txt_go_vote.setVisibility(View.GONE);
             holder.view_btns_divider.setVisibility(View.GONE);

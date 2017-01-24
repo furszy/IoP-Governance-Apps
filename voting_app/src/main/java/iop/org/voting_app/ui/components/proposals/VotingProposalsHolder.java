@@ -26,6 +26,7 @@ public class VotingProposalsHolder extends FermatViewHolder {
     TextView txt_go_vote;
     View view_proposal_state;
     View view_btns_divider;
+    TextView txt_state;
 
 
     public VotingProposalsHolder(View itemView, int holderType) {
@@ -44,6 +45,7 @@ public class VotingProposalsHolder extends FermatViewHolder {
         txt_go_vote = (TextView) itemView.findViewById(R.id.txt_go_vote);
         view_proposal_state = itemView.findViewById(R.id.view_proposal_state);
         view_btns_divider = itemView.findViewById(R.id.view_btns_divider);
+        txt_state = (TextView) itemView.findViewById(R.id.txt_state);
 
 
     }

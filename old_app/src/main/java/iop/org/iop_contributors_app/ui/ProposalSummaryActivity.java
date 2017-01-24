@@ -111,6 +111,7 @@ public class ProposalSummaryActivity extends ContributorBaseActivity implements 
     protected void onCreateView(ViewGroup container, Bundle savedInstance) {
         super.onCreateView(container, savedInstance);
 
+        setTitle("Proposal Summary");
 
         if (getIntent().getExtras().containsKey(INTENT_EXTRA_PROPOSAL)) {
             proposal = (Proposal) getIntent().getSerializableExtra(INTENT_EXTRA_PROPOSAL);

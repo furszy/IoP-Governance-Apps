@@ -28,6 +28,8 @@ public class DevActivity extends BaseActivity {
     @Override
     protected void onCreateView(ViewGroup container, Bundle savedInstance) {
 
+        setTitle("Settings");
+
 
         setTheme(R.style.PreferenceScreen1);
 

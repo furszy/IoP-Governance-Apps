@@ -47,6 +47,8 @@ public class ForumActivity extends ContributorBaseActivity {
     @Override
     protected void onCreateView(ViewGroup container, Bundle savedInstance) {
 
+        setTitle("Forum");
+
         Intent intent = getIntent();
 
         String forumUrl = module.getForumUrl();

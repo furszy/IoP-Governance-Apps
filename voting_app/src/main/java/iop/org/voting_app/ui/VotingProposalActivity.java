@@ -108,6 +108,8 @@ public class VotingProposalActivity extends VotingBaseActivity implements View.O
     protected void onCreateView(ViewGroup container, Bundle savedInstance) {
         super.onCreateView(container,savedInstance);
 
+        setTitle("Vote");
+
         if (getIntent().getExtras().containsKey(INTENT_EXTRA_PROPOSAL)) {
             proposal = (Proposal) getIntent().getSerializableExtra(INTENT_EXTRA_PROPOSAL);
         }else if (getIntent().getAction().equals(ACTION_SUMMARY_PROPOSAL)){

@@ -38,7 +38,6 @@ import java.util.regex.Pattern;
 import de.hdodenhof.circleimageview.CircleImageView;
 import iop.org.furszy_lib.dialogs.DialogBuilder;
 import iop.org.iop_contributors_app.R;
-import iop.org.iop_contributors_app.ui.MainActivity;
 import iop.org.voting_app.base.VotingBaseActivity;
 import iop_sdk.forum.ForumProfile;
 import iop_sdk.forum.InvalidUserParametersException;
@@ -93,6 +92,8 @@ public class ProfileActivity extends VotingBaseActivity implements View.OnClickL
 
     @Override
     protected void onCreateView(ViewGroup container, Bundle savedInstance) {
+
+        setTitle("Profile");
 
         getLayoutInflater().inflate(R.layout.profile_main,container);
 
@@ -352,10 +353,6 @@ public class ProfileActivity extends VotingBaseActivity implements View.OnClickL
         executor.execute(runnable);
     }
 
-    private void goHome(){
-        Intent intent = new Intent(this,MainActivity.class);
-        startActivity(intent);
-    }
 
     private void buildFailDialog(String message) {
         DialogBuilder dialogBuilder = new DialogBuilder(ProfileActivity.this);

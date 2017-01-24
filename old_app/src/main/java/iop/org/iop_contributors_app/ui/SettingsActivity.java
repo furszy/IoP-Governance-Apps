@@ -26,6 +26,8 @@ public class SettingsActivity  extends ContributorBaseActivity {
     @Override
     protected void onCreateView(ViewGroup container, Bundle savedInstance) {
 
+        setTitle("Settings");
+
         setTheme(R.style.PreferenceScreen1);
 
         settingsFragment = SettingsFragment.newInstance(application,module);

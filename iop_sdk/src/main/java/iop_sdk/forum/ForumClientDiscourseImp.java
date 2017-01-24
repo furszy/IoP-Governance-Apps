@@ -103,6 +103,8 @@ public class ForumClientDiscourseImp implements ForumClient {
                         if (!forumProfile.getUsername().equals(username) && !forumProfile.getPassword().equals(password)){
                             forumProfile = new ForumProfile(username, password, null);
                         }
+                    }else {
+                        forumProfile = new ForumProfile(username, password, null);
                     }
                     saveForumData(true, username, password, null);
                     return true;

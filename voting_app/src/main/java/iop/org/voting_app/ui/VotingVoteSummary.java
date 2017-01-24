@@ -146,6 +146,8 @@ public class VotingVoteSummary extends VotingBaseActivity implements View.OnClic
     protected void onCreateView(final ViewGroup container, Bundle savedInstance) {
         super.onCreateView(container, savedInstance);
 
+        setTitle("Vote Summary");
+
         voteWrapper = (VoteWrapper) getIntent().getExtras().getSerializable(INTENT_VOTE_WRAPPER);
 
         root = getLayoutInflater().inflate(R.layout.vote_summary_main,container);

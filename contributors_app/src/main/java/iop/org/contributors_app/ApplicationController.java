@@ -180,7 +180,7 @@ public class ApplicationController extends Application implements AppController 
 //        bindService(intent,profServiceConnection,Context.BIND_AUTO_CREATE);
 //    }
 
-    private void startBlockchainService() {
+    public void startBlockchainService() {
         Intent blockchainServiceIntent = new Intent(this, BlockchainServiceImpl.class);
         startService(blockchainServiceIntent);
     }

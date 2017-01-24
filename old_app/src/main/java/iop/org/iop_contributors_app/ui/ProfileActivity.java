@@ -92,6 +92,8 @@ public class ProfileActivity extends ContributorBaseActivity implements View.OnC
     @Override
     protected void onCreateView(ViewGroup container, Bundle savedInstance) {
 
+        setTitle("Profile");
+
         getLayoutInflater().inflate(R.layout.profile_main,container);
 
         isRegistered = module.isForumRegistered();
@@ -348,11 +350,6 @@ public class ProfileActivity extends ContributorBaseActivity implements View.OnC
      */
     private void execute(Runnable runnable){
         executor.execute(runnable);
-    }
-
-    private void goHome(){
-        Intent intent = new Intent(this,MainActivity.class);
-        startActivity(intent);
     }
 
     private void buildFailDialog(String message) {

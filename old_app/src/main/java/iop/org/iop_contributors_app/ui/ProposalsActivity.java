@@ -40,6 +40,8 @@ public class ProposalsActivity extends ContributorBaseActivity {
     @Override
     protected void onCreateView(ViewGroup container, Bundle savedInstance) {
 
+        setTitle("My Proposals");
+
         root = getLayoutInflater().inflate(R.layout.proposals_main,container);
 
         recyclerView = (RecyclerView) root.findViewById(R.id.recycler_proposals);
@@ -124,10 +126,12 @@ public class ProposalsActivity extends ContributorBaseActivity {
 
 
     private void showEmptyScreen(){
-        AnimationUtils.fadeInView(container_empty_screen,300);
+        if (container_empty_screen!=null)
+            AnimationUtils.fadeInView(container_empty_screen,300);
     }
 
     private void hideEmptyScreen(){
-        AnimationUtils.fadeOutView(container_empty_screen,300);
+        if (container_empty_screen!=null)
+            AnimationUtils.fadeOutView(container_empty_screen,300);
     }
 }

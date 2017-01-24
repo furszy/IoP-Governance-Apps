@@ -165,6 +165,8 @@ public class CreateProposalActivity extends ContributorBaseActivity {
     @Override
     protected void onCreateView(final ViewGroup container, Bundle savedInstance) {
 
+        setTitle("Create Proposal");
+
         this.validator = new CreateProposalActivityValidator(module);
 
         if (getIntent().getAction()!=null) {

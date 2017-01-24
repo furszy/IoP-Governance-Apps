@@ -70,6 +70,8 @@ public class TransactionsActivity extends BaseActivity implements SwipeRefreshLa
 
         proposalTransactionsWrapperList = new ArrayList<>();
 
+        setTitle("Unconfirmed Transactions");
+
         root = getLayoutInflater().inflate(R.layout.transactions_main,container);
 
 

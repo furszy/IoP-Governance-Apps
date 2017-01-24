@@ -807,6 +807,7 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
             // remove listeners
             blockchainManager.removeDisconnectedEventListener(peerConnectivityListener);
             blockchainManager.removeConnectivityListener(peerConnectivityListener);
+            blockchainManager.removeBlockchainManagerListener(blockchainManagerListener);
             // destroy the blockchain
             blockchainManager.destroy(resetBlockchainOnShutdown);
 
@@ -841,63 +842,7 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
 
             if (!isChecking.getAndSet(true)) {
 
-                List<String> txHashes = null;
-                ServerWrapper.RequestProposalsResponse requestProposalsResponse= null;
-
-                if (application.isVotingApp()) {
-                    // obtain proposal contracts to filter
-                    requestProposalsResponse = walletModule.requestProposals(blockchainManager.getChainHeadHeight());
-                    if (requestProposalsResponse != null) {
-                        txHashes = requestProposalsResponse.getTxHashesNew();
-                    }
-                }
-
-                final List<String> finalTxHashes = txHashes;
-                final ServerWrapper.RequestProposalsResponse finalRequestProposalsResponse = requestProposalsResponse;
-                blockchainManager.addBlockchainManagerListener(new BlockchainManagerListener() {
-                    @Override
-                    public void peerGroupInitialized(PeerGroup peerGroup) {
-                        if (application.isVotingApp()) {
-                            // new thing
-                            transactionFinder = walletModule.getAndCreateFinder(peerGroup);
-                            transactionFinder.addTransactionFinderListener(transactionFinderListener);
-                            if (finalRequestProposalsResponse!=null) {
-                                transactionFinder.setLastBestChainHash(finalRequestProposalsResponse.getBestChainHash());
-                                for (String txHash : finalTxHashes) {
-                                    transactionFinder.addTx(txHash);
-                                    //todo: falta agregar el output de lockeo en el finder como hice abajo..
-                                }
-//                        transactionFinder.addTx("068af403e4f0935c419fb71ab625fb8364d7565a436c35a997ba6a75c9883b2b");
-//                        transactionFinder.addWatchedOutpoint(Sha256Hash.wrap("068af403e4f0935c419fb71ab625fb8364d7565a436c35a997ba6a75c9883b2b"),0,36);
-                                transactionFinder.startDownload();
-                            }
-                        }
-                    }
-
-                    @Override
-                    public void onBlockchainOff(Set<BlockchainState.Impediment> impediments) {
-                        String dialogText = "Blockchain impediment: ";
-                        int i = 0;
-                        for (BlockchainState.Impediment impediment : impediments) {
-                            dialogText += impediment.toString();
-                            if (i != 0) dialogText += " , ";
-                            i++;
-                        }
-                        walletModule.getAppController().showDialog(SHOW_BLOCKCHAIN_OFF_DIALOG, dialogText);
-                    }
-
-                    @Override
-                    public void checkStart() {
-                        LOG.debug("acquiring wakelock");
-                        wakeLock.acquire();
-                    }
-
-                    @Override
-                    public void checkEnd() {
-                        LOG.debug("releasing wakelock");
-                        wakeLock.release();
-                    }
-                });
+                blockchainManager.addBlockchainManagerListener(blockchainManagerListener);
 
                 blockchainManager.check(
                         impediments,
@@ -919,6 +864,62 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
             broadcastBlockchainState();
         }
     }
+
+
+    BlockchainManagerListener blockchainManagerListener = new BlockchainManagerListener() {
+
+        @Override
+        public void peerGroupInitialized(PeerGroup peerGroup) {
+            List<String> txHashes = null;
+            ServerWrapper.RequestProposalsResponse requestProposalsResponse= null;
+            if (application.isVotingApp()) {
+
+                // obtain proposal contracts to filter
+                requestProposalsResponse = walletModule.requestProposals(blockchainManager.getChainHeadHeight());
+                if (requestProposalsResponse != null) {
+                    txHashes = requestProposalsResponse.getTxHashesNew();
+                }
+
+                // new thing
+                transactionFinder = walletModule.getAndCreateFinder(peerGroup);
+                transactionFinder.addTransactionFinderListener(transactionFinderListener);
+                if (requestProposalsResponse!=null) {
+                    transactionFinder.setLastBestChainHash(requestProposalsResponse.getBestChainHash());
+                    for (String txHash : txHashes) {
+                        transactionFinder.addTx(txHash);
+                        //todo: falta agregar el output de lockeo en el finder como hice abajo..
+                    }
+//                        transactionFinder.addTx("068af403e4f0935c419fb71ab625fb8364d7565a436c35a997ba6a75c9883b2b");
+//                        transactionFinder.addWatchedOutpoint(Sha256Hash.wrap("068af403e4f0935c419fb71ab625fb8364d7565a436c35a997ba6a75c9883b2b"),0,36);
+                    transactionFinder.startDownload();
+                }
+            }
+        }
+
+        @Override
+        public void onBlockchainOff(Set<BlockchainState.Impediment> impediments) {
+            String dialogText = "Blockchain impediment: ";
+            int i = 0;
+            for (BlockchainState.Impediment impediment : impediments) {
+                dialogText += impediment.toString();
+                if (i != 0) dialogText += " , ";
+                i++;
+            }
+            walletModule.getAppController().showDialog(SHOW_BLOCKCHAIN_OFF_DIALOG, dialogText);
+        }
+
+        @Override
+        public void checkStart() {
+            LOG.debug("acquiring wakelock");
+            wakeLock.acquire();
+        }
+
+        @Override
+        public void checkEnd() {
+            LOG.debug("releasing wakelock");
+            wakeLock.release();
+        }
+    };
 
     private void broadcastBlockchainState() {
 

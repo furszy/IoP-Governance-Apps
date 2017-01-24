@@ -183,6 +183,8 @@ public class BlockchainManager {
             if (peerGroup.isRunning())
                 peerGroup.stopAsync();
 
+            peerGroup = null;
+
             LOG.info("peergroup stopped");
 
         }
@@ -191,6 +193,7 @@ public class BlockchainManager {
         try {
             blockStore.close();
         } catch (final BlockStoreException x) {
+            LOG.error("ACÁ SE ROMPIÍ!###################333");
             throw new RuntimeException(x);
         }
 

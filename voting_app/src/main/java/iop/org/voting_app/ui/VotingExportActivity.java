@@ -64,6 +64,8 @@ public class VotingExportActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        setTitle("Export");
+
         module = ((AppController)getApplication()).getModule();
 
         setContentView(R.layout.voting_export_main);

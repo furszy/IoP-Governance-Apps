@@ -55,6 +55,8 @@ public class VotingMyVotesActivity extends VotingBaseActivity implements FermatL
     @Override
     protected void onCreateView(ViewGroup container, Bundle savedInstance) {
 
+        setTitle("My Votes");
+
         super.onCreateView(container,savedInstance);
 
         root = getLayoutInflater().inflate(R.layout.my_votes_main,container);

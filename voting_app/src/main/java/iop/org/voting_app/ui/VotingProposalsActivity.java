@@ -75,6 +75,8 @@ public class VotingProposalsActivity extends VotingBaseActivity {
     @Override
     protected void onCreateView(ViewGroup container, Bundle savedInstance) {
 
+        setTitle("Home");
+
         super.onCreateView(container,savedInstance);
 
         root = getLayoutInflater().inflate(R.layout.proposals_voting_main,container);

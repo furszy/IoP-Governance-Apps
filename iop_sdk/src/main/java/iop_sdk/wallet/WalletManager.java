@@ -42,6 +42,7 @@ import java.util.concurrent.TimeUnit;
 
 import iop_sdk.crypto.Crypto;
 import iop_sdk.global.ContextWrapper;
+import iop_sdk.global.IntentWrapper;
 import iop_sdk.global.utils.Io;
 import iop_sdk.wallet.utils.WalletUtils;
 

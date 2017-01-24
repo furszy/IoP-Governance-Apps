@@ -42,6 +42,8 @@ public class BalanceActivity extends BaseActivity {
     @Override
     protected void onCreateView(ViewGroup container, Bundle savedInstance) {
 
+        setTitle("Balance");
+
         root = getLayoutInflater().inflate(R.layout.balance_activity_main,container);
 
         txt_available = (TextView) root.findViewById(R.id.txt_available);
@@ -52,6 +54,19 @@ public class BalanceActivity extends BaseActivity {
 
         container_unnavailable = findViewById(R.id.container_unnavailable);
 
+        container_unnavailable.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(v.getContext(),TransactionsActivity.class));
+            }
+        });
+
+        super.onCreateView(container, savedInstance);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
         try {
             loadBalance();
             loadQr();
@@ -62,15 +77,6 @@ public class BalanceActivity extends BaseActivity {
         } catch (Exception e){
             e.printStackTrace();
         }
-
-        container_unnavailable.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(v.getContext(),TransactionsActivity.class));
-            }
-        });
-
-        super.onCreateView(container, savedInstance);
     }
 
     private void loadProfile() {

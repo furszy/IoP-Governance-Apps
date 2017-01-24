@@ -140,6 +140,10 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
     private int notificationCount;
     private Coin notificationAccumulatedAmount = Coin.ZERO;
 
+    private NotificationCompat.Builder blockchainSyncBuilder;
+    // Sync flag to know when the peer is downloading blocks
+    private AtomicBoolean isSyncing = new AtomicBoolean(false);
+
 
     private final class PeerConnectivityListener
             implements PeerConnectedEventListener, PeerDisconnectedEventListener, SharedPreferences.OnSharedPreferenceChangeListener {
@@ -232,9 +236,9 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
             LOG.info("Peer: "+peer+", Block: "+block+", left: "+blocksLeft);
             LOG.info("############# on Blockcs downloaded end ###########");
 
+            showBlockchainSyncNotification(blocksLeft);
 
             delayHandler.removeCallbacksAndMessages(null);
-
 
 
             final long now = System.currentTimeMillis();
@@ -499,15 +503,6 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
         }
     };
 
-    public static double round(double value, int places) {
-        if (places < 0) throw new IllegalArgumentException();
-
-        long factor = (long) Math.pow(10, places);
-        value = value * factor;
-        long tmp = Math.round(value);
-        return (double) tmp / factor;
-    }
-
 
     private TransactionFinderListener transactionFinderListener = new TransactionFinderListener() {
         @Override
@@ -745,6 +740,29 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
         return START_NOT_STICKY;
     }
 
+    private void showBlockchainSyncNotification(int blockLeft){
+        if (blockLeft>=2 && !isSyncing.getAndSet(true)){
+            blockchainSyncBuilder = new NotificationCompat.Builder(this);
+            blockchainSyncBuilder.setContentTitle("Blockchain Syncing")
+                    .setContentText("Blocks left: "+blockLeft)
+                    .setSmallIcon(R.drawable.ic__launcher);
+            // Sets an activity indicator for an operation of indeterminate length
+            blockchainSyncBuilder.setProgress(0, 0, true);
+            // Displays the progress bar for the first time.
+            nm.notify(25, blockchainSyncBuilder.build());
+        }else if (blockLeft<2){
+            isSyncing.set(false);
+            // When the loop is finished, updates the notification
+            blockchainSyncBuilder.setContentText("Download complete")
+                    // Removes the progress bar
+                    .setProgress(0,0,false);
+            nm.notify(25, blockchainSyncBuilder.build());
+        }else {
+            blockchainSyncBuilder.setContentText("Blocks left: "+blockLeft);
+
+            nm.notify(25, blockchainSyncBuilder.build());
+        }
+    }
 
     private void showDialogException(int dialogType, String message){
         Intent intent = new Intent(ACTION_NOTIFICATION);
@@ -870,6 +888,8 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
 
         @Override
         public void peerGroupInitialized(PeerGroup peerGroup) {
+
+            // Proposals finder
             List<String> txHashes = null;
             ServerWrapper.RequestProposalsResponse requestProposalsResponse= null;
             if (application.isVotingApp()) {

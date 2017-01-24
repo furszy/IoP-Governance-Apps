@@ -10,7 +10,7 @@
 
     <PreferenceCategory android:title="Wallet">
 
-        <Preference android:key="id_balance" android:title="Balance" />
+        <Preference android:key="id_balance" android:title="Export coins" />
 
     </PreferenceCategory>
 
@@ -20,9 +20,9 @@
 
     </PreferenceCategory>
 
-    <PreferenceCategory android:title="Dev">
+    <PreferenceCategory android:title="Devs">
 
-        <Preference android:key="id_dev" android:title="Blockchain" />
+        <Preference android:key="id_dev" android:title="Advance configurations" />
 
     </PreferenceCategory>
 

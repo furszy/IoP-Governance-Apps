@@ -1,6 +1,7 @@
 package iop.org.iop_contributors_app.ui;
 
 import android.app.Fragment;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 
@@ -131,6 +132,8 @@ public class UnconfirmedTransactionFragment extends Fragment {
                     Toast.makeText(getActivity(), String.format("Clicked on position #%s of Section %s", sectionAdapter.getSectionPosition(itemHolder.getAdapterPosition()), title), Toast.LENGTH_SHORT).show();
                 }
             });
+
+            itemHolder.itemView.setBackgroundColor((position%2==0)? Color.parseColor("#CCCCCC"):Color.WHITE);
         }
 
         @Override

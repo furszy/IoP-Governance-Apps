@@ -186,7 +186,7 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
 
     // Getting single contact
     Proposal getProposal(String title) throws CantGetProposalException {
-        Log.d(TAG,"getProposal");
+//        Log.d(TAG,"getProposal");
         Proposal proposal = null;
         try {
             SQLiteDatabase db = this.getReadableDatabase();

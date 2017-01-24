@@ -90,6 +90,8 @@ public class VotingProposalActivity extends VotingBaseActivity implements View.O
     private Button btn_minus_voting;
     private Button btn_plus_voting;
     private EditText edit_vote_quantity;
+    private Button btn_plus_x2_voting;
+    private Button btn_plus_div_2_voting;
 
     // loading ui
     private View container_send;
@@ -100,6 +102,7 @@ public class VotingProposalActivity extends VotingBaseActivity implements View.O
     private AtomicBoolean lockBroadcast = new AtomicBoolean(false);
 
     private Handler handler = new Handler();
+
 
     @Override
     protected void onCreateView(ViewGroup container, Bundle savedInstance) {
@@ -137,9 +140,13 @@ public class VotingProposalActivity extends VotingBaseActivity implements View.O
         edit_vote_quantity = (EditText) root.findViewById(R.id.edit_vote_quantity);
         btn_minus_voting = (Button) root.findViewById(R.id.btn_minus_voting);
         btn_plus_voting = (Button) root.findViewById(R.id.btn_plus_voting);
+        btn_plus_x2_voting = (Button) root.findViewById(R.id.btn_plus_x2_voting);
+        btn_plus_div_2_voting = (Button) root.findViewById(R.id.btn_plus_div_2_voting);
 
         btn_minus_voting.setOnClickListener(this);
         btn_plus_voting.setOnClickListener(this);
+        btn_plus_x2_voting.setOnClickListener(this);
+        btn_plus_div_2_voting.setOnClickListener(this);
         txt_go_forum.setOnClickListener(this);
         txt_go_vote.setOnClickListener(this);
 
@@ -270,6 +277,18 @@ public class VotingProposalActivity extends VotingBaseActivity implements View.O
                 updateVotesAmount();
             }
         }
+        else if (id == R.id.btn_plus_x2_voting){
+            if (voteType!= Vote.VoteType.NEUTRAL) {
+                votingAmount = votingAmount*2;
+                updateVotesAmount();
+            }
+        }
+        else if (id == R.id.btn_plus_div_2_voting){
+            if (voteType!= Vote.VoteType.NEUTRAL) {
+                votingAmount = votingAmount/2;
+                updateVotesAmount();
+            }
+        }
         else if (id == R.id.txt_go_forum){
             onBackPressed();
         }
@@ -300,7 +319,7 @@ public class VotingProposalActivity extends VotingBaseActivity implements View.O
         // loading
         preparateLoading("Vote sent!", R.drawable.icon_done);
 
-        long amountIoPToshis = IoPCalculator.iopToIopToshis(votingAmount);
+        long amountIoPToshis = votingAmount; //IoPCalculator.iopToIopToshis(votingAmount);
 
         vote = new Vote(proposal.getGenesisTxHash(),voteType,amountIoPToshis);
 

@@ -107,6 +107,8 @@ public class VotingVoteSummary extends VotingBaseActivity implements View.OnClic
 
     private Button btn_minus_voting;
     private Button btn_plus_voting;
+    private Button btn_plus_x2_voting;
+    private Button btn_plus_div_2_voting;
     private EditText txt_vote_quantity;
 
     private boolean isChangeVoteExpanded;
@@ -165,6 +167,8 @@ public class VotingVoteSummary extends VotingBaseActivity implements View.OnClic
         txt_vote_quantity = (EditText) root.findViewById(R.id.txt_vote_quantity);
         btn_minus_voting = (Button) root.findViewById(R.id.btn_minus_voting);
         btn_plus_voting = (Button) root.findViewById(R.id.btn_plus_voting);
+        btn_plus_x2_voting = (Button) root.findViewById(R.id.btn_plus_x2_voting);
+        btn_plus_div_2_voting = (Button) root.findViewById(R.id.btn_plus_div_2_voting);
 
         container_send = root.findViewById(R.id.container_send);
         img_done = (ImageView) root.findViewById(R.id.img_done);
@@ -183,6 +187,8 @@ public class VotingVoteSummary extends VotingBaseActivity implements View.OnClic
 
         btn_minus_voting.setOnClickListener(this);
         btn_plus_voting.setOnClickListener(this);
+        btn_plus_x2_voting.setOnClickListener(this);
+        btn_plus_div_2_voting.setOnClickListener(this);
         txt_go_cancel.setOnClickListener(this);
         txt_go_vote.setOnClickListener(this);
 
@@ -385,6 +391,18 @@ public class VotingVoteSummary extends VotingBaseActivity implements View.OnClic
         else if (id == R.id.btn_plus_voting){
             if (voteType!= Vote.VoteType.NEUTRAL) {
                 votingAmount++;
+                updateVotesAmount();
+            }
+        }
+        else if (id == R.id.btn_plus_x2_voting){
+            if (voteType!= Vote.VoteType.NEUTRAL) {
+                votingAmount = votingAmount*2;
+                updateVotesAmount();
+            }
+        }
+        else if (id == R.id.btn_plus_div_2_voting){
+            if (voteType!= Vote.VoteType.NEUTRAL) {
+                votingAmount = votingAmount/2;
                 updateVotesAmount();
             }
         }

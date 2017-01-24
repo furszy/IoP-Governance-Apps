@@ -24,8 +24,8 @@
         <activity android:name=".SettingsActivity"
             android:theme="@style/PreferenceScreen" />
 
-        <activity android:name="iop.org.iop_contributors_app.ui.settings.IoPBalanceActivity"/>
-        <activity android:name=".ui.DevActivity" android:theme="@style/PreferenceScreen"/>
+        <activity android:name=".ui.VotingExportActivity"/>
+        <activity android:name=".ui.DevActivity" android:theme="@style/PreferenceScreen" />
         <service android:name="iop.org.iop_contributors_app.services.BlockchainServiceImpl"/>
 
         <activity android:name=".ui.VotingStartActivity" android:theme="@style/AppTheme.VotingCenterAnimation">
@@ -34,7 +34,7 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <activity android:name=".ui.VotingProposalsActivity"/>
+        <activity android:name=".ui.VotingProposalsActivity" android:launchMode="singleInstance"/>
         <activity android:name=".ui.VotingProposalActivity"/>
         <activity android:name=".ui.VotingMyVotesActivity"/>
         <activity android:name=".ui.VotingVoteSummary"/>

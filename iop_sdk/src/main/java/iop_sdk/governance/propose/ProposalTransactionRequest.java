@@ -188,6 +188,7 @@ public class ProposalTransactionRequest {
             Transaction tx = future.get(1,TimeUnit.MINUTES);
 
 
+
             // now that the transaction is complete lock the output
             // lock address
             String parentTransactionHashHex = sendRequest.tx.getHash().toString();

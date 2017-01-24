@@ -27,6 +27,7 @@ import iop.org.iop_contributors_app.ui.dialogs.ReportIssueDialogBuilder;
 import iop.org.iop_contributors_app.ui.settings.IoPBalanceActivity;
 import iop.org.iop_contributors_app.utils.CrashReporter;
 import iop.org.voting_app.ui.DevActivity;
+import iop.org.voting_app.ui.VotingExportActivity;
 import iop.org.voting_app.ui.VotingStartActivity;
 
 /**
@@ -78,7 +79,7 @@ public class SettingsFragment extends PreferenceFragment {
     public boolean onPreferenceTreeClick(PreferenceScreen preferenceScreen, Preference preference) {
 
         if (preference.getKey().equals(getString(R.string.id_balance))){
-            startActivity(new Intent(getActivity(), IoPBalanceActivity.class));
+            startActivity(new Intent(getActivity(), VotingExportActivity.class));
         }else if (preference.getKey().equals("id_report")){
             handleReportIssue();
         } else if(preference.getKey().equals("id_dev")){

@@ -99,7 +99,11 @@ public class ForumClientDiscourseImp implements ForumClient {
                 if (apiKey != null) {
                     conf.setApiKey(apiKey);
                     this.client.setApiKey(apiKey);
-                    forumProfile = new ForumProfile(username, password, null);
+                    if (forumProfile!=null){
+                        if (!forumProfile.getUsername().equals(username) && !forumProfile.getPassword().equals(password)){
+                            forumProfile = new ForumProfile(username, password, null);
+                        }
+                    }
                     saveForumData(true, username, password, null);
                     return true;
                 } else

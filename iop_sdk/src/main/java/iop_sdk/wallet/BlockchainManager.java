@@ -167,7 +167,7 @@ public class BlockchainManager {
         if (peerGroup != null) {
             LOG.info("broadcasting transaction " + tx.getHashAsString());
             TransactionBroadcast transactionBroadcast = peerGroup.broadcastTransaction(tx,1);
-            return transactionBroadcast.future();
+            return transactionBroadcast.broadcast();
         } else {
             LOG.info("peergroup not available, not broadcasting transaction " + tx.getHashAsString());
             return null;

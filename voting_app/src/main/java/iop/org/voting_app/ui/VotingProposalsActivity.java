@@ -150,9 +150,7 @@ public class VotingProposalsActivity extends VotingBaseActivity {
 
     @Override
     protected void onResume() {
-        if (proposals==null){
-            executor.execute(loadProposals);
-        }
+        executor.execute(loadProposals);
         super.onResume();
     }
 

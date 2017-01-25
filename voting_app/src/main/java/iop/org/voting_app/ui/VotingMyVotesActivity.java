@@ -75,7 +75,6 @@ public class VotingMyVotesActivity extends VotingBaseActivity implements FermatL
 
         adapter = new MyVotesAdapter(this,module);
         recyclerView.setAdapter(adapter);
-        adapter.setFermatListEventListener(this);
 
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -121,6 +120,7 @@ public class VotingMyVotesActivity extends VotingBaseActivity implements FermatL
 
     @Override
     protected void onResume() {
+        adapter.setFermatListEventListener(this);
         executor.execute(loadMyVotes);
         super.onResume();
     }
@@ -128,6 +128,7 @@ public class VotingMyVotesActivity extends VotingBaseActivity implements FermatL
 
     @Override
     protected void onStop() {
+        adapter.clear();
         super.onStop();
     }
 
@@ -176,10 +177,11 @@ public class VotingMyVotesActivity extends VotingBaseActivity implements FermatL
         ActivityOptionsCompat options =
                 ActivityOptionsCompat.makeSceneTransitionAnimation(
                         this,
-                        holder.itemView,//albumCoverImageView,   // The view which starts the transition
+                        holder.card_view,//albumCoverImageView,   // The view which starts the transition
                         transitionName    // The transitionName of the view we’re transitioning to
                 );
         ActivityCompat.startActivity(this, intent, options.toBundle());
+
     }
 
     @Override

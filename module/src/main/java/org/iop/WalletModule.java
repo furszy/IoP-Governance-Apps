@@ -71,6 +71,7 @@ import iop_sdk.wallet.exceptions.InsuficientBalanceException;
 import static iop_sdk.governance.propose.Proposal.ProposalState.EXECUTED;
 import static iop_sdk.governance.propose.Proposal.ProposalState.EXECUTION_CANCELLED;
 import static iop_sdk.governance.propose.Proposal.ProposalState.FORUM;
+import static iop_sdk.governance.propose.Proposal.ProposalState.PENDING;
 import static iop_sdk.governance.propose.Proposal.ProposalState.SUBMITTED;
 import static org.iop.intents.constants.IntentsConstants.ACTION_NOTIFICATION;
 import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_PROPOSAL_FROZEN_FUNDS_UNLOCKED;
@@ -212,6 +213,9 @@ public class WalletModule {
                 }
 
                 try {
+                    // check if we have at least one peer connected
+                    if(blockchainManager.getConnectedPeers().isEmpty()) throw new NotConnectedPeersException();
+
                     ProposalTransactionRequest proposalTransactionRequest = new ProposalTransactionRequest(blockchainManager, walletManager, proposalsDao);
                     proposalTransactionRequest.forProposal(proposal);
                     proposalTransactionRequest.broadcast();
@@ -223,6 +227,7 @@ public class WalletModule {
                     // mark proposal sent and put state in "voting"
                     proposal.setSent(true);
                     resp = proposalsDao.markSentBroadcastedProposal(proposal.getForumId());
+                    proposal.setState(PENDING);
                     LOG.info("proposal mark sent "+resp);
                     // locked balance
                     addLockedBalance(proposalTransactionRequest.getLockedBalance());
@@ -816,7 +821,7 @@ public class WalletModule {
 
                     }
                 }else {
-                    if (forumProposal.getState() == EXECUTED || forumProposal.getState() == EXECUTION_CANCELLED){
+                    if (forumProposal.getState() == EXECUTED || forumProposal.getState() == EXECUTION_CANCELLED || forumProposal.getState() == CANCELED_BY_OWNER){
                         // No tengo que desloquear los fondos aquí ya que se lokean por el estado de la propuesta
                         // así que solamente tengo que notificar al usuario que sus fondos fueron desbloqueados
                         minusLockedValue(ProposalTransactionBuilder.FREEZE_VALUE.getValue());
@@ -848,6 +853,15 @@ public class WalletModule {
 
     public boolean checkIfVoteExist(Vote vote) {
         return votesDaoImp.exist(vote);
+    }
+
+    /**
+     * Check if the vote exist for a proposal tx genesis hash
+     * @param genesisTxHash
+     * @return
+     */
+    public boolean checkIfVoteExist(String genesisTxHash) {
+        return votesDaoImp.getVote(genesisTxHash)!=null;
     }
 
     public boolean isProposalTransaction(Transaction transaction) {
@@ -916,4 +930,6 @@ public class WalletModule {
             proposalsDao.updateProposalStateByForumId(remainingProposal.getForumId(), Proposal.ProposalState.UNKNOWN);
         }
     }
+
+
 }

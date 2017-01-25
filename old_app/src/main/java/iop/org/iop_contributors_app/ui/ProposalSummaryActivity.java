@@ -42,6 +42,7 @@ import static org.iop.intents.constants.IntentsConstants.COMMON_ERROR_DIALOG;
 import static org.iop.intents.constants.IntentsConstants.INSUFICIENTS_FUNDS_DIALOG;
 import static org.iop.intents.constants.IntentsConstants.INTENTE_BROADCAST_DIALOG_TYPE;
 import static org.iop.intents.constants.IntentsConstants.INTENTE_EXTRA_MESSAGE;
+import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_PROPOSAL_TRANSACTION_CANCEL;
 import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_PROPOSAL_TRANSACTION_SUCCED;
 import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_TYPE;
 import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_TYPE;
@@ -94,18 +95,6 @@ public class ProposalSummaryActivity extends ContributorBaseActivity implements 
     /** broadcast flag */
     private AtomicBoolean lockBroadcast = new AtomicBoolean(false);
 
-//    private final BroadcastReceiver receiver = new BroadcastReceiver() {
-//        @Override
-//        public void onReceive(Context context, final Intent intent) {
-//            runOnUiThread(new Runnable() {
-//                @Override
-//                public void run() {
-//
-//                }
-//            });
-//
-//        }
-//    };
 
     @Override
     protected void onCreateView(ViewGroup container, Bundle savedInstance) {
@@ -197,13 +186,7 @@ public class ProposalSummaryActivity extends ContributorBaseActivity implements 
         txt_total_amount.setText("Total: " + coinToString(proposal.getBlockReward() * proposal.getEndBlock()) + " IoPs");
 
         if (!proposal.isActive()) {
-            btn_broadcast_proposal.setText("Back");
-            btn_broadcast_proposal.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    onBackPressed();
-                }
-            });
+            setProposalFinished();
         } else if (proposal.isSent()) {
             proposalSent();
         } else {
@@ -234,6 +217,11 @@ public class ProposalSummaryActivity extends ContributorBaseActivity implements 
                 lockBroadcast.set(false);
                 showDoneLoading();
                 Toast.makeText(this, "Proposal broadcasted!", Toast.LENGTH_SHORT).show();
+            }else if ((data.getString(INTENT_BROADCAST_DATA_TYPE).equals(INTENT_BROADCAST_DATA_PROPOSAL_TRANSACTION_CANCEL))){
+                proposal = (Proposal) data.get(INTENT_EXTRA_PROPOSAL);
+                lockBroadcast.set(false);
+                showDoneLoading();
+                Toast.makeText(this, "Proposal canceled!", Toast.LENGTH_SHORT).show();
             }
         } else if(data.getString(INTENT_BROADCAST_TYPE).equals(INTENT_DIALOG)){
             switch (data.getInt(INTENTE_BROADCAST_DIALOG_TYPE,0)){
@@ -273,6 +261,16 @@ public class ProposalSummaryActivity extends ContributorBaseActivity implements 
         int id = v.getId();
         if (id == R.id.btn_broadcast_proposal){
 
+            if (proposal.getState() == Proposal.ProposalState.CANCELED_BY_OWNER){
+                Toast.makeText(this,"Proposal already canceled, you have to wait until the transaction is included in a block",Toast.LENGTH_LONG).show();
+                return;
+            }
+
+            if (proposal.getState() == Proposal.ProposalState.PENDING){
+                Toast.makeText(this,"Proposal pending to be confirmed in the blockchain, please wait",Toast.LENGTH_LONG).show();
+                return;
+            }
+
             if (lockBroadcast.compareAndSet(false, true)) {
 
                 showBroadcastDialog();
@@ -304,10 +302,10 @@ public class ProposalSummaryActivity extends ContributorBaseActivity implements 
             @Override
             public void onClick(View v) {
                 hideDoneLoading();
-                if (proposal.isSent()) {
+                if (proposal.isSent() && proposal.isActive()) {
                     proposalSent();
-                }else {
-                    Log.e(TAG,"proposal is no sent");
+                }else if (!proposal.isActive()){
+                    setProposalFinished();
                 }
             }
         });
@@ -344,6 +342,15 @@ public class ProposalSummaryActivity extends ContributorBaseActivity implements 
         iop.org.furszy_lib.utils.AnimationUtils.collapse(container_more_data);
     }
 
+    private void setProposalFinished(){
+        btn_broadcast_proposal.setText("Back");
+        btn_broadcast_proposal.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onBackPressed();
+            }
+        });
+    }
 
     private void redirectToForum(Proposal proposal) {
         Intent intent1 = new Intent(this,ForumActivity.class);

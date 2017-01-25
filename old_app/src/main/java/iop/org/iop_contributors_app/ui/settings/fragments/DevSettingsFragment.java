@@ -206,7 +206,7 @@ public class DevSettingsFragment extends PreferenceFragment implements Preferenc
 
                     for (int i=0;i<11;i++){
 
-                        String title = "Propuesta para el peladito más tiernos "+i;
+                        String title = "Propuesta para el peladito más2s tiernos "+i;
 
                         Proposal proposal = Proposal.buildRandomProposal(title);
                         proposal.addBeneficiary(module.getReceiveAddress(),10000000);

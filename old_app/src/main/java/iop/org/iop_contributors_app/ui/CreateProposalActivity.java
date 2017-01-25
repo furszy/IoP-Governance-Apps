@@ -207,14 +207,6 @@ public class CreateProposalActivity extends ContributorBaseActivity {
 
         initWatchers();
 
-        root.findViewById(R.id.img_help_my_address).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-//                if (!isEditing)
-//                    edit_beneficiary_address_1.setText(module.getReceiveAddress());
-            }
-        });
-
         container_send.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

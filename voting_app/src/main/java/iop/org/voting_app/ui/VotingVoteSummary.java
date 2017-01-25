@@ -66,6 +66,7 @@ public class VotingVoteSummary extends VotingBaseActivity implements View.OnClic
     private static final String TAG = "VotingVoteSummary";
 
     public static final String INTENT_VOTE_WRAPPER = "vote_wrapper";
+    public static final String INTENT_CHANGE_VOTE = "change_vote";
 
     private VoteWrapper voteWrapper;
 
@@ -194,18 +195,6 @@ public class VotingVoteSummary extends VotingBaseActivity implements View.OnClic
         txt_go_cancel.setOnClickListener(this);
         txt_go_vote.setOnClickListener(this);
 
-//        root.findViewById(R.id.txt_change_vote).setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                if (container_change_vote.getVisibility()!=View.VISIBLE) {
-////                    container_change_vote.setVisibility(View.VISIBLE);
-//                    expand(container_change_vote);
-//                }else {
-//                    collapse(container_change_vote);
-//                }
-//            }
-//        });
-
         seek_bar_switch.addSwitchListener(new SwitchSeekBar.SwitchListener() {
             @Override
             public void handleLeft() {
@@ -226,6 +215,11 @@ public class VotingVoteSummary extends VotingBaseActivity implements View.OnClic
         });
         
         loadVote();
+
+
+        if(getIntent().getExtras().containsKey(INTENT_CHANGE_VOTE)){
+            expand(container_change_vote, card_bottom_border);
+        }
 
     }
 

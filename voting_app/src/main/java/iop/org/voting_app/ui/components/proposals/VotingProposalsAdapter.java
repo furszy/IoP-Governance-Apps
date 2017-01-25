@@ -28,9 +28,12 @@ public class VotingProposalsAdapter extends FermatAdapterImproved<Proposal,Votin
 
     private WalletModule module;
 
-    public VotingProposalsAdapter(VotingProposalsActivity context, WalletModule module,List<Proposal> proposalList) {
+    private VoteClickListener onVoteTouchedListener;
+
+    public VotingProposalsAdapter(VotingProposalsActivity context, WalletModule module,List<Proposal> proposalList,VoteClickListener onVoteTouchedListener) {
         super(context,proposalList);
         this.module = module;
+        this.onVoteTouchedListener = onVoteTouchedListener;
     }
 
     @Override
@@ -44,7 +47,7 @@ public class VotingProposalsAdapter extends FermatAdapterImproved<Proposal,Votin
     }
 
     @Override
-    protected void bindHolder(VotingProposalsHolder holder, final Proposal data, int position) {
+    protected void bindHolder(VotingProposalsHolder holder, final Proposal data, final int position) {
 
         holder.txt_title.setText(data.getTitle());
         holder.txt_forum_id.setText(String.valueOf(data.getForumId()));
@@ -64,6 +67,7 @@ public class VotingProposalsAdapter extends FermatAdapterImproved<Proposal,Votin
                 Toast.makeText(context,"Aqui deberia mostrar todo el texto si es que lo tiene o esconder el boton si no tiene..",Toast.LENGTH_LONG).show();
             }
         });
+        holder.btn_read_more.setVisibility(View.INVISIBLE);
         holder.txt_start_block.setText(String.valueOf(data.getStartBlock()));
         holder.txt_end_block.setText(String.valueOf(data.getEndBlock()));
         holder.txt_total_amount.setText("Reward "+coinToString(data.getBlockReward())+" IoPs");
@@ -87,9 +91,7 @@ public class VotingProposalsAdapter extends FermatAdapterImproved<Proposal,Votin
             holder.txt_go_vote.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Intent intent = new Intent(v.getContext(), VotingProposalActivity.class);
-                    intent.putExtra(INTENT_EXTRA_PROPOSAL, data);
-                    context.startActivity(intent);
+                    onVoteTouchedListener.goVote(data,position);
                 }
             });
         }

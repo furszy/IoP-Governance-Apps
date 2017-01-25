@@ -293,6 +293,7 @@ public class ForumClientDiscourseImp implements ForumClient {
         forumProfile = null;
         apiKey = null;
         conf.remove();
+        client.clean();
     }
 
 

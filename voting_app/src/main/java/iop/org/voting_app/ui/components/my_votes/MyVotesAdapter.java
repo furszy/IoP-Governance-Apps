@@ -70,5 +70,9 @@ public class MyVotesAdapter extends FermatAdapterImproved<VoteWrapper,MyVotesHol
         this.onEventListeners=onEventListeners;
     }
 
+    public void clear(){
+        onEventListeners = null;
+    }
+
 
 }

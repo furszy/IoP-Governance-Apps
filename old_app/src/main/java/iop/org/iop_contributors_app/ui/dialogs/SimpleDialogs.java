@@ -28,6 +28,15 @@ public class SimpleDialogs {
         alertDialog.show();
     }
 
+    public static AlertDialog buildDialog(Context context, String title, String message,DialogInterface.OnClickListener onOkClickListener) {
+        AlertDialog alertDialog = new AlertDialog.Builder(context).create();
+        alertDialog.setTitle((title!=null)?title:"Upss");
+        alertDialog.setMessage(message);
+        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",onOkClickListener);
+        return alertDialog;
+    }
+
+
     public static void showInsuficientFundsException(BaseActivity baseActivity, WalletModule module){
         InsuficientFundsDialog insuficientFundsDialog = InsuficientFundsDialog.newInstance(module);
         insuficientFundsDialog.show(baseActivity.getFragmentManager(),"insuficientFundsDialog");

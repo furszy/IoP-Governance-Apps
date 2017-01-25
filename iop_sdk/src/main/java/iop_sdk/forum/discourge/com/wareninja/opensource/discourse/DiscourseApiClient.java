@@ -1267,5 +1267,9 @@ this.post('posts', { 'title': title, 'raw': raw, 'category': category, 'archetyp
 		return responseModel;
 	}
 
+	public void clean(){
+		this.api_username = null;
+		this.api_key = null;
+	}
 	
 }

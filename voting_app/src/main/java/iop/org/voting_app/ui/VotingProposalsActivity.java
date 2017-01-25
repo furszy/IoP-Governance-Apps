@@ -1,5 +1,6 @@
 package iop.org.voting_app.ui;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
@@ -17,9 +18,12 @@ import java.util.List;
 import iop.org.furszy_lib.utils.AnimationUtils;
 import iop.org.voting_app.R;
 import iop.org.voting_app.base.VotingBaseActivity;
+import iop.org.voting_app.ui.components.proposals.VoteClickListener;
 import iop.org.voting_app.ui.components.proposals.VotingProposalsAdapter;
 import iop.org.voting_app.ui.dialogs.VoteDialog;
 import iop_sdk.governance.propose.Proposal;
+import iop_sdk.governance.vote.Vote;
+import iop_sdk.governance.vote.VoteWrapper;
 
 import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_PROPOSAL_TRANSACTION_ARRIVED;
 import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_TYPE;
@@ -29,7 +33,7 @@ import static org.iop.intents.constants.IntentsConstants.INTENT_EXTRA_PROPOSAL;
  * Created by mati on 17/11/16.
  */
 
-public class VotingProposalsActivity extends VotingBaseActivity {
+public class VotingProposalsActivity extends VotingBaseActivity implements VoteClickListener {
 
     private static final String TAG = "VotingProposalsActivity";
 
@@ -94,7 +98,7 @@ public class VotingProposalsActivity extends VotingBaseActivity {
         recyclerView.setLayoutManager(layoutManager);
 
         // specify an adapter (see also next example)
-        adapter = new VotingProposalsAdapter(this,module,null);
+        adapter = new VotingProposalsAdapter(this,module,null,this);
         recyclerView.setAdapter(adapter);
 
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
@@ -142,9 +146,7 @@ public class VotingProposalsActivity extends VotingBaseActivity {
                 }
             }else {
                 if (!proposals.contains(proposal)) {
-                    //proposals.put(proposal);
                     adapter.addItem(proposal);
-                    adapter.notifyDataSetChanged();
                 }
             }
             return true;
@@ -205,4 +207,18 @@ public class VotingProposalsActivity extends VotingBaseActivity {
     }
 
 
+    @Override
+    public void goVote(Proposal data, int pos) {
+        Vote vote = null;
+        if ((vote = module.getVote(data.getGenesisTxHash()))!=null){
+            Intent intent = new Intent(this,VotingVoteSummary.class);
+            intent.putExtra(VotingVoteSummary.INTENT_VOTE_WRAPPER,new VoteWrapper(vote,data));
+            intent.putExtra(VotingVoteSummary.INTENT_CHANGE_VOTE,true);
+            startActivity(intent);
+        }else {
+            Intent intent = new Intent(this, VotingProposalActivity.class);
+            intent.putExtra(INTENT_EXTRA_PROPOSAL, data);
+            startActivity(intent);
+        }
+    }
 }

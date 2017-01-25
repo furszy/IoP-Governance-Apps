@@ -45,31 +45,21 @@ public class Proposal implements Serializable {
     public static final double END_BLOCK_MAX_VALUE = 120960;
 
 
-    /**
-     * Proposal states
-     * SUBMITTED:  Transaction confirmed on blockchain. No votes yet.
-     * APPROVED: YES > NO. Current height  > (BlockStart + 1000 blocks).
-     * NOT_APPROVED: NO > YES. Current height  > (BlockStart + 1000 blocks)
-     * QUEUED_FOR_EXECUTION: YES > NO. Current height  < (BlockStart + 1000 blocks).
-     * DEQUEUED: NO > YES. Current height  < (BlockStart + 1000 blocks).
-     * IN_EXECUTION: YES > NO. Current height  > BlockStart
-     * EXECUTION_CANCELLED: NO > YES. Current height  > BlockStart
-     * EXECUTED: YES > NO. Current height  > BlockEnd
-     */
     public enum ProposalState{
         DRAFT(100),          // Proposal in a edit state
         FORUM(101),          // Proposal created and posted in the forum
-        SUBMITTED(102),      //  Transaction confirmed on blockchain. No votes yet.
-        APPROVED(103),       // YES > NO. Current height  < (BlockStart + 1000 blocks).
-        NOT_APPROVED(104), 			// NO > YES. Current height  < (BlockStart + 1000 blocks).
-        CANCELED_BY_OWNER(105),  // Proposal canceled by the owner, moving the locked funds to another address.
+        PENDING(102),        // Proposal is waiting to be included in a block
+        SUBMITTED(103),      //  Transaction confirmed on blockchain. No votes yet.
+        APPROVED(104),       // YES > NO. Current height  < (BlockStart + 1000 blocks).
+        NOT_APPROVED(105), 			// NO > YES. Current height  < (BlockStart + 1000 blocks).
+        CANCELED_BY_OWNER(106),  // Proposal canceled by the owner, moving the locked funds to another address.
         // todo: faltan estados..
-        QUEUED_FOR_EXECUTION(106),	// YES > NO. Current height  < (BlockStart + 1000 blocks).
-        IN_EXECUTION(107),			// YES > NO. Current height  > BlockStart  and Current height  < BlockEnd
-        QUEUED(108),                     //
-        EXECUTION_CANCELLED(109), 	// NO > YES. Current height  > BlockStart  and Current height  < BlockEnd
-        EXECUTED(110),				// YES > NO. Current height  > BlockEnd
-        UNKNOWN(111);
+        QUEUED_FOR_EXECUTION(107),	// YES > NO. Current height  < (BlockStart + 1000 blocks).
+        IN_EXECUTION(108),			// YES > NO. Current height  > BlockStart  and Current height  < BlockEnd
+        QUEUED(109),                     //
+        EXECUTION_CANCELLED(110), 	// NO > YES. Current height  > BlockStart  and Current height  < BlockEnd
+        EXECUTED(111),				// YES > NO. Current height  > BlockEnd
+        UNKNOWN(112);
 
         private int id;
 
@@ -497,7 +487,7 @@ public class Proposal implements Serializable {
     }
 
     public boolean isActive(){
-        return (state != ProposalState.EXECUTED && state != ProposalState.EXECUTION_CANCELLED);
+        return (state != ProposalState.EXECUTED && state != ProposalState.EXECUTION_CANCELLED  && state != ProposalState.CANCELED_BY_OWNER);
     }
 
     public boolean equals(Proposal o2) throws NotValidParametersException {

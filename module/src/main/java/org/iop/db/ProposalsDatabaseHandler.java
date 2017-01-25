@@ -390,7 +390,11 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
         try {
 
             SQLiteDatabase db = this.getReadableDatabase();
-            Cursor cursor = db.query(TABLE_PROPOSALS, tableNames(), KEY_PROPOSAL_STATE+" !=? AND "+KEY_PROPOSAL_STATE+" !=? AND "+KEY_PROPOSAL_STATE+" !=?", new String[]{Proposal.ProposalState.EXECUTED.toString(),Proposal.ProposalState.EXECUTION_CANCELLED.toString(), Proposal.ProposalState.FORUM.toString()}, null, null, null, null);
+            Cursor cursor = db.query(
+                    TABLE_PROPOSALS,
+                    tableNames(),
+                    KEY_PROPOSAL_STATE+" NOT IN (?,?,?)",
+                    new String[]{Proposal.ProposalState.EXECUTED.toString(),Proposal.ProposalState.EXECUTION_CANCELLED.toString(), Proposal.ProposalState.FORUM.toString()}, null, null, null, null);
 
             if (cursor.moveToFirst()) {
                 do {
@@ -572,6 +576,7 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
 
         ContentValues values = new ContentValues();
         values.put(KEY_PROPOSAL_IS_SENT,1);
+        values.put(KEY_PROPOSAL_STATE, Proposal.ProposalState.PENDING.toString());
 //        // updating row
         try {
             return db.update(TABLE_PROPOSALS, values, KEY_PROPOSAL_FORUM_ID + " = ?",

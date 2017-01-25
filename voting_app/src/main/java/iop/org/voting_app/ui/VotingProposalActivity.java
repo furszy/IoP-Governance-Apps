@@ -1,6 +1,9 @@
 package iop.org.voting_app.ui;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -67,7 +70,9 @@ public class VotingProposalActivity extends VotingBaseActivity implements View.O
 
     private Proposal proposal;
     private int votingAmount;
-    /** Vote */
+    /**
+     * Vote
+     */
     private Vote vote;
 
     private View root;
@@ -84,7 +89,9 @@ public class VotingProposalActivity extends VotingBaseActivity implements View.O
     TextView txt_go_vote;
 
     private SwitchSeekBar switchSeekBar;
-    /** no, neutral, yes */
+    /**
+     * no, neutral, yes
+     */
     private Vote.VoteType voteType = Vote.VoteType.NEUTRAL;
 
     private Button btn_minus_voting;
@@ -106,17 +113,17 @@ public class VotingProposalActivity extends VotingBaseActivity implements View.O
 
     @Override
     protected void onCreateView(ViewGroup container, Bundle savedInstance) {
-        super.onCreateView(container,savedInstance);
+        super.onCreateView(container, savedInstance);
 
         setTitle("Vote");
 
         if (getIntent().getExtras().containsKey(INTENT_EXTRA_PROPOSAL)) {
             proposal = (Proposal) getIntent().getSerializableExtra(INTENT_EXTRA_PROPOSAL);
-        }else if (getIntent().getAction().equals(ACTION_SUMMARY_PROPOSAL)){
+        } else if (getIntent().getAction().equals(ACTION_SUMMARY_PROPOSAL)) {
             int forumId = getIntent().getIntExtra(INTENT_DATA_FORUM_ID, -1);
             String forumTitle = getIntent().getStringExtra(INTENT_DATA_FORUM_TITLE);
-            forumTitle = forumTitle.replace("-"," ");
-            Log.i(TAG,"editing mode, title: "+forumTitle+", id: "+forumId);
+            forumTitle = forumTitle.replace("-", " ");
+            Log.i(TAG, "editing mode, title: " + forumTitle + ", id: " + forumId);
             try {
                 proposal = module.getProposal(forumId);
             } catch (CantGetProposalException e) {
@@ -124,7 +131,7 @@ public class VotingProposalActivity extends VotingBaseActivity implements View.O
             }
         }
 
-        root = getLayoutInflater().inflate(R.layout.vote_proposal_main,container);
+        root = getLayoutInflater().inflate(R.layout.vote_proposal_main, container);
 
         txt_title = (TextView) root.findViewById(R.id.txt_title);
         txt_forum_id = (TextView) root.findViewById(R.id.txt_forum_id);
@@ -187,18 +194,18 @@ public class VotingProposalActivity extends VotingBaseActivity implements View.O
         txt_body.setText(proposal.getBody());
         txt_start_block.setText(String.valueOf(proposal.getStartBlock()));
         txt_end_block.setText(String.valueOf(proposal.getEndBlock()));
-        txt_total_amount.setText("Reward "+coinToString(proposal.getBlockReward())+" IoPs");
+        txt_total_amount.setText("Reward " + coinToString(proposal.getBlockReward()) + " IoPs");
 
         vote = module.getVote(proposal.getGenesisTxHash());
-        if (vote!=null){
+        if (vote != null) {
             voteType = vote.getVote();
             switchSeekBar.setPosition(getPositionByVoteType(vote.getVote()));
             edit_vote_quantity.setText(String.valueOf(vote.getVotingPower()));
         }
     }
 
-    private SwitchSeekBar.Position getPositionByVoteType(Vote.VoteType voteType){
-        switch (voteType){
+    private SwitchSeekBar.Position getPositionByVoteType(Vote.VoteType voteType) {
+        switch (voteType) {
             case NEUTRAL:
                 return CENTER;
             case NO:
@@ -213,42 +220,42 @@ public class VotingProposalActivity extends VotingBaseActivity implements View.O
     @Override
     protected boolean onVotingBroadcastReceive(Bundle bundle) {
 
-        if (bundle.containsKey(INTENT_BROADCAST_DATA_TYPE)){
+        if (bundle.containsKey(INTENT_BROADCAST_DATA_TYPE)) {
             if (bundle.getString(INTENT_BROADCAST_DATA_TYPE).equals(INTENT_BROADCAST_DATA_VOTE_TRANSACTION_SUCCED)) {
                 Vote vote = (Vote) bundle.getSerializable(INTENT_EXTRA_PROPOSAL_VOTE);
-                if (Arrays.equals(vote.getGenesisHash(),this.vote.getGenesisHash())) {
+                if (Arrays.equals(vote.getGenesisHash(), this.vote.getGenesisHash())) {
                     showDoneLoading();
                     lockBroadcast.set(false);
                     handler.postDelayed(new Runnable() {
                         @Override
                         public void run() {
-                            startActivity(new Intent(VotingProposalActivity.this,VotingMyVotesActivity.class));
+                            startActivity(new Intent(VotingProposalActivity.this, VotingMyVotesActivity.class));
                             finish();
                         }
                     }, TimeUnit.SECONDS.toMillis(3));
                 }
             }
-        }else if(bundle.getString(INTENT_BROADCAST_TYPE).equals(INTENT_DIALOG)){
-            switch (bundle.getInt(INTENTE_BROADCAST_DIALOG_TYPE,0)){
+        } else if (bundle.getString(INTENT_BROADCAST_TYPE).equals(INTENT_DIALOG)) {
+            switch (bundle.getInt(INTENTE_BROADCAST_DIALOG_TYPE, 0)) {
                 case UNKNOWN_ERROR_DIALOG:
                     String textToShow = "Uknown error, please send log";
                     if (bundle.containsKey(INTENTE_EXTRA_MESSAGE)) {
                         textToShow = bundle.getString(INTENTE_EXTRA_MESSAGE);
                     }
-                    SimpleDialogs.showErrorDialog(this, "Upss",textToShow );
+                    SimpleDialogs.showErrorDialog(this, "Upss", textToShow);
                     break;
                 case INSUFICIENTS_FUNDS_DIALOG:
-                    SimpleDialogs.showInsuficientFundsException(this,module);
+                    SimpleDialogs.showInsuficientFundsException(this, module);
                     break;
                 case INVALID_PROPOSAL_DIALOG:
                     loadProposal();
-                    SimpleDialogs.showErrorDialog(this,"Error",bundle.getString(INTENTE_EXTRA_MESSAGE));
+                    SimpleDialogs.showErrorDialog(this, "Error", bundle.getString(INTENTE_EXTRA_MESSAGE));
                     break;
                 case COMMON_ERROR_DIALOG:
-                    SimpleDialogs.showErrorDialog(this,"Error", bundle.getString(INTENTE_EXTRA_MESSAGE));
+                    SimpleDialogs.showErrorDialog(this, "Error", bundle.getString(INTENTE_EXTRA_MESSAGE));
                     break;
                 default:
-                    Log.e(TAG,"BroadcastReceiver fail");
+                    Log.e(TAG, "BroadcastReceiver fail");
                     break;
             }
             hideDoneLoading();
@@ -267,52 +274,46 @@ public class VotingProposalActivity extends VotingBaseActivity implements View.O
     public void onClick(View v) {
         int id = v.getId();
 
-        if (id == R.id.btn_minus_voting){
-            if (votingAmount!=0 && voteType!= Vote.VoteType.NEUTRAL){
+        if (id == R.id.btn_minus_voting) {
+            if (votingAmount != 0 && voteType != Vote.VoteType.NEUTRAL) {
                 votingAmount--;
                 updateVotesAmount();
             }
-        }
-        else if (id == R.id.btn_plus_voting){
-            if (voteType!= Vote.VoteType.NEUTRAL) {
+        } else if (id == R.id.btn_plus_voting) {
+            if (voteType != Vote.VoteType.NEUTRAL) {
                 votingAmount++;
                 updateVotesAmount();
             }
-        }
-        else if (id == R.id.btn_plus_x2_voting){
-            if (voteType!= Vote.VoteType.NEUTRAL) {
-                votingAmount = votingAmount*2;
+        } else if (id == R.id.btn_plus_x2_voting) {
+            if (voteType != Vote.VoteType.NEUTRAL) {
+                votingAmount = votingAmount * 2;
                 updateVotesAmount();
             }
-        }
-        else if (id == R.id.btn_plus_div_2_voting){
-            if (voteType!= Vote.VoteType.NEUTRAL) {
-                votingAmount = votingAmount/2;
+        } else if (id == R.id.btn_plus_div_2_voting) {
+            if (voteType != Vote.VoteType.NEUTRAL) {
+                votingAmount = votingAmount / 2;
                 updateVotesAmount();
             }
-        }
-        else if (id == R.id.txt_go_forum){
+        } else if (id == R.id.txt_go_forum) {
             onBackPressed();
-        }
-        else if (id == R.id.txt_go_vote){
+        } else if (id == R.id.txt_go_vote) {
             handleSend();
         }
     }
 
     private void handleSend() {
-        if (lockBroadcast.compareAndSet(false,true)) {
+        if (lockBroadcast.compareAndSet(false, true)) {
             showBroadcastDialog();
-        }else
-            Log.e(TAG,"Tocó dos veces..");
+        } else
+            Log.e(TAG, "Tocó dos veces..");
     }
 
-    private void updateVotesAmount(){
-        if (voteType== Vote.VoteType.YES)
+    private void updateVotesAmount() {
+        if (voteType == Vote.VoteType.YES)
             edit_vote_quantity.setText(String.valueOf(votingAmount));
-        else if (voteType== Vote.VoteType.NO){
-            edit_vote_quantity.setText(String.valueOf(votingAmount*5));
-        }
-        else if (voteType == Vote.VoteType.NEUTRAL){
+        else if (voteType == Vote.VoteType.NO) {
+            edit_vote_quantity.setText(String.valueOf(votingAmount * 5));
+        } else if (voteType == Vote.VoteType.NEUTRAL) {
             edit_vote_quantity.setText("0");
         }
     }
@@ -325,23 +326,36 @@ public class VotingProposalActivity extends VotingBaseActivity implements View.O
 
         long amountIoPToshis = votingAmount; //IoPCalculator.iopToIopToshis(votingAmount);
 
-        vote = new Vote(proposal.getGenesisTxHash(),voteType,amountIoPToshis);
+        vote = new Vote(proposal.getGenesisTxHash(), voteType, amountIoPToshis);
+
+        if (!proposal.isActive()) {
+            final AlertDialog alertDialog = SimpleDialogs.buildDialog(this, "Update", "Proposal is not more active, state: " + proposal.getState().toString(), new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                    onBackPressed();
+                }
+            });
+            alertDialog.show();
+            unlockAndHideLoading();
+            return;
+        }
 
 
-        if (Transaction.MIN_NONDUST_OUTPUT.isGreaterThan(Coin.valueOf(amountIoPToshis))){
-            SimpleDialogs.showErrorDialog(this,"Error", "Votes not allowed, min votes value: "+Transaction.MIN_NONDUST_OUTPUT.getValue());
+        if (Transaction.MIN_NONDUST_OUTPUT.isGreaterThan(Coin.valueOf(amountIoPToshis))) {
+            SimpleDialogs.showErrorDialog(this, "Error", "Votes not allowed, min votes value: " + Transaction.MIN_NONDUST_OUTPUT.getValue());
             unlockAndHideLoading();
             return;
         }
 
         // check if the proposal is in a valid state
-        if (voteType == Vote.VoteType.YES && (proposal.getState() == QUEUED_FOR_EXECUTION || proposal.getState() == IN_EXECUTION ) ){
-            Toast.makeText(this,"No more positive votes are allowed\nProposal is already in execution",Toast.LENGTH_LONG).show();
+        if (voteType == Vote.VoteType.YES && (proposal.getState() == QUEUED_FOR_EXECUTION || proposal.getState() == IN_EXECUTION)) {
+            Toast.makeText(this, "No more positive votes are allowed\nProposal is already in execution", Toast.LENGTH_LONG).show();
             unlockAndHideLoading();
         }
 
-        if (checkVote(vote)){
-            BroadcastVoteDialog.newinstance(module,vote).setCancelListener(new CancelLister() {
+        if (checkVote(vote)) {
+            BroadcastVoteDialog.newinstance(module, vote).setCancelListener(new CancelLister() {
                 @Override
                 public void cancel() {
                     hideDoneLoading();
@@ -350,20 +364,20 @@ public class VotingProposalActivity extends VotingBaseActivity implements View.O
 
                 @Override
                 public void onDismiss(boolean isActionOk) {
-                    if(!isActionOk){
+                    if (!isActionOk) {
                         hideDoneLoading();
                         lockBroadcast.set(false);
                     }
                 }
-            }).show(getSupportFragmentManager(),"broadcastContractDialog");
+            }).show(getSupportFragmentManager(), "broadcastContractDialog");
         } else {
-            Toast.makeText(this,"Vote exist, app works great!\nFurszy :)",Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Vote exist, app works great!\nFurszy :)", Toast.LENGTH_LONG).show();
             hideDoneLoading();
             lockBroadcast.set(false);
         }
     }
 
-    private void unlockAndHideLoading(){
+    private void unlockAndHideLoading() {
         lockBroadcast.set(false);
         hideDoneLoading();
     }
@@ -372,7 +386,7 @@ public class VotingProposalActivity extends VotingBaseActivity implements View.O
         return !module.checkIfVoteExist(vote);
     }
 
-    private void preparateLoading(String textDone, int resImgDone){
+    private void preparateLoading(String textDone, int resImgDone) {
         container_send.setVisibility(View.VISIBLE);
         progressBar.setVisibility(View.VISIBLE);
         txt_done.setText(textDone);
@@ -381,7 +395,7 @@ public class VotingProposalActivity extends VotingBaseActivity implements View.O
         img_done.setVisibility(View.INVISIBLE);
     }
 
-    private void showDoneLoading(){
+    private void showDoneLoading() {
         progressBar.setVisibility(View.INVISIBLE);
         txt_done.setVisibility(View.VISIBLE);
         img_done.setVisibility(View.VISIBLE);
@@ -393,8 +407,20 @@ public class VotingProposalActivity extends VotingBaseActivity implements View.O
         });
     }
 
-    private void hideDoneLoading(){
+    private void hideDoneLoading() {
         container_send.setVisibility(View.INVISIBLE);
     }
 
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+
+    }
 }

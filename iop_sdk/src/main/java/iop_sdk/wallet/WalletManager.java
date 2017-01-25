@@ -452,9 +452,10 @@ public class WalletManager {
 
         transaction.addOutput(changeAddressOutput);
 
-        SendRequest sendRequest = SendRequest.to(to,value);
+        SendRequest sendRequest = SendRequest.forTx(transaction);
 
         sendRequest.signInputs = true;
+        sendRequest.shuffleOutputs = false;
 
         wallet.completeTx(sendRequest);
 

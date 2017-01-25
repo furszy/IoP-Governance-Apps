@@ -226,9 +226,10 @@ public class ServerWrapper {
 
         public List<String> getTxHashesNew(){
             List<String> txHashes = new ArrayList<>();
-            for (Proposal proposal : proposals) {
-                txHashes.add(proposal.getGenesisTxHash());
-            }
+            if (proposals!=null)
+                for (Proposal proposal : proposals) {
+                    txHashes.add(proposal.getGenesisTxHash());
+                }
             return txHashes;
         }
 

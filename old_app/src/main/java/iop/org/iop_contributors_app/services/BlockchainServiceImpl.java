@@ -39,6 +39,7 @@ import org.bitcoinj.utils.BtcFormat;
 import org.bitcoinj.wallet.Wallet;
 import org.bitcoinj.wallet.listeners.WalletCoinsReceivedEventListener;
 import org.iop.AppController;
+import org.iop.CantCancelProsalException;
 import org.iop.WalletConstants;
 import org.iop.WalletModule;
 import org.iop.configurations.WalletPreferencesConfiguration;
@@ -88,6 +89,7 @@ import static org.iop.intents.constants.IntentsConstants.INTENTE_EXTRA_MESSAGE;
 import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_ON_COIN_RECEIVED;
 import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_ON_COIN_RECEIVED_IS_TRANSACTION_MINE;
 import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_PROPOSAL_TRANSACTION_ARRIVED;
+import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_PROPOSAL_TRANSACTION_CANCEL;
 import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_PROPOSAL_TRANSACTION_SUCCED;
 import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_TYPE;
 import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_VOTE_TRANSACTION_SUCCED;
@@ -235,6 +237,7 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
             LOG.info("############# on Blockcs downloaded ###########");
             LOG.info("Peer: "+peer+", Block: "+block+", left: "+blocksLeft);
             LOG.info("############# on Blockcs downloaded end ###########");
+
 
             showBlockchainSyncNotification(blocksLeft);
 
@@ -474,7 +477,7 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
                             new NotificationCompat.Builder(getApplicationContext())
                                     .setSmallIcon(R.drawable.ic__launcher)
                                     .setContentTitle("IoPs received!")
-                                    .setContentText("Transaction received for a value of " + BtcFormat.getInstance().format(notificationAccumulatedAmount.getValue()))
+                                    .setContentText("Transaction received for a value of " + BtcFormat.getInstance().format(notificationAccumulatedAmount.getValue()).replace("BTC",""))
                                     .setAutoCancel(false)
                                     .setDeleteIntent(deleteIntent);
 
@@ -685,14 +688,16 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
                     }
                 });
 
-            } else if (ACTION_BROADCAST_CANCEL_PROPOSAL_TRANSACTION.equals(action)){
-                try{
+            } else if (ACTION_BROADCAST_CANCEL_PROPOSAL_TRANSACTION.equals(action)) {
+                try {
                     LOG.info("ACTION_BROADCAST_CANCEL_PROPOSAL_TRANSACTION arrive");
                     Proposal proposal = (Proposal) intent.getSerializableExtra(INTENT_EXTRA_PROPOSAL);
-                    if ((proposal=walletModule.cancelProposalContract(proposal))!=null){
+                    if ((proposal = walletModule.cancelProposalContract(proposal)) != null) {
                         LOG.info("contract cancelled");
-                        broadcastProposalSuced(proposal);
+                        broadcastProposalCancel(proposal);
                     }
+                }catch (CantCancelProsalException e){
+                    showDialogException(COMMON_ERROR_DIALOG, e.getMessage());
                 }catch (Exception e){
                     showDialogException(UNKNOWN_ERROR_DIALOG, e.getMessage());
                 }
@@ -741,7 +746,7 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
     }
 
     private void showBlockchainSyncNotification(int blockLeft){
-        if (blockLeft>=2 && !isSyncing.getAndSet(true)){
+        if (blockLeft>1 && !isSyncing.getAndSet(true)){
             blockchainSyncBuilder = new NotificationCompat.Builder(this);
             blockchainSyncBuilder.setContentTitle("Blockchain Syncing")
                     .setContentText("Blocks left: "+blockLeft)
@@ -750,17 +755,23 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
             blockchainSyncBuilder.setProgress(0, 0, true);
             // Displays the progress bar for the first time.
             nm.notify(25, blockchainSyncBuilder.build());
-        }else if (blockLeft<2){
-            isSyncing.set(false);
-            // When the loop is finished, updates the notification
-            blockchainSyncBuilder.setContentText("Download complete")
-                    // Removes the progress bar
-                    .setProgress(0,0,false);
-            nm.notify(25, blockchainSyncBuilder.build());
+        }else if (blockLeft<1){
+            if (isSyncing.get()){
+                isSyncing.set(false);
+                // When the loop is finished, updates the notification
+                if(blockchainSyncBuilder!=null) {
+                    blockchainSyncBuilder.setContentText("Download complete")
+                            // Removes the progress bar
+                            .setProgress(0, 0, false);
+                    nm.notify(25, blockchainSyncBuilder.build());
+                }
+            }
         }else {
-            blockchainSyncBuilder.setContentText("Blocks left: "+blockLeft);
+            if (isSyncing.get()) {
+                blockchainSyncBuilder.setContentText("Blocks left: " + blockLeft);
 
-            nm.notify(25, blockchainSyncBuilder.build());
+                nm.notify(25, blockchainSyncBuilder.build());
+            }
         }
     }
 
@@ -778,6 +789,14 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
         intent.putExtra(INTENT_EXTRA_PROPOSAL,proposal);
         intent.putExtra(INTENT_BROADCAST_TYPE,INTENT_DATA+INTENT_NOTIFICATION);
         intent.putExtra(INTENT_BROADCAST_DATA_TYPE, INTENT_BROADCAST_DATA_PROPOSAL_TRANSACTION_SUCCED);
+        localBroadcast.sendBroadcast(intent);
+    }
+
+    private void broadcastProposalCancel(Proposal proposal){
+        Intent intent = new Intent(ACTION_NOTIFICATION);
+        intent.putExtra(INTENT_EXTRA_PROPOSAL,proposal);
+        intent.putExtra(INTENT_BROADCAST_TYPE,INTENT_DATA+INTENT_NOTIFICATION);
+        intent.putExtra(INTENT_BROADCAST_DATA_TYPE, INTENT_BROADCAST_DATA_PROPOSAL_TRANSACTION_CANCEL);
         localBroadcast.sendBroadcast(intent);
     }
 

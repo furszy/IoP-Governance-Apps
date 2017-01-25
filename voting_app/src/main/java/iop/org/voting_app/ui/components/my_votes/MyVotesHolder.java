@@ -12,6 +12,7 @@ import iop.org.iop_contributors_app.R;
 
 public class MyVotesHolder extends FermatViewHolder {
 
+    public View card_view;
     TextView txt_title;
     TextView txt_forum_id;
     TextView txt_sub_title;
@@ -26,6 +27,7 @@ public class MyVotesHolder extends FermatViewHolder {
     public MyVotesHolder(View itemView, int holderType) {
         super(itemView, holderType);
 
+        card_view = itemView.findViewById(R.id.card_view);
         txt_title = (TextView) itemView.findViewById(R.id.txt_title);
         txt_forum_id = (TextView) itemView.findViewById(R.id.txt_forum_id);
         txt_sub_title = (TextView) itemView.findViewById(R.id.txt_sub_title);

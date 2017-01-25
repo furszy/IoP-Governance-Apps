@@ -5,7 +5,6 @@ import com.google.common.util.concurrent.ListenableFuture;
 import org.bitcoinj.core.Address;
 import org.bitcoinj.core.Coin;
 import org.bitcoinj.core.InsufficientMoneyException;
-import org.bitcoinj.core.RejectedTransactionException;
 import org.bitcoinj.core.Transaction;
 import org.bitcoinj.core.TransactionOutPoint;
 import org.bitcoinj.core.TransactionOutput;
@@ -18,8 +17,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -90,7 +90,8 @@ public class ProposalTransactionRequest {
         List<TransactionOutput> unspentTransactions = new ArrayList<>();
         Coin totalInputsValue = Coin.ZERO;
         boolean inputsSatisfiedContractValue = false;
-        for (TransactionOutput transactionOutput : wallet.getUnspents()) {
+        List<TransactionOutput> unspentOutputs = sortOutputsHighToLowValue(wallet.getUnspents());
+        for (TransactionOutput transactionOutput : unspentOutputs) {
             //
             TransactionOutPoint transactionOutPoint = transactionOutput.getOutPointFor();
             if (proposalsDao.isLockedOutput(transactionOutPoint.getHash().toString(), transactionOutPoint.getIndex())) {
@@ -168,6 +169,11 @@ public class ProposalTransactionRequest {
         } catch (Wallet.DustySendRequested e) {
             e.printStackTrace();
             LOG.error("DustySendRequest: "+sendRequest.tx+", wallet: "+wallet);
+            throw new CantCompleteProposalException("DustySendRequestException");
+        } catch (Wallet.ExceededMaxTransactionSize e){
+            e.printStackTrace();
+            LOG.error("ExceededMaxTransactionSize: "+sendRequest.tx+", wallet: "+wallet);
+            throw new CantCompleteProposalException("ExceededMaxTransactionSize");
         }
 
         LOG.info("inputs value: " + tran.getInputSum().toFriendlyString() + ", outputs value: " + tran.getOutputSum().toFriendlyString() + ", fee: " + tran.getFee().toFriendlyString());
@@ -175,12 +181,23 @@ public class ProposalTransactionRequest {
 
     }
 
+    private List<TransactionOutput> sortOutputsHighToLowValue(List<TransactionOutput> unspents) {
+        Collections.sort(unspents, new Comparator<TransactionOutput>() {
+            @Override
+            public int compare(TransactionOutput z1, TransactionOutput z2) {
+                if (z1.getValue().isGreaterThan(z2.getValue()))
+                    return -1;
+                if (z1.getValue().isLessThan(z2.getValue()))
+                    return 1;
+                return 0;
+            }
+        });
+        return unspents;
+    }
+
     public void broadcast() throws NotConnectedPeersException,CantSendTransactionException {
         Wallet wallet = walletManager.getWallet();
         try {
-
-            // check if we have at least one peer connected
-            if(blockchainManager.getConnectedPeers().isEmpty()) throw new NotConnectedPeersException();
 
             wallet.commitTx(sendRequest.tx);
 

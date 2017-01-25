@@ -412,13 +412,6 @@
                     android:layout_marginLeft="9dp"
                     />
 
-                <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/img_help_my_address"
-                    android:src="@drawable/ic_miniqr"
-                    android:layout_marginLeft="9dp"
-                    />
 
             </LinearLayout>
 

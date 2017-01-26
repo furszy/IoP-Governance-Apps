@@ -784,8 +784,16 @@ public class WalletModule {
         if (forumClient.getForumProfile()!=null) {
             // forum
             Proposal forumProposal = forumClient.getProposalFromWrapper(proposal.getForumId());
-            //todo: acá deberia chequear con el hash del foro..
             if (forumProposal != null) {
+                // check hash
+//                if (proposalDb!=null) {
+//                    if (proposalDb.getTitle()!=null) {
+//                        if (!forumProposal.checkHash(proposalDb)) {
+//                            return null;
+//                        }
+//                    }
+//                }
+
                 LOG.info("forumProposal arrive: " + forumProposal);
                 // set parameters
                 forumProposal.setForumId(proposal.getForumId());

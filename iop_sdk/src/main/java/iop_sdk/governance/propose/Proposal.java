@@ -263,10 +263,9 @@ public class Proposal implements Serializable {
      * Check hash, esto se va a hacer cuando setee los datos del foro el la propuesta decodificada de la blockchain
      * @return
      */
-    public boolean checkHash() {
-        byte[] hash = CryptoBytes.fromHexToBytes(genesisTxHash);
-        if (hash!=null){
-            return Arrays.equals(hash,hash());
+    public boolean checkHash(Proposal proposal) {
+        if (proposal!=null){
+            return Arrays.equals(proposal.hash(),hash());
         }
         return false;
     }

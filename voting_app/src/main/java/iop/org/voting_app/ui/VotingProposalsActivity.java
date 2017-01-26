@@ -2,6 +2,7 @@ package iop.org.voting_app.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -14,6 +15,7 @@ import android.view.ViewGroup;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import iop.org.furszy_lib.utils.AnimationUtils;
 import iop.org.voting_app.R;
@@ -141,6 +143,7 @@ public class VotingProposalsActivity extends VotingBaseActivity implements VoteC
             Proposal proposal = (Proposal) data.get(INTENT_EXTRA_PROPOSAL);
             if (proposals==null || proposals.isEmpty()) {
                 if (adapter!=null) {
+                    proposals.add(proposal);
                     adapter.changeDataSet(proposals);
                     hideEmptyScreen();
                 }

@@ -98,9 +98,6 @@ public class ForumActivity extends VotingBaseActivity {
         });
 
 
-
-
-//        address = FORUM_URL.contains("http://") ? FORUM_URL :"http://" + FORUM_URL;
         WebSettings webSetting = webView.getSettings();
         webSetting.setBuiltInZoomControls(true);
         webSetting.setGeolocationEnabled(true);

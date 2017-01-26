@@ -18,7 +18,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <activity android:name=".ui.ForumActivity"/>
+        <activity android:name=".ui.ForumActivity"
+            android:windowSoftInputMode="adjustResize"/>
 
         <activity android:name=".ui.ProfileActivity" />
         <activity android:name=".SettingsActivity"
@@ -40,11 +41,8 @@
         <activity android:name=".ui.VotingVoteSummary"/>
 
         <activity android:name="iop.org.iop_contributors_app.ui.BalanceActivity"/>
-        <activity android:name="iop.org.iop_contributors_app.ui.TransactionsActivity"/><!-- ATTENTION: This was auto-generated to add Google Play services to your project for
-     App Indexing.  See https://g.co/AppIndexing/AndroidStudio for more information. -->
-        <meta-data
-            android:name="com.google.android.gms.version"
-            android:value="@integer/google_play_services_version" />
+        <activity android:name="iop.org.iop_contributors_app.ui.TransactionsActivity"/>
+
 
 
     </application>

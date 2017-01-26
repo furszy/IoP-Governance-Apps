@@ -24,7 +24,9 @@ import java.io.IOException;
 import iop.org.furszy_lib.dialogs.DialogBuilder;
 import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.ui.OnboardingWithCenterAnimationActivity;
+import iop.org.iop_contributors_app.ui.dialogs.DialogListener;
 import iop.org.iop_contributors_app.ui.dialogs.ReportIssueDialogBuilder;
+import iop.org.iop_contributors_app.ui.dialogs.SimpleDialog;
 import iop.org.iop_contributors_app.ui.settings.DevActivity;
 import iop.org.iop_contributors_app.ui.settings.IoPBalanceActivity;
 import iop.org.iop_contributors_app.utils.CrashReporter;
@@ -84,9 +86,10 @@ public class SettingsFragment extends PreferenceFragment {
         } else if(preference.getKey().equals("id_dev")){
             startActivity(new Intent(getActivity(), DevActivity.class));
         } else if (preference.getKey().equals("id_profile")){
+
             final DialogBuilder dialogBuilder = new DialogBuilder(getActivity());
-            dialogBuilder.setMessage("You are going to remove everything in the app\nAre you sure?");
             dialogBuilder.setTitle("Remove User");
+            dialogBuilder.setMessage("You are going to remove everything in the app\nAre you sure?");
             dialogBuilder.setPositiveButton("YES", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {

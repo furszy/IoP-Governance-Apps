@@ -57,8 +57,6 @@ public class IoPBalanceActivity extends AppCompatActivity {
     private boolean isAddressFine;
     private boolean isAmountFine;
 
-    private ExecutorService executorService;
-
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -189,10 +187,7 @@ public class IoPBalanceActivity extends AppCompatActivity {
                         final long realAmount = Coin.valueOf((int) amount,0).getValue();
 
 
-                        if(executorService==null){
-                            executorService = Executors.newSingleThreadExecutor();
-                        }
-                        executorService.submit(new Runnable() {
+                        Thread thread = new Thread(new Runnable() {
                             @Override
                             public void run() {
                                 try {
@@ -228,12 +223,9 @@ public class IoPBalanceActivity extends AppCompatActivity {
                                         }
                                     });
                                 }
-
                             }
                         });
-
-                        executorService.shutdown();
-
+                        thread.start();
                     }else {
                         showErrorDialog("Error","Invalid amount");
                     }
@@ -248,20 +240,11 @@ public class IoPBalanceActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        if (executorService!=null){
-            executorService.shutdown();
-        }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        if (executorService!=null){
-            if (!executorService.isShutdown()){
-                executorService.shutdown();
-            }
-            executorService = null;
-        }
     }
 
     private void loadBalances() {

@@ -44,6 +44,11 @@ public class SimpleDialogs {
 
 
 
+    public static SimpleDialog buildSimpleDialog(Context context,String title,String body){
+        final SimpleDialog dialog = SimpleDialog.newInstance(title,body);
+        return dialog;
+    }
+
 
 
 }

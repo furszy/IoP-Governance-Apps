@@ -26,11 +26,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import iop.org.furszy_lib.utils.SizeUtils;
 import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.ui.dialogs.BroadcastContractDialog;
-import iop.org.iop_contributors_app.ui.dialogs.CancelLister;
+import iop.org.iop_contributors_app.ui.dialogs.DialogListener;
 import iop.org.iop_contributors_app.ui.dialogs.SimpleDialogs;
 import iop_sdk.governance.propose.Beneficiary;
 import iop_sdk.governance.propose.Proposal;
-import iop_sdk.governance.utils.TextUtils;
 
 import static iop.org.iop_contributors_app.ui.CreateProposalActivity.INTENT_DATA_FORUM_ID;
 import static iop.org.iop_contributors_app.ui.CreateProposalActivity.INTENT_DATA_FORUM_TITLE;
@@ -160,18 +159,13 @@ public class ProposalSummaryActivity extends ContributorBaseActivity implements 
     @Override
     protected void onResume() {
         super.onResume();
-//        IntentFilter intent = new IntentFilter(ACTION_RECEIVE_EXCEPTION);
-//        localBroadcastManager.registerReceiver(receiver,intent);
+
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-//        try {
-//            localBroadcastManager.unregisterReceiver(receiver);
-//        } catch (Exception e) {
-//            // nothing
-//        }
+
     }
 
     private void loadProposal() {
@@ -364,7 +358,7 @@ public class ProposalSummaryActivity extends ContributorBaseActivity implements 
         // loading
         preparateLoading("Proposal broadcasted!", R.drawable.icon_done);
         final BroadcastContractDialog dialog = BroadcastContractDialog.newinstance(module,proposal);
-        dialog.setCancelListener(new CancelLister() {
+        dialog.setCancelListener(new DialogListener() {
             @Override
             public void cancel(boolean isActionCompleted) {
                 if (!isActionCompleted) {

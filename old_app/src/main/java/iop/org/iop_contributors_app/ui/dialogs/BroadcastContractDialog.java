@@ -22,7 +22,7 @@ public class BroadcastContractDialog extends DialogFragment {
 
     private WalletModule module;
     private Proposal proposal;
-    private CancelLister cancelListener;
+    private DialogListener cancelListener;
 
     private boolean actionCompleted;
 
@@ -86,7 +86,7 @@ public class BroadcastContractDialog extends DialogFragment {
         this.proposal = proposal;
     }
 
-    public DialogFragment setCancelListener(CancelLister cancelListener) {
+    public DialogFragment setCancelListener(DialogListener cancelListener) {
         this.cancelListener = cancelListener;
         return this;
     }

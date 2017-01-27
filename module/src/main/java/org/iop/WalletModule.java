@@ -1,5 +1,7 @@
 package org.iop;
 
+import android.util.Log;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -786,13 +788,15 @@ public class WalletModule {
             Proposal forumProposal = forumClient.getProposalFromWrapper(proposal.getForumId());
             if (forumProposal != null) {
                 // check hash
-//                if (proposalDb!=null) {
-//                    if (proposalDb.getTitle()!=null) {
-//                        if (!forumProposal.checkHash(proposalDb)) {
-//                            return null;
-//                        }
-//                    }
-//                }
+                if (proposalDb!=null) {
+                    if (proposalDb.getTitle()!=null) {
+                        LOG.info("proposalDB: "+proposalDb.toString());
+                        LOG.info("Proposal Forum: "+forumProposal.toString());
+                        if (!forumProposal.checkHash(proposalDb)) {
+                            return null;
+                        }
+                    }
+                }
 
                 LOG.info("forumProposal arrive: " + forumProposal);
                 // set parameters

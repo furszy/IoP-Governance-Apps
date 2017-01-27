@@ -633,7 +633,6 @@ public class ServerWrapper {
 
             // make GET request to the given URL
             HttpResponse httpResponse = client.execute(httpPost);
-
             InputStream inputStream = null;
             // receive response as inputStream
             inputStream = httpResponse.getEntity().getContent();

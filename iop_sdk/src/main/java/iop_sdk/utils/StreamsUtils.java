@@ -12,7 +12,7 @@ import java.io.InputStreamReader;
 public class StreamsUtils {
 
     public static String convertInputStreamToString(InputStream inputStream) throws IOException {
-        BufferedReader bufferedReader = new BufferedReader( new InputStreamReader(inputStream));
+        BufferedReader bufferedReader = new BufferedReader( new InputStreamReader(inputStream,"ISO-8859-1"));
         String line = "";
         String result = "";
         while((line = bufferedReader.readLine()) != null)

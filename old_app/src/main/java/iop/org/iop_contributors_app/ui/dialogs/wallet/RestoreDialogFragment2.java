@@ -90,8 +90,8 @@ public class RestoreDialogFragment2 extends DialogFragment {
                         warnDialog.setNegativeButton(R.string.button_retry, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(final DialogInterface dialog, final int id) {
-                                Toast.makeText(getActivity(),"Acá tengo que resetear el proceso",Toast.LENGTH_LONG).show();
-                                //showDialog(DIALOG_RESTORE_WALLET);
+                                RestoreDialogFragment2 restoreDialogFragment = RestoreDialogFragment2.newInstance(module);
+                                restoreDialogFragment.show(getFragmentManager(), "restore_dialog");
                             }
                         });
                         warnDialog.show();

@@ -33,4 +33,6 @@ public interface ForumConfigurations {
     void setUserImg(byte[] profImgData);
 
     File getUserImgFile();
+
+    void setMail(String email);
 }

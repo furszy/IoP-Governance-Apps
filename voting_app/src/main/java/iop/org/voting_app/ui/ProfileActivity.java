@@ -53,7 +53,9 @@ public class ProfileActivity extends VotingBaseActivity implements View.OnClickL
 
     private static final String TAG = "ProfileActivity";
 
-    public static final String INTENT_LOGIN = "login";
+    private static final int REGISTER_SCREEN_STATE = 0;
+    private static final int UPDATE_SCREEN_STATE = 1;
+    private static final int DONE_SCREEN_STATE = 2;
 
     private static final int RESULT_LOAD_IMAGE = 100;
     private static final int MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL = 500;
@@ -81,6 +83,8 @@ public class ProfileActivity extends VotingBaseActivity implements View.OnClickL
     private AtomicBoolean lock = new AtomicBoolean(false);
 
     private boolean isRegistered;
+
+    private int screenState;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -123,52 +127,14 @@ public class ProfileActivity extends VotingBaseActivity implements View.OnClickL
             }
         });
 
+        btn_create.setOnClickListener(this);
+
         if (isRegistered){
-            btn_create.setText("Back");
-            btn_create.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    onBackPressed();
-                }
-            });
-
+            changeScreenState(DONE_SCREEN_STATE);
         }else {
-            btn_create.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    try {
-                        progressBar.setVisibility(View.VISIBLE);
-                        if (isUsernameCorrect){
-                            if (isPasswordCorrect){
-                                if (isEmailCorrect){
-                                    if (!module.isForumRegistered()) {
-                                        final String username = txt_name.getText().toString();
-                                        final String password = txt_password.getText().toString();
-                                        final String email = txt_email.getText().toString();
-
-                                        registerUser(username, password, email);
-
-                                    } else
-                                        Log.e(TAG, "IsRegistered true, error!!");
-                                }else {
-                                    Toast.makeText(ProfileActivity.this, "Error email is invalid", Toast.LENGTH_LONG).show();
-                                }
-
-                            }else {
-                                Toast.makeText(ProfileActivity.this, "Error password is invalid", Toast.LENGTH_LONG).show();
-                            }
-                        }else {
-                            Toast.makeText(ProfileActivity.this, "Username invalid, please put your nickname", Toast.LENGTH_LONG).show();
-                        }
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-
-                }
-            });
-
+            changeScreenState(REGISTER_SCREEN_STATE);
         }
+
         try {
             File imgFile = module.getUserImageFile();
             if (imgFile.exists())
@@ -178,6 +144,22 @@ public class ProfileActivity extends VotingBaseActivity implements View.OnClickL
         }
 
         init();
+    }
+
+    private void changeScreenState(int state){
+        screenState = state;
+        switch (state){
+            case REGISTER_SCREEN_STATE:
+
+                break;
+            case DONE_SCREEN_STATE:
+                btn_create.setText("Back");
+                break;
+            case UPDATE_SCREEN_STATE:
+                btn_create.setText("Save");
+                break;
+        }
+
     }
 
     @Override
@@ -249,11 +231,17 @@ public class ProfileActivity extends VotingBaseActivity implements View.OnClickL
                     isEmailCorrect = true;
                     check_email.setVisibility(View.VISIBLE);
                     check_email.setImageResource(R.drawable.ic_check_profile);
+
+                    if(isRegistered && (forumProfile.getEmail()==null || forumProfile.getEmail().equals(""))){
+                        changeScreenState(UPDATE_SCREEN_STATE);
+                    }
+
                 }else {
                     isEmailCorrect = false;
                     check_email.setVisibility(View.VISIBLE);
                     check_email.setImageResource(R.drawable.ic_xroja_profile);
                 }
+
             }
         });
 
@@ -465,13 +453,63 @@ public class ProfileActivity extends VotingBaseActivity implements View.OnClickL
         }
     }
 
+    private void updateProfile(){
+        final String email = txt_email.getText().toString();
+
+        module.updateUser(
+                null,
+                null,
+                (isEmailCorrect && (module.getForumProfile().getEmail()==null || module.getForumProfile().getEmail().equals("")))? email:null,
+                profImgData);
+        Toast.makeText(this,"Saved",Toast.LENGTH_LONG).show();
+    }
+
+    private void registerProfile(){
+        try {
+            progressBar.setVisibility(View.VISIBLE);
+            if (isUsernameCorrect){
+                if (isPasswordCorrect){
+                    if (isEmailCorrect){
+                        if (!module.isForumRegistered()) {
+                            final String username = txt_name.getText().toString();
+                            final String password = txt_password.getText().toString();
+                            final String email = txt_email.getText().toString();
+
+                            registerUser(username, password, email);
+
+                        } else
+                            Log.e(TAG, "IsRegistered true, error!!");
+                    }else {
+                        Toast.makeText(ProfileActivity.this, "Error email is invalid", Toast.LENGTH_LONG).show();
+                    }
+
+                }else {
+                    Toast.makeText(ProfileActivity.this, "Error password is invalid", Toast.LENGTH_LONG).show();
+                }
+            }else {
+                Toast.makeText(ProfileActivity.this, "Username invalid, please put your nickname", Toast.LENGTH_LONG).show();
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     @Override
     public void onClick(View v) {
         int id = v.getId();
         if (id == R.id.btn_create){
-            module.updateUser(null,null,null,profImgData);
-            Toast.makeText(this,"Saved",Toast.LENGTH_LONG).show();
+            switch (screenState){
+                case DONE_SCREEN_STATE:
+                    onBackPressed();
+                    break;
+                case UPDATE_SCREEN_STATE:
+                    updateProfile();
+                    break;
+                case REGISTER_SCREEN_STATE:
+                    registerProfile();
+                    break;
+            }
         }
     }
 }

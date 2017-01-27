@@ -214,6 +214,7 @@ public class ProposalSummaryActivity extends ContributorBaseActivity implements 
             }else if ((data.getString(INTENT_BROADCAST_DATA_TYPE).equals(INTENT_BROADCAST_DATA_PROPOSAL_TRANSACTION_CANCEL))){
                 proposal = (Proposal) data.get(INTENT_EXTRA_PROPOSAL);
                 lockBroadcast.set(false);
+                txt_done.setText("Proposal cancel broadcasted");
                 showDoneLoading();
                 Toast.makeText(this, "Proposal canceled!", Toast.LENGTH_SHORT).show();
             }

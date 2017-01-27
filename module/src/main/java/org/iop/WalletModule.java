@@ -10,9 +10,11 @@ import org.bitcoinj.core.Coin;
 import org.bitcoinj.core.Context;
 import org.bitcoinj.core.InsufficientMoneyException;
 import org.bitcoinj.core.PeerGroup;
+import org.bitcoinj.core.Sha256Hash;
 import org.bitcoinj.core.Transaction;
 import org.bitcoinj.core.TransactionOutput;
 import org.bitcoinj.utils.BtcFormat;
+import org.bitcoinj.wallet.CoinSelector;
 import org.bitcoinj.wallet.Wallet;
 import org.iop.db.CantGetProposalException;
 import org.iop.db.CantSaveProposalException;
@@ -291,23 +293,27 @@ public class WalletModule {
 
     }
 
-    private boolean cancelVote(Vote vote){
+    private boolean cancelVote(Vote vote) throws CantCancelVoteException{
         LOG.info("cancelVote request: "+vote.toString());
         try {
-            Transaction tx = walletManager.changeAddressOfTx(vote.getLockedOutputHex(),0);
-            ListenableFuture<Transaction> future = blockchainManager.broadcastTransaction(tx.getHash().getBytes());
-            future.get(1, TimeUnit.MINUTES);
+            if (walletManager.isTransactionOutputAvailableForSpending(Sha256Hash.wrap(vote.getLockedOutputHex()),0)) {
+                Transaction tx = walletManager.changeAddressOfTx(vote.getLockedOutputHex(), 0);
+                ListenableFuture<Transaction> future = blockchainManager.broadcastTransaction(tx.getHash().getBytes());
+                future.get(1, TimeUnit.MINUTES);
 
-            votesDaoImp.addUpdateIfExistVote(vote);
+                votesDaoImp.addUpdateIfExistVote(vote);
 
-            LOG.info("cancelVote succed: "+vote.toString());
+                LOG.info("cancelVote succed: " + vote.toString());
 
-            return true;
+                return true;
+            }else {
+                LOG.info("cancelVote fail, vote transaction is already spent: " + vote.toString());
+            }
 
         } catch (InsufficientMoneyException e) {
-            e.printStackTrace();
+            throw new CantCancelVoteException(e.getMessage());
         } catch (Exception e){
-            e.printStackTrace();
+            throw new CantCancelVoteException(e.getMessage());
         }
         return false;
     }
@@ -316,15 +322,20 @@ public class WalletModule {
         LOG.info("cancelProposalContract : "+proposal.toString());
         try {
             if (proposal.getState()==CANCELED_BY_OWNER && proposal.isSent()) throw new CantCancelProsalException("Proposal is sent but not confirmed in the blockchain,\nplease wait until is accepted");
-            Transaction tx = walletManager.changeAddressOfTx(proposal.getGenesisTxHash(),0);
-            ListenableFuture<Transaction> future = blockchainManager.broadcastTransaction(tx.getHash().getBytes());
-            future.get(1, TimeUnit.MINUTES);
 
-            proposalsDao.updateProposalByForumId(proposal);
+            if(walletManager.isTransactionOutputAvailableForSpending(Sha256Hash.wrap(proposal.getGenesisTxHash()),0)) {
+                Transaction tx = walletManager.changeAddressOfTx(proposal.getGenesisTxHash(), 0);
+                ListenableFuture<Transaction> future = blockchainManager.broadcastTransaction(tx.getHash().getBytes());
+                future.get(1, TimeUnit.MINUTES);
 
-            proposal.setState(CANCELED_BY_OWNER);
+                proposalsDao.updateProposalByForumId(proposal);
 
-            LOG.info("cancelProposalContract succed: "+proposal.toString());
+                proposal.setState(CANCELED_BY_OWNER);
+
+                LOG.info("cancelProposalContract succed: " + proposal.toString());
+            }else {
+                LOG.info("cancelProposalContract fail, proposal transaction is already spent: " + proposal.toString());
+            }
 
             return proposal;
 
@@ -337,7 +348,7 @@ public class WalletModule {
         }
     }
 
-    public boolean sendVote(Vote vote) throws InsuficientBalanceException, NotConnectedPeersException, CantSendVoteException, iop_sdk.wallet.CantSendVoteException {
+    public boolean sendVote(Vote vote) throws InsuficientBalanceException, NotConnectedPeersException, CantSendVoteException, iop_sdk.wallet.CantSendVoteException, CantCancelVoteException {
 
         try {
 
@@ -383,8 +394,10 @@ public class WalletModule {
         } catch (NotConnectedPeersException e){
             rollbackVote(vote);
             throw e;
-        } catch (iop_sdk.wallet.CantSendVoteException e){
+        } catch (iop_sdk.wallet.CantSendVoteException e) {
             rollbackVote(vote);
+            throw e;
+        } catch (CantCancelVoteException e){
             throw e;
         } catch (Exception e){
             rollbackVote(vote);
@@ -645,8 +658,14 @@ public class WalletModule {
     }
 
     public void updateUser(String name, String password, String email, byte[] profImgData) {
-        LOG.info("Saving image");
-        forumConfigurations.setUserImg(profImgData);
+        LOG.info("updating profile..");
+        if (email!=null) {
+            forumConfigurations.setMail(email);
+            getForumProfile().setEmail(email);
+        }
+        if (profImgData!=null) {
+            forumConfigurations.setUserImg(profImgData);
+        }
     }
 
     public File getUserImageFile() {

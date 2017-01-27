@@ -40,6 +40,7 @@ import org.bitcoinj.wallet.Wallet;
 import org.bitcoinj.wallet.listeners.WalletCoinsReceivedEventListener;
 import org.iop.AppController;
 import org.iop.CantCancelProsalException;
+import org.iop.CantCancelVoteException;
 import org.iop.WalletConstants;
 import org.iop.WalletModule;
 import org.iop.configurations.WalletPreferencesConfiguration;
@@ -719,6 +720,10 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
                             showDialogException(UNKNOWN_ERROR_DIALOG, e.getMessage());
                         } catch (iop_sdk.wallet.CantSendVoteException e) {
                             showDialogException(COMMON_ERROR_DIALOG,e.getMessage());
+                        } catch (CantCancelVoteException e) {
+                            showDialogException(COMMON_ERROR_DIALOG,e.getMessage());
+                        } catch (Exception e){
+                            e.printStackTrace();
                         }
 
                     }

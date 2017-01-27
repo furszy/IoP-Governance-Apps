@@ -97,7 +97,6 @@ public class ProposalTransactionRequest {
             if (proposalsDao.isLockedOutput(transactionOutPoint.getHash().toString(), transactionOutPoint.getIndex())) {
                 continue;
             }
-            // todo: agregué el isMature para validar que lo esté tomando..
             if (DefaultCoinSelector.isSelectable(transactionOutput.getParentTransaction()) && transactionOutput.getParentTransaction().isMature()) {
                 LOG.info("adding non locked transaction to spend as an input: postion:" + transactionOutPoint.getIndex() + ", parent hash: " + transactionOutPoint.toString());
                 totalInputsValue = totalInputsValue.add(transactionOutput.getValue());

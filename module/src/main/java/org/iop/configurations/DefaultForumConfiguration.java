@@ -55,6 +55,11 @@ public class DefaultForumConfiguration extends Configurations implements ForumCo
     }
 
     @Override
+    public void setMail(String email) {
+        save(PREFS_EMAIL,email);
+    }
+
+    @Override
     public void setApiKey(String apiKey) {
         save(PREFS_API_KEY,apiKey);
     }
@@ -97,6 +102,7 @@ public class DefaultForumConfiguration extends Configurations implements ForumCo
 
     @Override
     public void setUserImg(byte[] profImgData) {
+        if (profImgData==null || profImgData.length<1) throw new IllegalArgumentException("Invalid img data array");
         File file = new File(privateDirUrl+"img.png");
         if (file.exists()){
             file.delete();
@@ -120,4 +126,6 @@ public class DefaultForumConfiguration extends Configurations implements ForumCo
     public File getUserImgFile() {
         return new File(privateDirUrl+"img.png");
     }
+
+
 }

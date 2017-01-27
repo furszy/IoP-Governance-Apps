@@ -465,6 +465,19 @@ public class WalletManager {
 
     }
 
+    /**
+     * Check if a transaction output is already spent
+     *
+     * @param hash
+     * @param output
+     * @return
+     */
+    public boolean isTransactionOutputAvailableForSpending(Sha256Hash hash,int output){
+        if (hash==null) throw new IllegalArgumentException("Hash null");
+        if (output<0) throw new IllegalArgumentException("Output less than 0");
+        return wallet.getTransaction(hash).getOutput(output).isAvailableForSpending();
+    }
+
     public WalletPreferenceConfigurations getConfigurations() {
         return walletConfiguration;
     }

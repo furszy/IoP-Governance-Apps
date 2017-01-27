@@ -308,6 +308,7 @@ public class WalletModule {
                 return true;
             }else {
                 LOG.info("cancelVote fail, vote transaction is already spent: " + vote.toString());
+                throw new CantCancelVoteException("Vote freeze output is already spent");
             }
 
         } catch (InsufficientMoneyException e) {
@@ -315,7 +316,6 @@ public class WalletModule {
         } catch (Exception e){
             throw new CantCancelVoteException(e.getMessage());
         }
-        return false;
     }
 
     public Proposal cancelProposalContract(Proposal proposal) throws CantCancelProsalException{
@@ -335,10 +335,9 @@ public class WalletModule {
                 LOG.info("cancelProposalContract succed: " + proposal.toString());
             }else {
                 LOG.info("cancelProposalContract fail, proposal transaction is already spent: " + proposal.toString());
+                throw new CantCancelProsalException("Proposal freeze output is already spent");
             }
-
             return proposal;
-
         } catch (InsufficientMoneyException e) {
             e.printStackTrace();
             throw new CantCancelProsalException("Insufficient money");

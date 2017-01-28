@@ -33,4 +33,16 @@ public class RegtestUtil {
     }
 
 
+    public static InetSocketAddress[] getPeersToConnect(NetworkParameters params,String host){
+        if (!(params instanceof RegTestParams)) throw new IllegalArgumentException("NetworkParameters input is not a RegTestParams");
+
+        InetSocketAddress[] list = new InetSocketAddress[1];
+        // peers
+        InetSocketAddress inetSocketAddress = new InetSocketAddress(host,7685);
+        list[0]=(inetSocketAddress);
+//        list.put(new PeerAddress(params,new InetSocketAddress(LOCAL_PC,7686)));
+        return list;
+    }
+
+
 }

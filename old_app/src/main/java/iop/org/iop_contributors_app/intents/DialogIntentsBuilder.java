@@ -32,7 +32,6 @@ public class DialogIntentsBuilder {
         {
             @Override
             public void onClick(final DialogInterface dialog, final int id) {
-                walletManager.resetBlockchain();
                 Handler handler = new Handler();
                 handler.postDelayed(new Runnable() {
                     @Override
@@ -40,7 +39,7 @@ public class DialogIntentsBuilder {
                         Intent blockchainServiceIntent = new Intent(context, BlockchainServiceImpl.class);
                         context.startService(blockchainServiceIntent);
                     }
-                }, TimeUnit.SECONDS.toMillis(10));
+                }, TimeUnit.SECONDS.toMillis(3));
                 dialog.dismiss();
             }
         });

@@ -62,6 +62,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -429,12 +430,20 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
                 impediments.remove(BlockchainState.Impediment.STORAGE);
 //                check();
             }
-            executorService.submit(new Runnable() {
-                @Override
-                public void run() {
-                    check();
-                }
-            });
+
+            if (application.isVotingApp()){
+                executorService.submit(new Runnable() {
+                    @Override
+                    public void run() {
+                        check();
+                    }
+                });
+            }else {
+                check();
+            }
+
+
+
         }
     };
 
@@ -586,13 +595,6 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
 //        broadcastPeerState(0);
         blockchainManager.init();
 
-
-        final IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
-        intentFilter.addAction(Intent.ACTION_DEVICE_STORAGE_LOW);
-        intentFilter.addAction(Intent.ACTION_DEVICE_STORAGE_OK);
-        registerReceiver(connectivityReceiver, intentFilter); // implicitly init PeerGroup
-
         // coins received
         walletModule.getWalletManager().getWallet().addCoinsReceivedEventListener(coinReceiverListener);
         walletModule.getWalletManager().getWallet().addTransactionConfidenceEventListener(new TransactionConfidenceEventListener() {
@@ -627,6 +629,11 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
 
 //        registerReceiver(tickReceiver, new IntentFilter(Intent.ACTION_TIME_TICK));
 
+        final IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+        intentFilter.addAction(Intent.ACTION_DEVICE_STORAGE_LOW);
+        intentFilter.addAction(Intent.ACTION_DEVICE_STORAGE_OK);
+        registerReceiver(connectivityReceiver, intentFilter); // implicitly init PeerGroup
     }
 
 
@@ -857,6 +864,8 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
 
             delayHandler.removeCallbacksAndMessages(null);
 
+            executorService.shutdown();
+
             if (wakeLock.isHeld()) {
                 LOG.debug("wakelock still held, releasing");
                 wakeLock.release();
@@ -865,6 +874,16 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
             super.onDestroy();
 
             LOG.info("service was up for " + ((System.currentTimeMillis() - serviceCreatedAt) / 1000 / 60) + " minutes");
+
+            if (resetBlockchainOnShutdown){
+//                handler.postDelayed(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        android.os.Process.killProcess(android.os.Process.myPid());
+//                        System.exit(0);
+//                    }
+//                }, TimeUnit.SECONDS.toMillis(5));
+            }
 
         }catch(Exception e){
             e.printStackTrace();
@@ -878,7 +897,7 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
      */
     private void check(){
 
-        org.bitcoinj.core.Context.propagate(WalletConstants.CONTEXT);
+
         LOG.info("check");
         try {
 

@@ -77,23 +77,25 @@ public class BlockchainManager {
     }
 
     public void init(){
-        // todo: en vez de que el service este maneje el blockchain deberia crear una clase que lo haga..
-        blockChainFile = new File(context.getDirPrivateMode("blockstore"), conf.getBlockchainFilename());
-        final boolean blockChainFileExists = blockChainFile.exists();
+        synchronized (this) {
 
-        if (!blockChainFileExists) {
-            LOG.info("blockchain does not exist, resetting wallet");
-            walletManager.getWallet().reset();
-        }
+            // todo: en vez de que el service este maneje el blockchain deberia crear una clase que lo haga..
+            blockChainFile = new File(context.getDirPrivateMode("blockstore"), conf.getBlockchainFilename());
+            final boolean blockChainFileExists = blockChainFile.exists();
 
-        // Create the blockstore
-        try {
-            blockStore = new SPVBlockStore(conf.getNetworkParams(), blockChainFile);
-            blockStore.getChainHead(); // detect corruptions as early as possible
+            if (!blockChainFileExists) {
+                LOG.info("blockchain does not exist, resetting wallet");
+                walletManager.getWallet().reset();
+            }
 
-            final long earliestKeyCreationTime = walletManager.getWallet().getEarliestKeyCreationTime();
+            // Create the blockstore
+            try {
+                blockStore = new SPVBlockStore(conf.getNetworkParams(), blockChainFile);
+                blockStore.getChainHead(); // detect corruptions as early as possible
 
-            // todo: esto es para cuando tengamos checkpoints
+                final long earliestKeyCreationTime = walletManager.getWallet().getEarliestKeyCreationTime();
+
+                // todo: esto es para cuando tengamos checkpoints
 //			if (!blockChainFileExists && earliestKeyCreationTime > 0)
 //			{
 //				try
@@ -110,19 +112,21 @@ public class BlockchainManager {
 //				}
 //			}
 
-        }catch (final BlockStoreException x) {
-            blockChainFile.delete();
+            } catch (final BlockStoreException x) {
+                blockChainFile.delete();
 
-            final String msg = "blockstore cannot be created";
-            LOG.error(msg, x);
-            throw new Error(msg, x);
-        }
+                final String msg = "blockstore cannot be created";
+                LOG.error(msg, x);
+                throw new Error(msg, x);
+            }
 
-        // create the blockchain
-        try {
-            blockChain = new BlockChain(conf.getNetworkParams(), walletManager.getWallet(), blockStore);
-        }catch (final BlockStoreException x) {
-            throw new Error("blockchain cannot be created", x);
+            // create the blockchain
+            try {
+                blockChain = new BlockChain(conf.getNetworkParams(), walletManager.getWallet(), blockStore);
+            } catch (final BlockStoreException x) {
+                throw new Error("blockchain cannot be created", x);
+            }
+
         }
 
     }
@@ -193,7 +197,6 @@ public class BlockchainManager {
         try {
             blockStore.close();
         } catch (final BlockStoreException x) {
-            LOG.error("ACÁ SE ROMPIÍ!###################333");
             throw new RuntimeException(x);
         }
 
@@ -203,116 +206,125 @@ public class BlockchainManager {
         if (resetBlockchainOnShutdown) {
             LOG.info("removing blockchain");
             blockChainFile.delete();
+            blockChain=null;
+            blockStore=null;
         }
     }
 
     public void check(Set<BlockchainState.Impediment> impediments, PeerConnectedEventListener peerConnectivityListener,PeerDisconnectedEventListener peerDisconnectedEventListener ,PeerDataEventListener blockchainDownloadListener){
+        synchronized (this) {
+            final Wallet wallet = walletManager.getWallet();
 
-        final Wallet wallet = walletManager.getWallet();
+            if (impediments.isEmpty() && peerGroup == null) {
 
-        if (impediments.isEmpty() && peerGroup == null) {
-
-            for (BlockchainManagerListener blockchainManagerListener : blockchainManagerListeners) {
-                blockchainManagerListener.checkStart();
-            }
-
-            // consistency check
-            final int walletLastBlockSeenHeight = wallet.getLastBlockSeenHeight();
-            final int bestChainHeight = blockChain.getBestChainHeight();
-            if (walletLastBlockSeenHeight != -1 && walletLastBlockSeenHeight != bestChainHeight) {
-                final String message = "wallet/blockchain out of sync: " + walletLastBlockSeenHeight + "/" + bestChainHeight;
-                LOG.error(message);
-//                CrashReporter.saveBackgroundTrace(new RuntimeException(message), application.packageInfoWrapper());
-            }
-
-            LOG.info("starting peergroup");
-            peerGroup = new PeerGroup(conf.getNetworkParams(), blockChain);
-            peerGroup.setDownloadTxDependencies(0); // recursive implementation causes StackOverflowError
-            peerGroup.addWallet(wallet);
-            peerGroup.setUserAgent(USER_AGENT, context.packageInfoWrapper().getVersionName());
-            peerGroup.addConnectedEventListener(peerConnectivityListener);
-            peerGroup.addDisconnectedEventListener(peerDisconnectedEventListener);
-
-            // check memory, esto lo tengo qu ehacer mejor..
-            final int maxConnectedPeers = 2;//context.isMemoryLow() ? 4 : 6 ;
-
-            final String trustedPeerHost = null;//config.getTrustedPeerHost();
-            final boolean hasTrustedPeer = trustedPeerHost != null;
-
-            final boolean connectTrustedPeerOnly = false;//hasTrustedPeer && config.getTrustedPeerOnly();
-            peerGroup.setMaxConnections(connectTrustedPeerOnly ? 1 : maxConnectedPeers);
-            peerGroup.setConnectTimeoutMillis( conf.getPeerTimeoutMs() );
-            peerGroup.setPeerDiscoveryTimeoutMillis( conf.getPeerDiscoveryTimeoutMs() );
-
-            if (conf.getNetworkParams().equals(RegTestParams.get())) {
-                for (PeerAddress peerAddress : RegtestUtil.getConnectedPeers(conf.getNetworkParams(), conf.getNode())) {
-                    peerGroup.addAddress(peerAddress);
+                for (BlockchainManagerListener blockchainManagerListener : blockchainManagerListeners) {
+                    blockchainManagerListener.checkStart();
                 }
-            } else{
 
-                peerGroup.addPeerDiscovery(new PeerDiscovery() {
+                // consistency check
+                final int walletLastBlockSeenHeight = wallet.getLastBlockSeenHeight();
+                final int bestChainHeight = blockChain.getBestChainHeight();
+                if (walletLastBlockSeenHeight != -1 && walletLastBlockSeenHeight != bestChainHeight) {
+                    final String message = "wallet/blockchain out of sync: " + walletLastBlockSeenHeight + "/" + bestChainHeight;
+                    LOG.error(message);
+//                CrashReporter.saveBackgroundTrace(new RuntimeException(message), application.packageInfoWrapper());
+                }
+                LOG.info("starting peergroup");
+                peerGroup = new PeerGroup(conf.getNetworkParams(), blockChain);
+                peerGroup.setDownloadTxDependencies(0); // recursive implementation causes StackOverflowError
+                peerGroup.addWallet(wallet);
+                peerGroup.setUserAgent(USER_AGENT, context.packageInfoWrapper().getVersionName());
+                peerGroup.addConnectedEventListener(peerConnectivityListener);
+                peerGroup.addDisconnectedEventListener(peerDisconnectedEventListener);
 
-                    private final PeerDiscovery normalPeerDiscovery = MultiplexingDiscovery.forServices(conf.getNetworkParams(), 0);
+                // check memory, esto lo tengo qu ehacer mejor..
+                final int maxConnectedPeers = 2;//context.isMemoryLow() ? 4 : 6 ;
 
-                    @Override
-                    public InetSocketAddress[] getPeers(final long services, final long timeoutValue, final TimeUnit timeoutUnit)
-                            throws PeerDiscoveryException {
-                        final List<InetSocketAddress> peers = new LinkedList<InetSocketAddress>();
+                final String trustedPeerHost = null;//config.getTrustedPeerHost();
+                final boolean hasTrustedPeer = trustedPeerHost != null;
 
-                        boolean needsTrimPeersWorkaround = false;
+                final boolean connectTrustedPeerOnly = false;//hasTrustedPeer && config.getTrustedPeerOnly();
+                peerGroup.setMaxConnections(connectTrustedPeerOnly ? 1 : maxConnectedPeers);
+                peerGroup.setConnectTimeoutMillis(conf.getPeerTimeoutMs());
+                peerGroup.setPeerDiscoveryTimeoutMillis(conf.getPeerDiscoveryTimeoutMs());
 
-                        if (hasTrustedPeer) {
-                            LOG.info("trusted peer '" + trustedPeerHost + "'" + (connectTrustedPeerOnly ? " only" : ""));
-
-                            final InetSocketAddress addr = new InetSocketAddress(trustedPeerHost, conf.getNetworkParams().getPort());
-                            if (addr.getAddress() != null) {
-                                peers.add(addr);
-                                needsTrimPeersWorkaround = true;
-                            }
+                if (conf.getNetworkParams().equals(RegTestParams.get())) {
+                    peerGroup.addPeerDiscovery(new PeerDiscovery() {
+                        @Override
+                        public InetSocketAddress[] getPeers(long services, long timeoutValue, TimeUnit timeUnit) throws PeerDiscoveryException {
+                            return RegtestUtil.getPeersToConnect(conf.getNetworkParams(),conf.getNode());
                         }
 
-                        if (!connectTrustedPeerOnly)
-                            peers.addAll(Arrays.asList(normalPeerDiscovery.getPeers(services, timeoutValue, timeoutUnit)));
+                        @Override
+                        public void shutdown() {
 
-                        // workaround because PeerGroup will shuffle peers
-                        if (needsTrimPeersWorkaround)
-                            while (peers.size() >= maxConnectedPeers)
-                                peers.remove(peers.size() - 1);
+                        }
+                    });
+                } else {
+                    peerGroup.addPeerDiscovery(new PeerDiscovery() {
 
-                        return peers.toArray(new InetSocketAddress[0]);
-                    }
+                        private final PeerDiscovery normalPeerDiscovery = MultiplexingDiscovery.forServices(conf.getNetworkParams(), 0);
 
-                    @Override
-                    public void shutdown() {
-                        normalPeerDiscovery.shutdown();
-                    }
-                });
-            }
+                        @Override
+                        public InetSocketAddress[] getPeers(final long services, final long timeoutValue, final TimeUnit timeoutUnit)
+                                throws PeerDiscoveryException {
+                            final List<InetSocketAddress> peers = new LinkedList<InetSocketAddress>();
 
-            // notify that the peergroup is initialized
-            if (blockchainManagerListeners!=null) {
-                for (BlockchainManagerListener blockchainManagerListener : blockchainManagerListeners) {
-                    blockchainManagerListener.peerGroupInitialized(peerGroup);
+                            boolean needsTrimPeersWorkaround = false;
+
+                            if (hasTrustedPeer) {
+                                LOG.info("trusted peer '" + trustedPeerHost + "'" + (connectTrustedPeerOnly ? " only" : ""));
+
+                                final InetSocketAddress addr = new InetSocketAddress(trustedPeerHost, conf.getNetworkParams().getPort());
+                                if (addr.getAddress() != null) {
+                                    peers.add(addr);
+                                    needsTrimPeersWorkaround = true;
+                                }
+                            }
+
+                            if (!connectTrustedPeerOnly)
+                                peers.addAll(Arrays.asList(normalPeerDiscovery.getPeers(services, timeoutValue, timeoutUnit)));
+
+                            // workaround because PeerGroup will shuffle peers
+                            if (needsTrimPeersWorkaround)
+                                while (peers.size() >= maxConnectedPeers)
+                                    peers.remove(peers.size() - 1);
+
+                            return peers.toArray(new InetSocketAddress[0]);
+                        }
+
+                        @Override
+                        public void shutdown() {
+                            normalPeerDiscovery.shutdown();
+                        }
+                    });
                 }
+
+                // notify that the peergroup is initialized
+                if (blockchainManagerListeners != null) {
+                    for (BlockchainManagerListener blockchainManagerListener : blockchainManagerListeners) {
+                        blockchainManagerListener.peerGroupInitialized(peerGroup);
+                    }
+                }
+
+                // init peergroup
+                peerGroup.startAsync();
+                peerGroup.startBlockChainDownload(blockchainDownloadListener);
+
+            } else if (!impediments.isEmpty() && peerGroup != null) {
+                LOG.info("stopping peergroup");
+                peerGroup.removeDisconnectedEventListener(peerDisconnectedEventListener);
+                peerGroup.removeConnectedEventListener(peerConnectivityListener);
+                peerGroup.removeWallet(wallet);
+                peerGroup.stopAsync();
+                peerGroup = null;
+
+                for (BlockchainManagerListener blockchainManagerListener : blockchainManagerListeners) {
+                    blockchainManagerListener.checkEnd();
+                }
+
+                notifyBlockchainStateOff(impediments);
             }
-
-            // init peergroup
-            peerGroup.startAsync();
-            peerGroup.startBlockChainDownload(blockchainDownloadListener);
-
-        }else if (!impediments.isEmpty() && peerGroup != null) {
-            LOG.info("stopping peergroup");
-            peerGroup.removeDisconnectedEventListener(peerDisconnectedEventListener);
-            peerGroup.removeConnectedEventListener(peerConnectivityListener);
-            peerGroup.removeWallet(wallet);
-            peerGroup.stopAsync();
-            peerGroup = null;
-
-            for (BlockchainManagerListener blockchainManagerListener : blockchainManagerListeners) {
-                blockchainManagerListener.checkEnd();
-            }
-
-            notifyBlockchainStateOff(impediments);
         }
 
         //todo: falta hacer el tema de la memoria, hoy en día si se queda sin memoria no dice nada..

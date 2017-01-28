@@ -792,7 +792,8 @@ public class WalletModule {
         // check if the proposal exist and is not in a final state
         Proposal proposalDb = proposalsDao.findProposal(proposal.getForumId());
         if (proposalDb!=null){
-            if (!proposalDb.isActive())
+            // check if proposal is not active and if we already have it to not download it again.
+            if (!proposalDb.isActive() && proposalDb.getTitle()!=null)
                 return null;
             if (proposalDb.isMine()){
                 proposal.setMine(true);
@@ -808,9 +809,8 @@ public class WalletModule {
                 // check hash
                 if (proposalDb!=null) {
                     if (proposalDb.getTitle()!=null) {
-                        LOG.info("proposalDB: "+proposalDb.toString());
-                        LOG.info("Proposal Forum: "+forumProposal.toString());
                         if (!forumProposal.checkHash(proposalDb)) {
+                            // todo: acá deberia mostrar esto de alguna otra forma..
                             return null;
                         }
                     }

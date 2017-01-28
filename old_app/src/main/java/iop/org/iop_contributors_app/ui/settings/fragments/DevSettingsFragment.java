@@ -154,7 +154,7 @@ public class DevSettingsFragment extends PreferenceFragment implements Preferenc
 
         if (preference.getKey().equals("id_restart_blockchain")){
             module.getWalletManager().resetBlockchain();
-            module.cleanProposalDb();
+            module.cleanEverything();
             Toast.makeText(getActivity(),"Reseting blockchain...\nApp will be closed to clean data in 5 seconds",Toast.LENGTH_LONG).show();
             handler.postDelayed(new Runnable() {
                 @Override

@@ -1,5 +1,6 @@
 package iop.org.iop_contributors_app.ui.settings.fragments;
 
+import android.app.FragmentManager;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
@@ -22,11 +23,11 @@ import org.iop.WalletModule;
 import java.io.IOException;
 
 import iop.org.furszy_lib.dialogs.DialogBuilder;
+import iop.org.furszy_lib.dialogs.SimpleTwoButtonsDialog;
 import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.ui.OnboardingWithCenterAnimationActivity;
-import iop.org.iop_contributors_app.ui.dialogs.DialogListener;
 import iop.org.iop_contributors_app.ui.dialogs.ReportIssueDialogBuilder;
-import iop.org.iop_contributors_app.ui.dialogs.SimpleDialog;
+import iop.org.iop_contributors_app.ui.dialogs.SimpleDialogs;
 import iop.org.iop_contributors_app.ui.settings.DevActivity;
 import iop.org.iop_contributors_app.ui.settings.IoPBalanceActivity;
 import iop.org.iop_contributors_app.utils.CrashReporter;
@@ -87,23 +88,24 @@ public class SettingsFragment extends PreferenceFragment {
             startActivity(new Intent(getActivity(), DevActivity.class));
         } else if (preference.getKey().equals("id_profile")){
 
-            final DialogBuilder dialogBuilder = new DialogBuilder(getActivity());
-            dialogBuilder.setTitle("Remove User");
-            dialogBuilder.setMessage("You are going to remove everything in the app\nAre you sure?");
-            dialogBuilder.setPositiveButton("YES", new DialogInterface.OnClickListener() {
+            SimpleTwoButtonsDialog simpleTwoButtonsDialog = SimpleDialogs.buildSimpleTwoBtnsDialogForContributors(getActivity(), "Sign Out", "You are going to remove your profile.\nAre you sure?", new SimpleTwoButtonsDialog.SimpleTwoBtnsDialogListener() {
                 @Override
-                public void onClick(DialogInterface dialog, int which) {
+                public void onRightBtnClicked(SimpleTwoButtonsDialog dialog) {
                     module.cleanEverything();
+                    dialog.dismiss();
                     startActivity(new Intent(getActivity(), OnboardingWithCenterAnimationActivity.class));
                 }
-            });
-            dialogBuilder.setNegativeButton("NO", new DialogInterface.OnClickListener() {
+
                 @Override
-                public void onClick(DialogInterface dialog, int which) {
+                public void onLeftBtnClicked(SimpleTwoButtonsDialog dialog) {
                     dialog.dismiss();
                 }
             });
-            dialogBuilder.show();
+            simpleTwoButtonsDialog.setImgAlertRes(R.drawable.ic_alert_popus);
+
+
+            simpleTwoButtonsDialog.show();
+
 
         }
 

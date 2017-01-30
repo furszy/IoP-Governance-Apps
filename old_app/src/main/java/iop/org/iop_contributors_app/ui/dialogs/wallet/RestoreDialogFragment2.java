@@ -87,13 +87,13 @@ public class RestoreDialogFragment2 extends DialogFragment {
                         final DialogBuilder warnDialog = DialogBuilder.warn(getActivity(), R.string.import_export_keys_dialog_failure_title);
                         warnDialog.setMessage(getActivity().getString(R.string.import_keys_dialog_failure, x.getMessage()));
                         warnDialog.setPositiveButton(R.string.button_dismiss, null);
-                        warnDialog.setNegativeButton(R.string.button_retry, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(final DialogInterface dialog, final int id) {
-                                RestoreDialogFragment2 restoreDialogFragment = RestoreDialogFragment2.newInstance(module);
-                                restoreDialogFragment.show(getFragmentManager(), "restore_dialog");
-                            }
-                        });
+//                        warnDialog.setNegativeButton(R.string.button_retry, new DialogInterface.OnClickListener() {
+//                            @Override
+//                            public void onClick(final DialogInterface dialog, final int id) {
+//                                RestoreDialogFragment2 restoreDialogFragment = RestoreDialogFragment2.newInstance(module);
+//                                restoreDialogFragment.show(getFragmentManager(), "restore_dialog");
+//                            }
+//                        });
                         warnDialog.show();
                     } catch (Exception e){
                         e.printStackTrace();

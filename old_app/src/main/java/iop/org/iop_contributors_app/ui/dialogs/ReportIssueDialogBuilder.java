@@ -24,6 +24,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
 import android.support.annotation.Nullable;
+import android.support.v4.content.FileProvider;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.CheckBox;
@@ -61,6 +62,8 @@ public abstract class ReportIssueDialogBuilder extends DialogBuilder implements 
 {
 	private final Context context;
 
+	private String authorities;
+
 	private EditText viewDescription;
 	private CheckBox viewCollectDeviceInfo;
 	private CheckBox viewCollectInstalledPackages;
@@ -69,9 +72,10 @@ public abstract class ReportIssueDialogBuilder extends DialogBuilder implements 
 
 	private static final Logger log = LoggerFactory.getLogger(ReportIssueDialogBuilder.class);
 
-	public ReportIssueDialogBuilder(final Context context, final int titleResId, final int messageResId)
-	{
+	public ReportIssueDialogBuilder(final Context context,String authorities, final int titleResId, final int messageResId) {
 		super(context);
+
+		this.authorities = authorities;
 
 		this.context = context;
 
@@ -187,7 +191,7 @@ public abstract class ReportIssueDialogBuilder extends DialogBuilder implements 
 					os.close();
 					is.close();
 
-					attachments.add(FileAttachmentProvider.contentUri(context.getPackageName(), file));
+					attachments.add(FileProvider.getUriForFile(getContext(),authorities, file));
 				}
 			}
 			catch (final IOException x)
@@ -204,13 +208,13 @@ public abstract class ReportIssueDialogBuilder extends DialogBuilder implements 
 
 				if (walletDump != null)
 				{
-					final File file = File.createTempFile("wallet-dump.", ".txt", cacheDir);
+					final File file = File.createTempFile("wallet-dump", ".txt", cacheDir);
 
 					final Writer writer = new OutputStreamWriter(new FileOutputStream(file), Charsets.UTF_8);
 					writer.write(walletDump.toString());
 					writer.close();
 
-					attachments.add(FileAttachmentProvider.contentUri(context.getPackageName(), file));
+					attachments.add(FileProvider.getUriForFile(getContext(),authorities, file));
 				}
 			}
 			catch (final IOException x)
@@ -257,15 +261,16 @@ public abstract class ReportIssueDialogBuilder extends DialogBuilder implements 
 		{
 			intent = new Intent(Intent.ACTION_SEND_MULTIPLE);
 			intent.setType("text/plain");
+
 			intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, attachments);
 		}
 
 		intent.putExtra(Intent.EXTRA_EMAIL, new String[] { WalletConstants.REPORT_EMAIL });
 		if (subject != null)
 			intent.putExtra(Intent.EXTRA_SUBJECT, subject);
-		ArrayList<CharSequence> str = new ArrayList<>();
-		str.add(text);
-		intent.putExtra(Intent.EXTRA_TEXT, str);
+//		ArrayList<CharSequence> str = new ArrayList<CharSequence>();
+//		str.add(text);
+		intent.putExtra(Intent.EXTRA_TEXT, text);
 
 		intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 

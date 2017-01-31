@@ -112,7 +112,10 @@ public class SettingsFragment extends PreferenceFragment {
 
     private void handleReportIssue() {
 
-        final ReportIssueDialogBuilder dialog = new ReportIssueDialogBuilder(getActivity(), R.string.report_issue_dialog_title_issue,
+        final ReportIssueDialogBuilder dialog = new ReportIssueDialogBuilder(
+                getActivity(),
+                "iop.org.voting_app.myfileprovider",
+                R.string.report_issue_dialog_title_issue,
                 R.string.report_issue_dialog_message_issue)
         {
             @Override

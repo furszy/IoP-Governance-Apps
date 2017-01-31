@@ -41,6 +41,7 @@ import iop.org.iop_contributors_app.R;
 import iop.org.voting_app.base.VotingBaseActivity;
 import iop_sdk.forum.ForumProfile;
 import iop_sdk.forum.InvalidUserParametersException;
+import iop_sdk.forum.wrapper.AdminNotificationException;
 
 import static iop_sdk.utils.StringUtils.cleanString;
 
@@ -180,7 +181,11 @@ public class ProfileActivity extends VotingBaseActivity implements View.OnClickL
         if (forumProfile!=null) {
             txt_name.setText(forumProfile.getUsername());
             txt_password.setText(forumProfile.getPassword());
-            txt_email.setText(forumProfile.getEmail());
+            if (forumProfile.getEmail()==null){
+                txt_email.setVisibility(View.INVISIBLE);
+                check_email.setVisibility(View.INVISIBLE);
+            }else
+                txt_email.setText(forumProfile.getEmail());
         }
     }
 
@@ -323,6 +328,8 @@ public class ProfileActivity extends VotingBaseActivity implements View.OnClickL
                                 progressBar.setVisibility(View.GONE);
                             }
                         });
+                    } catch (AdminNotificationException e) {
+                        e.printStackTrace();
                     }
 
                     lock.set(false);
@@ -448,7 +455,7 @@ public class ProfileActivity extends VotingBaseActivity implements View.OnClickL
 
             if (isRegistered){
                 btn_create.setText("Save");
-                btn_create.setOnClickListener(this);
+                screenState = UPDATE_SCREEN_STATE;
             }
         }
     }
@@ -505,6 +512,7 @@ public class ProfileActivity extends VotingBaseActivity implements View.OnClickL
                     break;
                 case UPDATE_SCREEN_STATE:
                     updateProfile();
+                    onBackPressed();
                     break;
                 case REGISTER_SCREEN_STATE:
                     registerProfile();

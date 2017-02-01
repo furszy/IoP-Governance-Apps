@@ -1,14 +1,20 @@
 package iop.org.iop_contributors_app.ui.settings;
 
 import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -33,6 +39,10 @@ import java.util.concurrent.Executors;
 
 import iop.org.iop_contributors_app.R;
 
+import static org.iop.intents.constants.IntentsConstants.ACTION_NOTIFICATION;
+import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_ON_COIN_RECEIVED;
+import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_TYPE;
+
 /**
  * Created by mati on 05/12/16.
  * //todo: falta mejorar esto y armar una clase que sirva de conversor de tokens de una vez por todas..
@@ -40,9 +50,10 @@ import iop.org.iop_contributors_app.R;
 
 public class IoPBalanceActivity extends AppCompatActivity {
 
-    private static final String LOG = "IoPBalanceActivity";
+    private static final String TAG = "IoPBalanceActivity";
 
     private WalletModule module;
+    protected LocalBroadcastManager localBroadcastManager;
 
     private Toolbar toolbar;
 
@@ -57,20 +68,36 @@ public class IoPBalanceActivity extends AppCompatActivity {
     private boolean isAddressFine;
     private boolean isAmountFine;
 
+    private BroadcastReceiver notificationReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Bundle bundle = intent.getExtras();
+            if (bundle.containsKey(INTENT_BROADCAST_DATA_TYPE)) {
+                String dataType = bundle.getString(INTENT_BROADCAST_DATA_TYPE);
+
+                if (dataType.equals(INTENT_BROADCAST_DATA_ON_COIN_RECEIVED)) {
+                    loadBalances();
+                }
+
+            }
+        }
+    };
+
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         module = ((AppController)getApplication()).getModule();
+        localBroadcastManager = LocalBroadcastManager.getInstance(this);
 
         setContentView(R.layout.iop_balance_main);
 
-        setTitle("Balance");
+        setTitle("Export");
         initToolbar();
         initEditTexts();
         initSpinner();
         initSendBtn();
-        loadBalances();
     }
 
 
@@ -142,6 +169,7 @@ public class IoPBalanceActivity extends AppCompatActivity {
 
     }
 
+
     private void initSpinner(){
         spinner_coin = (Spinner) findViewById(R.id.spinner_coin);
         List<String> list = new ArrayList<String>();
@@ -196,10 +224,11 @@ public class IoPBalanceActivity extends AppCompatActivity {
                                         @Override
                                         public void run() {
                                             showErrorDialog("Succed","Tokens exported from wallet");
+                                            loadBalances();
                                         }
                                     });
                                 } catch (InsufficientMoneyException e) {
-                                    e.printStackTrace();
+                                    Log.e(TAG,e.getMessage());
                                     runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
@@ -207,7 +236,7 @@ public class IoPBalanceActivity extends AppCompatActivity {
                                         }
                                     });
                                 }catch (final CantSendTransactionException e) {
-                                    e.printStackTrace();
+                                    Log.e(TAG,e.getMessage());
                                     runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
@@ -215,7 +244,7 @@ public class IoPBalanceActivity extends AppCompatActivity {
                                         }
                                     });
                                 } catch (final Exception e) {
-                                    e.printStackTrace();
+                                    Log.e(TAG,e.getMessage());
                                     runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
@@ -239,12 +268,16 @@ public class IoPBalanceActivity extends AppCompatActivity {
 
     @Override
     protected void onStop() {
+        localBroadcastManager.unregisterReceiver(notificationReceiver);
         super.onStop();
+
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        loadBalances();
+        localBroadcastManager.registerReceiver(notificationReceiver,new IntentFilter(ACTION_NOTIFICATION));
     }
 
     private void loadBalances() {
@@ -269,4 +302,6 @@ public class IoPBalanceActivity extends AppCompatActivity {
                 });
         alertDialog.show();
     }
+
+
 }

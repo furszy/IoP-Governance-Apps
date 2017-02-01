@@ -1,14 +1,20 @@
 package iop.org.voting_app.ui;
 
 import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -33,6 +39,10 @@ import java.util.concurrent.Executors;
 
 import iop.org.voting_app.R;
 
+import static org.iop.intents.constants.IntentsConstants.ACTION_NOTIFICATION;
+import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_ON_COIN_RECEIVED;
+import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_TYPE;
+
 
 /**
  * Created by mati on 05/12/16.
@@ -41,9 +51,10 @@ import iop.org.voting_app.R;
 
 public class VotingExportActivity extends AppCompatActivity {
 
-    private static final String LOG = "VotingExportActivity";
+    private static final String TAG = "VotingExportActivity";
 
     private WalletModule module;
+    protected LocalBroadcastManager localBroadcastManager;
 
     private Toolbar toolbar;
 
@@ -58,6 +69,22 @@ public class VotingExportActivity extends AppCompatActivity {
     private boolean isAddressFine;
     private boolean isAmountFine;
 
+
+    private BroadcastReceiver notificationReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Bundle bundle = intent.getExtras();
+            if (bundle.containsKey(INTENT_BROADCAST_DATA_TYPE)) {
+                String dataType = bundle.getString(INTENT_BROADCAST_DATA_TYPE);
+
+                if (dataType.equals(INTENT_BROADCAST_DATA_ON_COIN_RECEIVED)) {
+                    loadBalances();
+                }
+
+            }
+        }
+    };
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -65,6 +92,7 @@ public class VotingExportActivity extends AppCompatActivity {
         setTitle("Export");
 
         module = ((AppController)getApplication()).getModule();
+        localBroadcastManager = LocalBroadcastManager.getInstance(this);
 
         setContentView(R.layout.voting_export_main);
 
@@ -73,7 +101,6 @@ public class VotingExportActivity extends AppCompatActivity {
         initEditTexts();
         initSpinner();
         initSendBtn();
-        loadBalances();
     }
 
 
@@ -198,10 +225,11 @@ public class VotingExportActivity extends AppCompatActivity {
                                         @Override
                                         public void run() {
                                             showErrorDialog("Succed","Tokens exported from wallet");
+                                            loadBalances();
                                         }
                                     });
                                 } catch (InsufficientMoneyException e) {
-                                    e.printStackTrace();
+                                    Log.e(TAG,e.getMessage());
                                     runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
@@ -209,7 +237,7 @@ public class VotingExportActivity extends AppCompatActivity {
                                         }
                                     });
                                 }catch (final CantSendTransactionException e) {
-                                    e.printStackTrace();
+                                    Log.e(TAG,e.getMessage());
                                     runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
@@ -217,7 +245,7 @@ public class VotingExportActivity extends AppCompatActivity {
                                         }
                                     });
                                 } catch (final Exception e) {
-                                    e.printStackTrace();
+                                    Log.e(TAG,e.getMessage());
                                     runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
@@ -242,12 +270,16 @@ public class VotingExportActivity extends AppCompatActivity {
 
     @Override
     protected void onStop() {
+        localBroadcastManager.unregisterReceiver(notificationReceiver);
         super.onStop();
+
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        loadBalances();
+        localBroadcastManager.registerReceiver(notificationReceiver,new IntentFilter(ACTION_NOTIFICATION));
     }
 
     private void loadBalances() {

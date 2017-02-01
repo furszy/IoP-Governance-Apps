@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.view.View;
 import android.widget.Toast;
 
+import org.iop.ForumHelper;
 import org.iop.WalletModule;
 
 import java.util.List;
@@ -64,7 +65,7 @@ public class VotingProposalsAdapter extends FermatAdapterImproved<Proposal,Votin
 //                intent1.putExtra(CreateProposalActivity.INTENT_DATA_FORUM_ID,Integer.valueOf(forumId));
 //                intent1.putExtra(CreateProposalActivity.INTENT_DATA_FORUM_TITLE,forumTitle);
 //                context.startActivity(intent1);
-                Toast.makeText(context,"Aqui deberia mostrar todo el texto si es que lo tiene o esconder el boton si no tiene..",Toast.LENGTH_LONG).show();
+                //Toast.makeText(context,"Aqui deberia mostrar todo el texto si es que lo tiene o esconder el boton si no tiene..",Toast.LENGTH_LONG).show();
             }
         });
         holder.btn_read_more.setVisibility(View.INVISIBLE);
@@ -76,7 +77,7 @@ public class VotingProposalsAdapter extends FermatAdapterImproved<Proposal,Votin
             public void onClick(View v) {
                 // posts http://fermat.community/t/propuesta-numero-4/19
                 Intent intent1 = new Intent(context,ForumActivity.class);
-                String url = module.getForumUrl()+"/t/"+data.getTitle().replace(" ","-")+"/"+data.getForumId();
+                String url = ForumHelper.getForumUrl(module,data);
                 intent1.putExtra(ForumActivity.INTENT_URL,url);
                 context.startActivity(intent1);
 

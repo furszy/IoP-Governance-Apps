@@ -51,6 +51,7 @@
                             android:id="@+id/txt_forum_id"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:padding="2dp"
                             android:layout_alignParentEnd="true"
                             android:text="#807"
                             android:textColor="#662D91" />

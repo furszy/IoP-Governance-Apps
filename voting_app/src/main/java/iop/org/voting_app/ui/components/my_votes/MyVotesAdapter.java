@@ -1,7 +1,9 @@
 package iop.org.voting_app.ui.components.my_votes;
 
+import android.content.Intent;
 import android.view.View;
 
+import org.iop.ForumHelper;
 import org.iop.WalletModule;
 
 import iop.org.furszy_lib.adapter.FermatAdapterImproved;
@@ -9,6 +11,7 @@ import iop.org.furszy_lib.adapter.FermatListItemListeners;
 import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.ui.base.BaseActivity;
 import iop.org.iop_contributors_app.utils.ForumUtils;
+import iop.org.voting_app.ui.ForumActivity;
 import iop_sdk.governance.propose.Proposal;
 import iop_sdk.governance.vote.VoteWrapper;
 
@@ -56,7 +59,10 @@ public class MyVotesAdapter extends FermatAdapterImproved<VoteWrapper,MyVotesHol
         holder.txt_forum.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ForumUtils.goToFoum(v.getContext(),module,data.getProposal());
+                Intent intent1 = new Intent(context,ForumActivity.class);
+                String url = ForumHelper.getForumUrl(module,data.getProposal());
+                intent1.putExtra(ForumActivity.INTENT_URL,url);
+                context.startActivity(intent1);
             }
         });
         if (!data.getProposal().isActive()){

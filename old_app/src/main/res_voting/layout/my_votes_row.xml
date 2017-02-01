@@ -39,10 +39,11 @@
 
                         <TextView
                             android:id="@+id/txt_title"
-                            android:layout_width="wrap_content"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:text="Build a better place"
                             android:textColor="#333333"
+                            android:layout_toLeftOf="@+id/txt_forum_id"
                             android:textSize="18sp"
                             android:lines="1"/>
 

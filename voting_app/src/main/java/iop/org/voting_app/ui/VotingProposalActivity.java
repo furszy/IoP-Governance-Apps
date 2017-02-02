@@ -69,7 +69,7 @@ public class VotingProposalActivity extends VotingBaseActivity implements View.O
     private static final String TAG = "VotingProposalActivity";
 
     private Proposal proposal;
-    private int votingAmount;
+    private long votingAmount;
     /**
      * Vote
      */
@@ -322,7 +322,7 @@ public class VotingProposalActivity extends VotingBaseActivity implements View.O
         // loading
         preparateLoading("Vote sent!", R.drawable.icon_done);
 
-        votingAmount = Integer.parseInt(edit_vote_quantity.getText().toString());
+        votingAmount = Long.parseLong(edit_vote_quantity.getText().toString());
 
         long amountIoPToshis = votingAmount; //IoPCalculator.iopToIopToshis(votingAmount);
 

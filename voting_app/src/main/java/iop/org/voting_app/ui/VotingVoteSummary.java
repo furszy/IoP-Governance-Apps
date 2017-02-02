@@ -99,7 +99,7 @@ public class VotingVoteSummary extends VotingBaseActivity implements View.OnClic
     private View container_back;
 
     /** change vote */
-    private int votingAmount;
+    private long votingAmount;
 
     private View container_change_vote;
     private SwitchSeekBar seek_bar_switch;
@@ -414,7 +414,7 @@ public class VotingVoteSummary extends VotingBaseActivity implements View.OnClic
         // loading
         preparateLoading("Vote sent!", R.drawable.icon_done);
 
-        votingAmount = Integer.parseInt(txt_vote_quantity.getText().toString());
+        votingAmount = Long.parseLong(txt_vote_quantity.getText().toString());
 
         long amountIoPToshis = votingAmount;
 

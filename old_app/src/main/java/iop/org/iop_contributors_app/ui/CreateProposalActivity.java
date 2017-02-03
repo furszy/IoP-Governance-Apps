@@ -702,6 +702,7 @@ public class CreateProposalActivity extends ContributorBaseActivity {
 
         for (int i = 0; i < extraBeneficiaries.size(); i++) {
             Beneficiary extraBeneficiary = getBeneficiaryFromRecycler(i);
+            if (extraBeneficiary==null) continue;
             if (i > 0) {
                 if (extraBeneficiary.getAddress() == null || extraBeneficiary.getAddress().equals("") && extraBeneficiary.getAmount() == 0) {
                     continue;

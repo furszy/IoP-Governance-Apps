@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.view.View;
 import android.view.ViewTreeObserver;
 
+import org.iop.ForumHelper;
 import org.iop.WalletModule;
 
 import iop.org.furszy_lib.adapter.FermatAdapterImproved;
@@ -66,7 +67,7 @@ public class ProposalsAdapter extends FermatAdapterImproved<Proposal,ProposalsHo
             public void onClick(View v) {
                 // posts http://fermat.community/t/propuesta-numero-4/19
                 Intent intent1 = new Intent(context,ForumActivity.class);
-                String url = module.getForumUrl()+"/t/"+data.getTitle().replace(" ","-")+"/"+data.getForumId();
+                String url = ForumHelper.getForumUrl(module,data);
                 intent1.putExtra(ForumActivity.INTENT_URL,url);
                 context.startActivity(intent1);
 
@@ -88,8 +89,8 @@ public class ProposalsAdapter extends FermatAdapterImproved<Proposal,ProposalsHo
 
         holder.progressYes.setProgress(voteYesPorcen);
         holder.progressNo.setProgress(voteNoPorcen);
-        holder.txt_vote_yes.setText(StringUtils.numberToNumberWithDots(data.getVoteYes()));
-        holder.txt_vote_no.setText(StringUtils.numberToNumberWithDots((data.getVoteNo())));
+        holder.txt_vote_yes.setText(StringUtils.numberToK(data.getVoteYes()));
+        holder.txt_vote_no.setText(StringUtils.numberToK((data.getVoteNo())));
 
         holder.progress_yes_container.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override

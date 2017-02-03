@@ -276,21 +276,25 @@ public class VotingProposalActivity extends VotingBaseActivity implements View.O
 
         if (id == R.id.btn_minus_voting) {
             if (votingAmount != 0 && voteType != Vote.VoteType.NEUTRAL) {
+                updateVotingPower();
                 votingAmount--;
                 updateVotesAmount();
             }
         } else if (id == R.id.btn_plus_voting) {
             if (voteType != Vote.VoteType.NEUTRAL) {
+                updateVotingPower();
                 votingAmount++;
                 updateVotesAmount();
             }
         } else if (id == R.id.btn_plus_x2_voting) {
             if (voteType != Vote.VoteType.NEUTRAL) {
+                updateVotingPower();
                 votingAmount = votingAmount * 2;
                 updateVotesAmount();
             }
         } else if (id == R.id.btn_plus_div_2_voting) {
             if (voteType != Vote.VoteType.NEUTRAL) {
+                updateVotingPower();
                 votingAmount = votingAmount / 2;
                 updateVotesAmount();
             }
@@ -318,11 +322,15 @@ public class VotingProposalActivity extends VotingBaseActivity implements View.O
         }
     }
 
+    private void updateVotingPower(){
+        votingAmount = Long.parseLong(edit_vote_quantity.getText().toString());
+    }
+
     private void showBroadcastDialog() {
         // loading
         preparateLoading("Vote sent!", R.drawable.icon_done);
 
-        votingAmount = Long.parseLong(edit_vote_quantity.getText().toString());
+        updateVotingPower();
 
         long amountIoPToshis = votingAmount; //IoPCalculator.iopToIopToshis(votingAmount);
 

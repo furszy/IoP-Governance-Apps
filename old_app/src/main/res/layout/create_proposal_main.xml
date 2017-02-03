@@ -51,6 +51,7 @@
                 android:textColor="#fff"
                 android:background="#4E4E4E"
                 android:padding="12dp"
+                android:digits="0123456789 abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ñÑ"
                 android:textSize="15sp"
                 />
 
@@ -92,6 +93,7 @@
                 android:layout_below="@+id/subtitle"
                 android:background="#4E4E4E"
                 android:padding="12dp"
+                android:digits="0123456789 abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ñÑ"
                 android:textColor="#fff"
                 android:textSize="15sp"
 
@@ -206,6 +208,7 @@
                 android:gravity="top"
                 android:padding="12dp"
                 android:lines="7"
+                android:digits="0123456789 abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ñÑ"
                 android:textSize="15sp"
                 android:textColor="#fff"
 

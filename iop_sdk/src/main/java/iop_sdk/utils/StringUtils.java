@@ -32,4 +32,11 @@ public class StringUtils {
         return ret.reverse().toString();
     }
 
+
+    public static String numberToK(long number){
+        String numberStr = numberToNumberWithDots(number);
+        numberStr = numberStr.replace(".000","k");
+        return numberStr;
+    }
+
 }

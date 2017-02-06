@@ -1,8 +1,6 @@
 package iop.org.iop_contributors_app.ui.dialogs;
 
 import android.app.AlertDialog;
-import android.app.DialogFragment;
-import android.app.FragmentManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;

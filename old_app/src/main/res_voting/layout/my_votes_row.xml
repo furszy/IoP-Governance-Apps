@@ -54,6 +54,7 @@
                             android:layout_alignParentEnd="true"
                             android:layout_alignParentTop="true"
                             android:layout_marginRight="12dp"
+                            android:paddingLeft="3dp"
                             android:text="#807"
                             android:textColor="#662D91" />
 

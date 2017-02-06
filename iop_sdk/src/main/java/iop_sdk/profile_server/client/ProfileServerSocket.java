@@ -1,4 +1,4 @@
-package iop_sdk.profile_server;
+package iop_sdk.profile_server.client;
 
 
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -13,29 +13,31 @@ import java.nio.ByteBuffer;
 import javax.net.SocketFactory;
 
 import iop_sdk.IoHandler;
-import iop_sdk.profile_server.protocol.IopHomeNodeProto3;
+import iop_sdk.profile_server.CantSendMessageException;
+import iop_sdk.profile_server.IoSession;
+import iop_sdk.profile_server.protocol.IopProfileServer;
 
 /**
  * Created by mati on 08/11/16.
  */
 
-public class ProfileServerSocket implements IoSession<IopHomeNodeProto3.Message>{
+public class ProfileServerSocket implements IoSession<IopProfileServer.Message> {
 
     private static final Logger logger = LoggerFactory.getLogger(ProfileServerSocket.class);
 
     private int port;
     private String host;
-
-    private PortType portType;
+    /** Server role type */
+    private IopProfileServer.ServerRoleType portType;
 
     private SocketFactory socketFactory;
 
     private Socket socket;
 
-    private IoHandler<IopHomeNodeProto3.Message> handler;
+    private IoHandler<IopProfileServer.Message> handler;
 
 
-    public ProfileServerSocket(SocketFactory socketFactory, String host, int port,PortType portType) throws Exception {
+    public ProfileServerSocket(SocketFactory socketFactory, String host, int port,IopProfileServer.ServerRoleType portType) throws Exception {
         this.socketFactory = socketFactory;
         if (port<=0) throw new IllegalArgumentException(portType+" port is 0");
         this.port = port;
@@ -47,14 +49,14 @@ public class ProfileServerSocket implements IoSession<IopHomeNodeProto3.Message>
         this.socket = socketFactory.createSocket(host,port);
     }
 
-    public void setHandler(IoHandler<IopHomeNodeProto3.Message> handler) {
+    public void setHandler(IoHandler<IopProfileServer.Message> handler) {
         this.handler = handler;
     }
 
-    public void write(IopHomeNodeProto3.Message message) throws CantSendMessageException{
+    public void write(IopProfileServer.Message message) throws CantSendMessageException {
         try {
             int messageSize = message.toByteArray().length;
-            IopHomeNodeProto3.MessageWithHeader messageWithHeaderBuilder = IopHomeNodeProto3.MessageWithHeader.newBuilder()
+            IopProfileServer.MessageWithHeader messageWithHeaderBuilder = IopProfileServer.MessageWithHeader.newBuilder()
                     .setHeader(messageSize+computeProtocolOverhead(messageSize))
                     .setBody(message)
                     .build();
@@ -92,10 +94,10 @@ public class ProfileServerSocket implements IoSession<IopHomeNodeProto3.Message>
             // read reply
             count = socket.getInputStream().read(buffer);
             logger.info("Reciving data..");
-            IopHomeNodeProto3.MessageWithHeader message1 = null;
+            IopProfileServer.MessageWithHeader message1 = null;
             ByteBuffer byteBufferToRead = ByteBuffer.allocate(count);
             byteBufferToRead.put(buffer,0,count);
-            message1 = IopHomeNodeProto3.MessageWithHeader.parseFrom(byteBufferToRead.array());
+            message1 = IopProfileServer.MessageWithHeader.parseFrom(byteBufferToRead.array());
             handler.messageReceived(this,message1.getBody());
         } catch (InvalidProtocolBufferException e) {
 //                throw new InvalidProtocolViolation("Invalid message",e);
@@ -105,7 +107,7 @@ public class ProfileServerSocket implements IoSession<IopHomeNodeProto3.Message>
         }
     }
 
-    public PortType getPortType() {
+    public IopProfileServer.ServerRoleType getPortType() {
         return portType;
     }
 

@@ -1,8 +1,10 @@
-package iop_sdk.profile_server;
+package iop_sdk.profile_server.client;
 
 import java.io.IOException;
 
 import iop_sdk.IoHandler;
+import iop_sdk.profile_server.Signer;
+import iop_sdk.profile_server.protocol.IopProfileServer;
 
 
 /**
@@ -26,7 +28,7 @@ import iop_sdk.IoHandler;
 public interface ProfileServer {
 
 
-    int ping(PortType portType) throws Exception;
+    int ping(IopProfileServer.ServerRoleType portType) throws Exception;
 
     int listRolesRequest() throws Exception;
 
@@ -46,6 +48,6 @@ public interface ProfileServer {
 
     void addHandler(IoHandler hanlder);
 
-    void closePort(PortType portType) throws IOException;
+    void closePort(IopProfileServer.ServerRoleType portType) throws IOException;
 
 }

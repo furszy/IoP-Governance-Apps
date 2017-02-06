@@ -1,7 +1,7 @@
 package iop_sdk.profile_server;
 
 
-import iop_sdk.profile_server.protocol.IopHomeNodeProto3;
+import iop_sdk.profile_server.protocol.IopProfileServer;
 
 /**
  * Created by mati on 08/11/16.
@@ -11,7 +11,7 @@ public class MessageDispatcher {
     private static final String TAG = "MessageDispatcher";
 
 
-    public void dispatch(IopHomeNodeProto3.Message message) throws Exception {
+    public void dispatch(IopProfileServer.Message message) throws Exception {
 
         switch (message.getMessageTypeCase()){
 
@@ -28,7 +28,7 @@ public class MessageDispatcher {
     }
 
 
-    private void dispatchResponse(IopHomeNodeProto3.Response response) throws Exception {
+    private void dispatchResponse(IopProfileServer.Response response) throws Exception {
         switch (response.getConversationTypeCase()){
 
             case CONVERSATIONRESPONSE:
@@ -46,13 +46,13 @@ public class MessageDispatcher {
         }
     }
 
-    private void dispatchSingleResponse(IopHomeNodeProto3.SingleResponse singleResponse){
+    private void dispatchSingleResponse(IopProfileServer.SingleResponse singleResponse){
         switch (singleResponse.getResponseTypeCase()){
 
             case LISTROLES:
 //                Log.d(TAG,"ListRoles received");
 
-//                IopHomeNodeProto3.ListRolesResponse listRoles = singleResponse.getListRoles();
+//                IopProfileServer.ListRolesResponse listRoles = singleResponse.getListRoles();
 
                 break;
 

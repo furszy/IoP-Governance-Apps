@@ -1,9 +1,9 @@
-package iop_sdk.profile_server;
+package iop_sdk.profile_server.engine;
 
 /**
  * Created by mati on 09/11/16.
  */
-public enum  ProfileServerConnectionState {
+public enum ProfSerConnectionState {
 
 
     NO_SERVER,

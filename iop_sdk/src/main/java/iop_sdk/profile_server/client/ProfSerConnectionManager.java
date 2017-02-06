@@ -1,4 +1,4 @@
-package iop_sdk.profile_server;
+package iop_sdk.profile_server.client;
 
 
 import java.io.IOException;
@@ -15,39 +15,42 @@ import javax.net.SocketFactory;
 import javax.net.ssl.SSLContext;
 
 import iop_sdk.IoHandler;
-import iop_sdk.global.ContextWrapper;
-import iop_sdk.profile_server.protocol.IopHomeNodeProto3;
+import iop_sdk.profile_server.CantConnectException;
+import iop_sdk.profile_server.CantSendMessageException;
+import iop_sdk.profile_server.SslContextFactory;
+import iop_sdk.profile_server.protocol.IopProfileServer;
 
 
 /**
  * Created by mati on 07/11/16.
+ *
+ * Esta clase basicamente se encarga de controlar la conexión con un profile server en especifico.
+ * Abriendo,cerrando y/o manteniendo los sockets
+ *
  */
 
-public class ProfileServerManager {
+public class ProfSerConnectionManager {
 
-    private static final String TAG = "ProfileServerManager";
+    private static final String TAG = "ProfSerConnectionManager";
 
     private SSLContext sslContext;
 
     private String host;
 
-    private Map<PortType,ProfileServerSocket> serverSockets;
-    
-    private ContextWrapper context;
+    private Map<IopProfileServer.ServerRoleType,ProfileServerSocket> serverSockets;
 
-    private IoHandler<IopHomeNodeProto3.Message> handler;
+    private IoHandler<IopProfileServer.Message> handler;
 
     /** seconds */
     private static final long connectionTimeout = 30;
 
-    public ProfileServerManager(ContextWrapper context,String host,SslContextFactory sslContextFactory) throws Exception {
-        this.context = context;
+    public ProfSerConnectionManager(String host, SslContextFactory sslContextFactory) throws Exception {
         this.host = host;
         serverSockets = new HashMap<>();
         initContext(sslContextFactory);
     }
 
-    public void setHandler(IoHandler<IopHomeNodeProto3.Message> handler) {
+    public void setHandler(IoHandler<IopProfileServer.Message> handler) {
         this.handler = handler;
     }
 
@@ -56,7 +59,7 @@ public class ProfileServerManager {
         this.sslContext = SslContextFactory.buildContext();
     }
 
-    public boolean connectToSecurePort(final PortType portType, final int port) throws CantConnectException {
+    public boolean connectToSecurePort(final IopProfileServer.ServerRoleType portType, final int port) throws CantConnectException {
         boolean isActive = false;
         if (!serverSockets.containsKey(portType)){
             isActive = syncAddServer(portType,port);
@@ -66,7 +69,7 @@ public class ProfileServerManager {
         return isActive;
     }
 
-    public boolean connectToUnSecurePort(PortType portType,int port) throws CantConnectException {
+    public boolean connectToUnSecurePort(IopProfileServer.ServerRoleType portType, int port) throws CantConnectException {
         boolean isActive = false;
         if (!serverSockets.containsKey(portType)) {
             isActive = syncAddServer(portType,port);
@@ -83,7 +86,7 @@ public class ProfileServerManager {
      * @param port
      * @return
      */
-    private boolean syncAddServer(final PortType portType, final int port) throws CantConnectException{
+    private boolean syncAddServer(final IopProfileServer.ServerRoleType portType, final int port) throws CantConnectException{
         boolean isActive = false;
         try {
             ExecutorService executorService = Executors.newSingleThreadExecutor();
@@ -91,7 +94,7 @@ public class ProfileServerManager {
                 @Override
                 public Boolean call() {
                     try {
-                        if (portType==PortType.PRIMARY) {
+                        if (portType== IopProfileServer.ServerRoleType.PRIMARY) {
                             addServerSocket(SocketFactory.getDefault(), portType, host, port).connect();
                         }else
                             addServerSocket(sslContext.getSocketFactory(), portType, host, port).connect();
@@ -114,7 +117,7 @@ public class ProfileServerManager {
         return isActive;
     }
 
-    private ProfileServerSocket addServerSocket(SocketFactory socketFactory,PortType portType,String host,int port) throws Exception {
+    private ProfileServerSocket addServerSocket(SocketFactory socketFactory, IopProfileServer.ServerRoleType portType, String host, int port) throws Exception {
         ProfileServerSocket profileServerSocket = new ProfileServerSocket(
                 socketFactory,
                 host,
@@ -138,7 +141,7 @@ public class ProfileServerManager {
      * @param message
      * @throws Exception
      */
-    public void write(PortType portType,int port,IopHomeNodeProto3.Message message) throws CantConnectException,CantSendMessageException{
+    public void write(IopProfileServer.ServerRoleType portType, int port, IopProfileServer.Message message) throws CantConnectException,CantSendMessageException {
 
         try {
             boolean result = connectToPort(portType,port);
@@ -154,13 +157,13 @@ public class ProfileServerManager {
         }
     }
 
-    private boolean connectToPort(PortType portType,int port) throws CantConnectException {
+    private boolean connectToPort(IopProfileServer.ServerRoleType portType, int port) throws CantConnectException {
         boolean isConnected = false;
         switch (portType){
-            case CUSTOMER:
+            case CL_CUSTOMER:
                 isConnected = connectToSecurePort(portType,port);
                 break;
-            case NON_CUSTOMER:
+            case CL_NON_CUSTOMER:
                 isConnected = connectToSecurePort(portType,port);
                 break;
             case PRIMARY:
@@ -171,7 +174,7 @@ public class ProfileServerManager {
     }
 
 
-    public void close(PortType portType) throws IOException {
+    public void close(IopProfileServer.ServerRoleType portType) throws IOException {
         this.serverSockets.remove(portType).closeNow();
     }
 }

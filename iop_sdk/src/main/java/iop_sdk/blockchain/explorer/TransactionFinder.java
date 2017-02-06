@@ -1,7 +1,6 @@
 package iop_sdk.blockchain.explorer;
 
 
-
 import org.bitcoinj.core.Block;
 import org.bitcoinj.core.BlockChain;
 import org.bitcoinj.core.BloomFilter;
@@ -31,7 +30,6 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
 
 import static iop_sdk.blockchain.explorer.TxUtils.serializeData;
 

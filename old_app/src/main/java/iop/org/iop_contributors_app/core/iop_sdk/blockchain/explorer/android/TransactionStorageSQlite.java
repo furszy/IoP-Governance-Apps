@@ -4,7 +4,6 @@ import org.bitcoinj.core.Sha256Hash;
 import org.bitcoinj.core.Transaction;
 import org.iop.PrivateStorage;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

@@ -3,7 +3,6 @@ package iop.org.voting_app.ui;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -30,17 +29,13 @@ import iop.org.iop_contributors_app.ui.dialogs.SimpleDialogs;
 import iop.org.voting_app.base.VotingBaseActivity;
 import iop.org.voting_app.ui.dialogs.BroadcastVoteDialog;
 import iop.org.voting_app.ui.dialogs.CancelLister;
-import iop.org.iop_contributors_app.utils.ForumUtils;
-import iop_sdk.crypto.CryptoBytes;
 import iop_sdk.governance.propose.Proposal;
-import iop_sdk.governance.utils.IoPCalculator;
 import iop_sdk.governance.vote.Vote;
 
 import static iop.org.iop_contributors_app.services.BlockchainService.INTENT_EXTRA_PROPOSAL_VOTE;
 import static iop.org.iop_contributors_app.ui.CreateProposalActivity.INTENT_DATA_FORUM_ID;
 import static iop.org.iop_contributors_app.ui.CreateProposalActivity.INTENT_DATA_FORUM_TITLE;
 import static iop.org.iop_contributors_app.ui.ProposalSummaryActivity.ACTION_SUMMARY_PROPOSAL;
-
 import static iop.org.iop_contributors_app.ui.components.switch_seek_bar.SwitchSeekBar.Position.CENTER;
 import static iop.org.iop_contributors_app.ui.components.switch_seek_bar.SwitchSeekBar.Position.LEFT;
 import static iop.org.iop_contributors_app.ui.components.switch_seek_bar.SwitchSeekBar.Position.RIGHT;

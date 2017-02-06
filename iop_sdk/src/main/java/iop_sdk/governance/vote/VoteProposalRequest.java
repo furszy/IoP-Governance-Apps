@@ -1,4 +1,4 @@
-package iop_sdk.wallet;
+package iop_sdk.governance.vote;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -7,10 +7,8 @@ import org.bitcoinj.core.Coin;
 import org.bitcoinj.core.InsufficientMoneyException;
 import org.bitcoinj.core.Sha256Hash;
 import org.bitcoinj.core.Transaction;
-import org.bitcoinj.core.TransactionOutPoint;
 import org.bitcoinj.core.TransactionOutput;
 import org.bitcoinj.wallet.CoinSelection;
-import org.bitcoinj.wallet.DefaultCoinSelector;
 import org.bitcoinj.wallet.SendRequest;
 import org.bitcoinj.wallet.Wallet;
 import org.bitcoinj.wallet.WalletTransaction;
@@ -25,10 +23,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import iop_sdk.blockchain.NotConnectedPeersException;
-import iop_sdk.governance.vote.Vote;
-import iop_sdk.governance.vote.VoteTransactionBuilder;
-import iop_sdk.governance.vote.VotesDao;
+import iop_sdk.wallet.BlockchainManager;
+import iop_sdk.wallet.CantSendVoteException;
+import iop_sdk.wallet.WalletManager;
+import iop_sdk.wallet.WalletPreferenceConfigurations;
 import iop_sdk.wallet.exceptions.InsuficientBalanceException;
+
+import static iop_sdk.wallet.utils.WalletUtils.sumValue;
 
 /**
  * Created by mati on 21/12/16.
@@ -86,7 +87,7 @@ public class VoteProposalRequest {
         }
         // fill the tx with valid inputs
         if (!sumValue(unspentTransactions).isGreaterThan(totalOuputsValue) && !totalOuputsValue.isNegative() && totalOuputsValue.getValue()!=0) {
-            unspentTransactions = getInputsForVote(wallet, totalOuputsValue);
+            unspentTransactions = walletManager.getInputsForAmount(totalOuputsValue);
         }
         // inputs value
         totalInputsValue = sumValue(unspentTransactions);
@@ -143,52 +144,6 @@ public class VoteProposalRequest {
         LOG.info("total en el aire: " + tran.getInputSum().minus(tran.getOutputSum().minus(tran.getFee())).toFriendlyString());
     }
 
-    /**
-     * Return a list of unspent transaction satisfasing the total param amount
-     *
-     * @param totalAmount
-     * @return
-     */
-    private List<TransactionOutput> getInputsForVote(Wallet wallet,Coin totalAmount) throws InsuficientBalanceException {
-        List<TransactionOutput> unspentTransactions = new ArrayList<>();
-        Coin totalInputsValue = Coin.ZERO;
-        boolean inputsSatisfiedContractValue = false;
-
-        for (TransactionOutput transactionOutput : wallet.getUnspents()) {
-            //
-            TransactionOutPoint transactionOutPoint = transactionOutput.getOutPointFor();
-            if (votesDaoImp.isLockedOutput(transactionOutPoint.getHash().toString(), transactionOutPoint.getIndex())) {
-                continue;
-            }
-            if (DefaultCoinSelector.isSelectable(transactionOutput.getParentTransaction())) {
-                LOG.info("adding non locked transaction to spend as an input: postion:" + transactionOutPoint.getIndex() + ", parent hash: " + transactionOutPoint.toString());
-                totalInputsValue = totalInputsValue.add(transactionOutput.getValue());
-                unspentTransactions.add(transactionOutput);
-                if (totalInputsValue.isGreaterThan(totalAmount)) {
-                    inputsSatisfiedContractValue = true;
-                    break;
-                }
-            }
-        }
-
-        if (!inputsSatisfiedContractValue)
-            throw new InsuficientBalanceException("Inputs not satisfied vote value");
-
-        return unspentTransactions;
-    }
-
-    /**
-     * // todo algo pasa acá que no suma el value..
-     * @param list
-     * @return
-     */
-    private Coin sumValue(List<TransactionOutput> list){
-        Coin ret = Coin.ZERO;
-        for (TransactionOutput transactionOutput : list) {
-            ret = ret.add(transactionOutput.getValue());
-        }
-        return ret;
-    }
 
     public void broadcast() throws NotConnectedPeersException {
         Wallet wallet = walletManager.getWallet();

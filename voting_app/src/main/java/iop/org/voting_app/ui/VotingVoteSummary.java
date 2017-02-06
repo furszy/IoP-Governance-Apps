@@ -14,18 +14,13 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.bitcoinj.core.Coin;
 import org.bitcoinj.core.Transaction;
-import org.w3c.dom.Text;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.util.Arrays;
-import java.util.Locale;
 
 import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.ui.components.switch_seek_bar.SwitchSeekBar;
@@ -35,7 +30,6 @@ import iop.org.voting_app.ui.dialogs.BroadcastVoteDialog;
 import iop.org.voting_app.ui.dialogs.CancelLister;
 import iop_sdk.governance.propose.Proposal;
 import iop_sdk.governance.propose.ProposalUtil;
-import iop_sdk.governance.utils.IoPCalculator;
 import iop_sdk.governance.vote.Vote;
 import iop_sdk.governance.vote.VoteWrapper;
 
@@ -54,7 +48,6 @@ import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_V
 import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_TYPE;
 import static org.iop.intents.constants.IntentsConstants.INTENT_DIALOG;
 import static org.iop.intents.constants.IntentsConstants.INTENT_EXTRA_PROPOSAL;
-import static org.iop.intents.constants.IntentsConstants.INVALID_PROPOSAL_DIALOG;
 import static org.iop.intents.constants.IntentsConstants.UNKNOWN_ERROR_DIALOG;
 
 /**

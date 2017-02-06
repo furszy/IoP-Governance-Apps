@@ -2,7 +2,6 @@ package iop.org.voting_app.ui.components.proposals;
 
 import android.content.Intent;
 import android.view.View;
-import android.widget.Toast;
 
 import org.iop.ForumHelper;
 import org.iop.WalletModule;
@@ -12,14 +11,10 @@ import java.util.List;
 import iop.org.furszy_lib.adapter.FermatAdapterImproved;
 import iop.org.iop_contributors_app.R;
 import iop.org.voting_app.ui.ForumActivity;
-import iop.org.voting_app.ui.VotingProposalActivity;
 import iop.org.voting_app.ui.VotingProposalsActivity;
 import iop_sdk.governance.propose.Proposal;
 
 import static iop_sdk.blockchain.utils.CoinUtils.coinToString;
-import static iop_sdk.governance.propose.Proposal.ProposalState.EXECUTED;
-import static iop_sdk.governance.propose.Proposal.ProposalState.EXECUTION_CANCELLED;
-import static org.iop.intents.constants.IntentsConstants.INTENT_EXTRA_PROPOSAL;
 
 /**
  * Created by mati on 17/11/16.

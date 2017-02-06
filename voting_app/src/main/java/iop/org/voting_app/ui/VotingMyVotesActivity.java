@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
-import android.support.v4.view.ViewCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -21,10 +20,8 @@ import iop.org.voting_app.ui.components.my_votes.MyVotesAdapter;
 import iop.org.voting_app.ui.components.my_votes.MyVotesHolder;
 import iop.org.voting_app.ui.dialogs.VoteDialog;
 import iop_sdk.governance.propose.Proposal;
-import iop_sdk.governance.vote.Vote;
 import iop_sdk.governance.vote.VoteWrapper;
 
-import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_EXTRA_DATA_VOTE;
 import static org.iop.intents.constants.IntentsConstants.INTENT_EXTRA_PROPOSAL;
 
 /**

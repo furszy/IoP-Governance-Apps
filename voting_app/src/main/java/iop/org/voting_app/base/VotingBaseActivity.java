@@ -2,7 +2,6 @@ package iop.org.voting_app.base;
 
 import android.content.Intent;
 import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.NotificationCompat;
@@ -22,23 +21,17 @@ import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.ui.base.BaseActivity;
 import iop.org.iop_contributors_app.ui.dialogs.wallet.BackupDialog;
 import iop.org.iop_contributors_app.ui.dialogs.wallet.RestoreDialogFragment2;
-import iop.org.iop_sdk_android.core.wrappers.IntentWrapperAndroid;
 import iop.org.voting_app.SettingsActivity;
 import iop.org.voting_app.ui.ForumActivity;
 import iop.org.voting_app.ui.VotingMyVotesActivity;
 import iop.org.voting_app.ui.VotingProposalsActivity;
-import iop_sdk.global.IntentWrapper;
 import iop_sdk.governance.propose.Proposal;
 import iop_sdk.governance.vote.Vote;
 
-import static org.iop.intents.constants.IntentsConstants.ACTION_NOTIFICATION;
 import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_TYPE;
 import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_VOTE_FROZEN_FUNDS_UNLOCKED;
 import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_EXTRA_DATA_VOTE;
-import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_TYPE;
-import static org.iop.intents.constants.IntentsConstants.INTENT_DATA;
 import static org.iop.intents.constants.IntentsConstants.INTENT_EXTRA_PROPOSAL;
-import static org.iop.intents.constants.IntentsConstants.INTENT_NOTIFICATION;
 
 /**
  * Created by mati on 21/12/16.
@@ -77,6 +70,8 @@ public abstract class VotingBaseActivity extends BaseActivity {
                     intent = new Intent(VotingBaseActivity.this, SettingsActivity.class);
                     break;
             }
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            finish();
             startActivity(intent);
         }
 

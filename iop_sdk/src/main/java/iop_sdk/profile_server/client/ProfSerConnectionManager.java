@@ -94,7 +94,7 @@ public class ProfSerConnectionManager {
                 @Override
                 public Boolean call() {
                     try {
-                        if (portType== IopProfileServer.ServerRoleType.PRIMARY) {
+                        if (portType == IopProfileServer.ServerRoleType.PRIMARY) {
                             addServerSocket(SocketFactory.getDefault(), portType, host, port).connect();
                         }else
                             addServerSocket(sslContext.getSocketFactory(), portType, host, port).connect();
@@ -148,9 +148,6 @@ public class ProfSerConnectionManager {
             if (!result) throw new Exception("Something happen with the connection");
             ProfileServerSocket profileServerSocket = serverSockets.get(portType);
             profileServerSocket.write(message);
-
-            // Launch message sent event
-            handler.messageSent(profileServerSocket,message);
 
         }catch (Exception e){
             e.printStackTrace();

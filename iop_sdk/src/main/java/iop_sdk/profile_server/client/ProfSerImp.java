@@ -13,9 +13,9 @@ import iop_sdk.IoHandler;
 import iop_sdk.global.ContextWrapper;
 import iop_sdk.profile_server.CantConnectException;
 import iop_sdk.profile_server.CantSendMessageException;
-import iop_sdk.profile_server.ProfileServerConfigurations;
 import iop_sdk.profile_server.Signer;
 import iop_sdk.profile_server.SslContextFactory;
+import iop_sdk.profile_server.model.ProfServerData;
 import iop_sdk.profile_server.protocol.IopProfileServer;
 import iop_sdk.profile_server.protocol.MessageFactory;
 
@@ -32,10 +32,10 @@ public class ProfSerImp implements ProfileServer {
 
     private ProfSerConnectionManager profSerConnectionManager;
 
-    private ProfileServerConfigurations configurations;
+    private ProfServerData configurations;
 
 
-    public ProfSerImp(ContextWrapper context, ProfileServerConfigurations configurations, SslContextFactory sslContextFactory) throws Exception {
+    public ProfSerImp(ContextWrapper context, ProfServerData configurations, SslContextFactory sslContextFactory) throws Exception {
         this.configurations = configurations;
         profSerConnectionManager = new ProfSerConnectionManager(configurations.getHost(),sslContextFactory);
     }
@@ -59,7 +59,7 @@ public class ProfSerImp implements ProfileServer {
         IopProfileServer.Message message = MessageFactory.buildServerListRolesRequestMessage(configurations.getProtocolVersion());
         profSerConnectionManager.write(
                 IopProfileServer.ServerRoleType.PRIMARY,
-                configurations.getPrimaryPort(),
+                configurations.getpPort(),
                 message
         );
         return message.getId();
@@ -70,7 +70,7 @@ public class ProfSerImp implements ProfileServer {
         IopProfileServer.Message message = MessageFactory.buildHomeNodeRequestRequest(identityPk,identityType,System.currentTimeMillis(),null);
         profSerConnectionManager.write(
                 IopProfileServer.ServerRoleType.CL_NON_CUSTOMER,
-                configurations.getNonClPort(),
+                configurations.getNonCustPort(),
                 message
         );
         return message.getId();
@@ -85,7 +85,7 @@ public class ProfSerImp implements ProfileServer {
         logger.info("startConversationNonCl message id: "+message.getId());
         profSerConnectionManager.write(
                 IopProfileServer.ServerRoleType.CL_NON_CUSTOMER,
-                configurations.getNonClPort(),
+                configurations.getNonCustPort(),
                 message
         );
         return message.getId();
@@ -103,7 +103,7 @@ public class ProfSerImp implements ProfileServer {
         logger.info("startConversationCl message id: "+message.getId());
         profSerConnectionManager.write(
                 IopProfileServer.ServerRoleType.CL_CUSTOMER,
-                configurations.getClPort(),
+                configurations.getCustPort(),
                 message
         );
         return message.getId();
@@ -120,7 +120,7 @@ public class ProfSerImp implements ProfileServer {
         logger.info("checkIn message id: "+message.getId());
         profSerConnectionManager.write(
                 IopProfileServer.ServerRoleType.CL_CUSTOMER,
-                configurations.getClPort(),
+                configurations.getCustPort(),
                 message
         );
         return message.getId();
@@ -143,7 +143,7 @@ public class ProfSerImp implements ProfileServer {
         IopProfileServer.Message message = MessageFactory.buildUpdateProfileRequest(signer,version,name,img,latitude,longitude,extraData);
         profSerConnectionManager.write(
                 IopProfileServer.ServerRoleType.CL_CUSTOMER,
-                configurations.getClPort(),
+                configurations.getCustPort(),
                 message
         );
         return message.getId();
@@ -155,7 +155,7 @@ public class ProfSerImp implements ProfileServer {
         IopProfileServer.Message message = MessageFactory.buildUpdateProfileRequest(signer,null,null,null,0,0,extraData);
         profSerConnectionManager.write(
                 IopProfileServer.ServerRoleType.CL_CUSTOMER,
-                configurations.getClPort(),
+                configurations.getCustPort(),
                 message
         );
         return message.getId();
@@ -176,13 +176,13 @@ public class ProfSerImp implements ProfileServer {
         int port = 0;
         switch (portType){
             case CL_CUSTOMER:
-                port = configurations.getClPort();
+                port = configurations.getCustPort();
                 break;
             case PRIMARY:
-                port = configurations.getPrimaryPort();
+                port = configurations.getpPort();
                 break;
             case CL_NON_CUSTOMER:
-                port = configurations.getNonClPort();
+                port = configurations.getNonCustPort();
                 break;
         }
         return port;

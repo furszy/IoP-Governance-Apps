@@ -8,9 +8,13 @@ import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+import iop_sdk.crypto.CryptoWrapper;
+
 
 /**
  * Created by Matias Furszyfer on 03/10/16.
+ *
+ * //todo: esta clase la puedo meter dentro de un wrapper así sigo usando estos metodos como estaticos.
  */
 public class CryptoImp {
 

@@ -6,8 +6,8 @@ import javax.net.ssl.SSLContext;
  * Created by mati on 25/12/16.
  */
 
-public class SslContextFactory {
-    public static SSLContext buildContext() {
-        return null;
-    }
+public interface SslContextFactory {
+
+    SSLContext buildContext(Object context) throws Exception;
+
 }

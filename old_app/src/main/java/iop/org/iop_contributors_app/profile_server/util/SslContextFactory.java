@@ -22,14 +22,14 @@ import iop.org.iop_contributors_app.R;
  * Created by mati on 08/11/16.
  */
 
-public class SslContextFactory {
+public class SslContextFactory implements iop_sdk.profile_server.SslContextFactory{
 
 
     private static final String TAG = "SslContextFactory";
 
-    public static SSLContext buildContext(Context context) throws Exception{
+    public SSLContext buildContext(Object context) throws Exception{
         try {
-            InputStream inputStream = context.getResources().openRawResource(R.raw.homenet);
+            InputStream inputStream = ((Context)context).getResources().openRawResource(R.raw.homenet);
             CertificateFactory cf = CertificateFactory.getInstance("X.509");
             X509Certificate caCert = (X509Certificate) cf.generateCertificate(inputStream);
             Log.d(TAG, "ca=" + caCert.getSubjectDN());

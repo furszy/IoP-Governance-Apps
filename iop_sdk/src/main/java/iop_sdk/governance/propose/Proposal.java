@@ -10,13 +10,10 @@ import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import iop_sdk.crypto.CryptoBytes;
 import iop_sdk.global.exceptions.NotValidParametersException;
 
 import static iop_sdk.global.utils.Preconditions.checkEquals;
@@ -92,6 +89,7 @@ public class Proposal implements Serializable {
     private int startBlock;
     private int endBlock;
     private long blockReward;
+    private int pendingBlocks = -1;
     /** topic id */
     private int forumId;
     /** post id */
@@ -485,6 +483,14 @@ public class Proposal implements Serializable {
         this.voteNo = voteNo;
     }
 
+    public int getPendingBlocks() {
+        return pendingBlocks;
+    }
+
+    public void setPendingBlocks(int pendingBlocks) {
+        this.pendingBlocks = pendingBlocks;
+    }
+
     public boolean isActive(){
         return (state != ProposalState.EXECUTED && state != ProposalState.EXECUTION_CANCELLED  && state != ProposalState.CANCELED_BY_OWNER);
     }
@@ -545,6 +551,7 @@ public class Proposal implements Serializable {
                 ", beneficiaries=" + beneficiaries +
                 ", ownerPubKey=" + Arrays.toString(ownerPubKey) +
                 ", extraFeeValue=" + extraFeeValue +
+                ", pendingBlocks" + pendingBlocks +
                 '}';
     }
 }

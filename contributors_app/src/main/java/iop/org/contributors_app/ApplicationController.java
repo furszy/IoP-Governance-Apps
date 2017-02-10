@@ -3,10 +3,13 @@ package iop.org.contributors_app;
 import android.app.ActivityManager;
 import android.app.Application;
 import android.app.Service;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.PackageInfo;
+import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.Toast;
@@ -29,7 +32,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
@@ -43,9 +45,9 @@ import iop.org.furszy_lib.dialogs.DialogBuilder;
 import iop.org.iop_contributors_app.core.iop_sdk.blockchain.explorer.android.TransactionStorageSQlite;
 import iop.org.iop_contributors_app.services.BlockchainService;
 import iop.org.iop_contributors_app.services.BlockchainServiceImpl;
+import iop.org.iop_contributors_app.services.ProfileServerService;
 import iop.org.iop_contributors_app.services.ServicesCodes;
 import iop.org.iop_contributors_app.ui.ProfileActivity;
-import iop.org.iop_contributors_app.ui.base.BaseActivity;
 import iop.org.iop_contributors_app.utils.AppUtils;
 import iop.org.iop_contributors_app.utils.CrashReporter;
 import iop.org.iop_sdk_android.core.wrappers.PackageInfoAndroid;
@@ -144,7 +146,7 @@ public class ApplicationController extends Application implements AppController 
         module.start();
 
         startBlockchainService();
-
+//        startProfileServerService();
 
 
 //        try {
@@ -163,23 +165,23 @@ public class ApplicationController extends Application implements AppController 
     }
 
 
-//    public ServiceConnection profServiceConnection = new ServiceConnection() {
-//        public void onServiceConnected(ComponentName className, IBinder binder) {
-//            Log.d(TAG,"profile service connected");
+    public ServiceConnection profServiceConnection = new ServiceConnection() {
+        public void onServiceConnected(ComponentName className, IBinder binder) {
+            Log.d(TAG,"profile service connected");
 //            profileServerService = ((ProfileServerService.ProfServerBinder)binder).getService();
-//        }
-//        //binder comes from server to communicate with method's of
+        }
+        //binder comes from server to communicate with method's of
+
+        public void onServiceDisconnected(ComponentName className) {
+            Log.d("ServiceConnection","disconnected");
+            profServiceConnection = null;
+        }
+    };
 //
-//        public void onServiceDisconnected(ComponentName className) {
-//            Log.d("ServiceConnection","disconnected");
-//            profServiceConnection = null;
-//        }
-//    };
-//
-//    private void startProfileServerService() {
-//        Intent intent = new Intent(this,ProfileServerService.class);
-//        bindService(intent,profServiceConnection,Context.BIND_AUTO_CREATE);
-//    }
+    private void startProfileServerService() {
+        Intent intent = new Intent(this,ProfileServerService.class);
+        bindService(intent,profServiceConnection,Context.BIND_AUTO_CREATE);
+    }
 
     public void startBlockchainService() {
         Intent blockchainServiceIntent = new Intent(this, BlockchainServiceImpl.class);

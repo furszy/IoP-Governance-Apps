@@ -18,7 +18,6 @@ import android.os.PowerManager;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.NotificationCompat;
-import android.util.Log;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
@@ -62,7 +61,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -70,8 +68,11 @@ import iop.org.iop_contributors_app.R;
 import iop_sdk.blockchain.NotConnectedPeersException;
 import iop_sdk.blockchain.explorer.TransactionFinder;
 import iop_sdk.blockchain.explorer.TransactionFinderListener;
+import iop_sdk.forum.wrapper.AdminNotificationException;
+import iop_sdk.forum.wrapper.ResponseMessageConstants;
 import iop_sdk.forum.wrapper.ServerWrapper;
 import iop_sdk.governance.propose.CantCompleteProposalException;
+import iop_sdk.governance.propose.CantCompleteProposalMaxTransactionExcededException;
 import iop_sdk.governance.propose.Proposal;
 import iop_sdk.governance.vote.Vote;
 import iop_sdk.wallet.BlockchainManager;
@@ -83,6 +84,7 @@ import static org.iop.WalletConstants.BLOCKCHAIN_STATE_BROADCAST_THROTTLE_MS;
 import static org.iop.WalletConstants.CONTEXT;
 import static org.iop.WalletConstants.SHOW_BLOCKCHAIN_OFF_DIALOG;
 import static org.iop.intents.constants.IntentsConstants.ACTION_NOTIFICATION;
+import static org.iop.intents.constants.IntentsConstants.ADMIN_NOTIFICATION_DIALOG;
 import static org.iop.intents.constants.IntentsConstants.CANT_SAVE_PROPOSAL_DIALOG;
 import static org.iop.intents.constants.IntentsConstants.COMMON_ERROR_DIALOG;
 import static org.iop.intents.constants.IntentsConstants.INSUFICIENTS_FUNDS_DIALOG;
@@ -101,6 +103,7 @@ import static org.iop.intents.constants.IntentsConstants.INTENT_DIALOG;
 import static org.iop.intents.constants.IntentsConstants.INTENT_EXTRA_PROPOSAL;
 import static org.iop.intents.constants.IntentsConstants.INTENT_NOTIFICATION;
 import static org.iop.intents.constants.IntentsConstants.INVALID_PROPOSAL_DIALOG;
+import static org.iop.intents.constants.IntentsConstants.MAX_INPUTS_EXCEDED_IN_A_TRANSACTION_DIALOG;
 import static org.iop.intents.constants.IntentsConstants.UNKNOWN_ERROR_DIALOG;
 
 /**
@@ -169,16 +172,16 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
         @Override
         public void onPeerConnected(final Peer peer, final int peerCount) {
             LOG.info("######### Peer connected!! ######");
-            android.support.v4.app.NotificationCompat.Builder mBuilder =
-                    new NotificationCompat.Builder(getApplicationContext())
-                            .setSmallIcon(R.drawable.ic__launcher)
-                            .setContentTitle("Peer connected!")
-                            .setContentText("OnPeerConnected: "+peer.getAddress().toString());
-
-            nm.notify(2,mBuilder.build());
+//            android.support.v4.app.NotificationCompat.Builder mBuilder =
+//                    new NotificationCompat.Builder(getApplicationContext())
+//                            .setSmallIcon(R.drawable.ic__launcher)
+//                            .setContentTitle("Peer connected!")
+//                            .setContentText("OnPeerConnected: "+peer.getAddress().toString());
+//
+//            nm.notify(2,mBuilder.build());
 
             // cancel the peer not connected notification
-            nm.cancel(16);
+//            nm.cancel(16);
 
             this.peerCount = peerCount;
             changed(peerCount);
@@ -293,9 +296,6 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
             public void run() {
                 lastMessageTime.set(System.currentTimeMillis());
 
-
-                final int bestBlockHeight = conf.maybeIncrementBestChainHeightEver(blockchainManager.getChainHeadHeight());
-
                 if (application.isVotingApp()) {
 
                     LOG.info("executing download voting");
@@ -307,15 +307,22 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
                                 //bestBlockHeight != -1 &&
                                 if (!transactionFinder.getLastBestChainHash().equals(block.getHash().toString())) {
                                     LOG.info("executing download-1");
+
+                                    int bestBlockHeight = conf.maybeIncrementBestChainHeightEver(blockchainManager.getChainHeadHeight());
+
+                                    if (bestBlockHeight>3){
+                                        bestBlockHeight = bestBlockHeight -3;
+                                    }
+
+
                                     List<Proposal> proposals = null;
                                     ServerWrapper.RequestProposalsResponse requestProposalsResponse = null;
 
                                     // obtain proposal contracts to filter
-                                    requestProposalsResponse = walletModule.requestProposalsFullTx(blockchainManager.getChainHeadHeight());
+                                    requestProposalsResponse = walletModule.requestProposalsFullTx(bestBlockHeight);
                                     if (requestProposalsResponse != null) {
                                         proposalsArrive(requestProposalsResponse.getProposals());
                                     }
-
                                 }
                             }catch (Exception e){
                                 e.printStackTrace();
@@ -337,7 +344,7 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
                                 List<Proposal> list = walletModule.getActiveProposalsInBlockchain();
                                 if (!list.isEmpty()) {
                                     LOG.info("Active proposals: "+Arrays.toString(list.toArray()));
-                                    ServerWrapper.RequestProposalsResponse requestProposalsResponse = walletModule.requestProposalsFullTx(list);
+                                    ServerWrapper.RequestProposalsResponse requestProposalsResponse = walletModule.requestUpdateFromProposals(list);
                                     if (requestProposalsResponse != null) {
                                         // arribo de propuestas
                                         proposalsArrive(requestProposalsResponse.getProposals());
@@ -435,6 +442,7 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
                 executorService.submit(new Runnable() {
                     @Override
                     public void run() {
+                        org.bitcoinj.core.Context.propagate(WalletConstants.CONTEXT);
                         check();
                     }
                 });
@@ -496,23 +504,24 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
                 }else {
                     LOG.error("transaction with a value lesser than zero arrives..");
                 }
-            } else {
-
-                if (amount.isGreaterThan(Coin.ZERO)) {
-
-                    android.support.v4.app.NotificationCompat.Builder mBuilder =
-                            new NotificationCompat.Builder(getApplicationContext())
-                                    .setSmallIcon(R.drawable.ic__launcher)
-                                    .setContentTitle("IoPs received!")
-                                    .setContentText("Transaction received for a value of " + amount.toFriendlyString())
-                                    .setSubText("This transaction is not confirmed yet, will be confirmed in the next 10 minutes")
-                                    .setDeleteIntent(deleteIntent);
-
-                    nm.notify(5, mBuilder.build());
-                }else {
-                    LOG.error("transaction with a value lesser than zero arrives..");
-                }
             }
+//            else {
+//
+//                if (amount.isGreaterThan(Coin.ZERO)) {
+//
+//                    android.support.v4.app.NotificationCompat.Builder mBuilder =
+//                            new NotificationCompat.Builder(getApplicationContext())
+//                                    .setSmallIcon(R.drawable.ic__launcher)
+//                                    .setContentTitle("IoPs received!")
+//                                    .setContentText("Transaction received for a value of " + amount.toFriendlyString())
+//                                    .setSubText("This transaction is not confirmed yet, will be confirmed in the next 10 minutes")
+//                                    .setDeleteIntent(deleteIntent);
+//
+//                    nm.notify(5, mBuilder.build());
+//                }else {
+//                    LOG.error("transaction with a value lesser than zero arrives..");
+//                }
+//            }
         }
     };
 
@@ -602,18 +611,20 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
             public void onTransactionConfidenceChanged(Wallet wallet, Transaction transaction) {
                 try {
                     org.bitcoinj.core.Context.propagate(WalletConstants.CONTEXT);
-                    if (transaction.getConfidence().getDepthInBlocks() > 1) {
-                        Proposal proposal = null;
-                        if ((proposal = walletModule.decodeProposalTransaction(transaction)) != null) {
-                            try {
-                                if (walletModule.proposalAcceptedInBlockchain(proposal)){
-                                    proposal.setState(Proposal.ProposalState.SUBMITTED);
-                                    broadcastProposalArrived(proposal);
+                    if (transaction!=null) {
+                        if (transaction.getConfidence().getDepthInBlocks() > 1) {
+                            Proposal proposal = null;
+                            if ((proposal = walletModule.decodeProposalTransaction(transaction)) != null) {
+                                try {
+                                    if (walletModule.proposalAcceptedInBlockchain(proposal)) {
+                                        proposal.setState(Proposal.ProposalState.SUBMITTED);
+                                        broadcastProposalArrived(proposal);
+                                    }
+                                } catch (CantUpdateProposalException e) {
+                                    e.printStackTrace();
+                                } catch (JsonProcessingException e) {
+                                    e.printStackTrace();
                                 }
-                            } catch (CantUpdateProposalException e) {
-                                e.printStackTrace();
-                            } catch (JsonProcessingException e) {
-                                e.printStackTrace();
                             }
                         }
                     }
@@ -669,6 +680,10 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
                     public void run() {
                         try {
                             Proposal proposal = (Proposal) intent.getSerializableExtra(INTENT_EXTRA_PROPOSAL);
+                            if (proposal.getForumId()==1) {
+                                LOG.error("Proposal with forum id=1, data: "+proposal.toString());
+                                throw new CantSendProposalException("Forum proposal id=1, something bad happen\nplease send log to furszy");
+                            }
                             if ((proposal = walletModule.sendProposal(proposal))!=null) {
                                 broadcastProposalSuced(proposal);
                             }
@@ -690,6 +705,12 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
                             check();
                         } catch (CantCompleteProposalException e){
                             showDialogException(COMMON_ERROR_DIALOG, e.getMessage());
+                        } catch (AdminNotificationException e){
+                            sendAdminNotifDialog(e);
+                            e.printStackTrace();
+                        } catch (CantCompleteProposalMaxTransactionExcededException e) {
+                            showMaxTransactionsExceedDialog(1500);
+                            e.printStackTrace();
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -756,6 +777,7 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
         }
         return START_NOT_STICKY;
     }
+
 
     private void showBlockchainSyncNotification(int blockLeft){
         if (blockLeft>1 && !isSyncing.getAndSet(true)){
@@ -827,6 +849,20 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
         intent.putExtra(INTENT_BROADCAST_TYPE,INTENT_DATA+INTENT_NOTIFICATION);
         intent.putExtra(INTENT_BROADCAST_DATA_TYPE, INTENT_BROADCAST_DATA_PROPOSAL_TRANSACTION_ARRIVED);
         intent.putExtra(INTENT_EXTRA_PROPOSAL,proposal);
+        localBroadcast.sendBroadcast(intent);
+    }
+
+    /**
+     * send a localbroadcast to show the maxTransactionsExceded dialog.
+     *
+     * @param requiredAmount is the needed, i'm going to join n inputs to get to that amount in a few transactions
+     */
+    private void showMaxTransactionsExceedDialog(long requiredAmount) {
+        Intent intent = new Intent(ACTION_NOTIFICATION);
+        intent.putExtra(INTENT_BROADCAST_TYPE,INTENT_DIALOG);
+        intent.putExtra(INTENTE_BROADCAST_DIALOG_TYPE,MAX_INPUTS_EXCEDED_IN_A_TRANSACTION_DIALOG);
+//        intent.putExtra(INTENT_DIALOG,dialogType);public static final String ACTION_RECEIVE_EXCEPTION = CreateProposalActivity.class.getName() + "_receive_exception";
+        intent.putExtra(INTENTE_EXTRA_MESSAGE,requiredAmount);
         localBroadcast.sendBroadcast(intent);
     }
 
@@ -1006,17 +1042,15 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
 
             nm.notify(15, mBuilder.build());
         }
-        if (blockchainManager.getConnectedPeers().isEmpty()){
-            android.support.v4.app.NotificationCompat.Builder mBuilder =
-                    new NotificationCompat.Builder(getApplicationContext())
-                            .setSmallIcon(R.drawable.ic__launcher)
-                            .setContentTitle("Impediment")
-                            .setContentText("No peer connection");
-
-            nm.notify(16, mBuilder.build());
-
-
-        }
+//        if (blockchainManager.getConnectedPeers().isEmpty()){
+//            android.support.v4.app.NotificationCompat.Builder mBuilder =
+//                    new NotificationCompat.Builder(getApplicationContext())
+//                            .setSmallIcon(R.drawable.ic__launcher)
+//                            .setContentTitle("Impediment")
+//                            .setContentText("No peer connection");
+//
+//            nm.notify(16, mBuilder.build());
+//        }
     }
 
 
@@ -1045,5 +1079,15 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
         return blockchainManager.getRecentBlocks(maxBlocks);
     }
 
+
+    private void sendAdminNotifDialog(AdminNotificationException e) {
+        Intent intent = new Intent(ACTION_NOTIFICATION);
+        intent.putExtra(INTENT_BROADCAST_TYPE,INTENT_DIALOG);
+        intent.putExtra(INTENTE_BROADCAST_DIALOG_TYPE,ADMIN_NOTIFICATION_DIALOG);
+//        intent.putExtraExtra(INTENT_DIALOG,dialogType);public static final String ACTION_RECEIVE_EXCEPTION = CreateProposalActivity.class.getName() + "_receive_exception";
+        intent.putExtra(ResponseMessageConstants.ADMIN_NOTIFICATION_TYPE,e.getAdminNotificationType());
+        intent.putExtra(ResponseMessageConstants.ADMIN_NOTIFICATION_MESSAGE,e.getMessage());
+        localBroadcast.sendBroadcast(intent);
+    }
 
 }

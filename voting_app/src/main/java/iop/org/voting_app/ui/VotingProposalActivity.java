@@ -1,6 +1,7 @@
 package iop.org.voting_app.ui;
 
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -17,14 +18,16 @@ import android.widget.Toast;
 
 import org.bitcoinj.core.Coin;
 import org.bitcoinj.core.Transaction;
+import org.iop.AppController;
 import org.iop.db.CantGetProposalException;
 
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import iop.org.iop_contributors_app.R;
+import iop.org.voting_app.R;
 import iop.org.iop_contributors_app.ui.components.switch_seek_bar.SwitchSeekBar;
+import iop.org.iop_contributors_app.ui.dialogs.ReportIssueDialogBuilder;
 import iop.org.iop_contributors_app.ui.dialogs.SimpleDialogs;
 import iop.org.voting_app.base.VotingBaseActivity;
 import iop.org.voting_app.ui.dialogs.BroadcastVoteDialog;
@@ -39,6 +42,7 @@ import static iop.org.iop_contributors_app.ui.ProposalSummaryActivity.ACTION_SUM
 import static iop.org.iop_contributors_app.ui.components.switch_seek_bar.SwitchSeekBar.Position.CENTER;
 import static iop.org.iop_contributors_app.ui.components.switch_seek_bar.SwitchSeekBar.Position.LEFT;
 import static iop.org.iop_contributors_app.ui.components.switch_seek_bar.SwitchSeekBar.Position.RIGHT;
+import static iop.org.iop_contributors_app.ui.dialogs.SimpleDialogs.buildReportIssueDialogVoting;
 import static iop_sdk.blockchain.utils.CoinUtils.coinToString;
 import static iop_sdk.governance.propose.Proposal.ProposalState.IN_EXECUTION;
 import static iop_sdk.governance.propose.Proposal.ProposalState.QUEUED_FOR_EXECUTION;
@@ -238,6 +242,10 @@ public class VotingProposalActivity extends VotingBaseActivity implements View.O
                         textToShow = bundle.getString(INTENTE_EXTRA_MESSAGE);
                     }
                     SimpleDialogs.showErrorDialog(this, "Upss", textToShow);
+
+                    ReportIssueDialogBuilder reportIssueDialog = buildReportIssueDialogVoting(this, (AppController) getApplication(),module,R.string.upss,R.string.upss_message);
+                    reportIssueDialog.show();
+
                     break;
                 case INSUFICIENTS_FUNDS_DIALOG:
                     SimpleDialogs.showInsuficientFundsException(this, module);
@@ -311,7 +319,7 @@ public class VotingProposalActivity extends VotingBaseActivity implements View.O
         if (voteType == Vote.VoteType.YES)
             edit_vote_quantity.setText(String.valueOf(votingAmount));
         else if (voteType == Vote.VoteType.NO) {
-            edit_vote_quantity.setText(String.valueOf(votingAmount * 5));
+            edit_vote_quantity.setText(String.valueOf(votingAmount));
         } else if (voteType == Vote.VoteType.NEUTRAL) {
             edit_vote_quantity.setText("0");
         }

@@ -5,13 +5,18 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
 
+import org.iop.AppController;
+import org.iop.WalletConstants;
 import org.iop.WalletModule;
+
+import java.io.IOException;
 
 import iop.org.furszy_lib.dialogs.SimpleTwoButtonsDialog;
 import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.ui.base.BaseActivity;
 import iop.org.iop_contributors_app.ui.base.SimpleTextDialog;
 import iop.org.iop_contributors_app.ui.dialogs.wallet.InsuficientFundsDialog;
+import iop.org.iop_contributors_app.utils.CrashReporter;
 
 /**
  * Created by mati on 21/12/16.
@@ -30,6 +35,50 @@ public class SimpleDialogs {
                     }
                 });
         alertDialog.show();
+    }
+
+
+    public static ReportIssueDialogBuilder buildReportIssueDialogVoting(final Context context, final AppController appController, final WalletModule module,int titleRes,int messageRes){
+        final ReportIssueDialogBuilder dialog = new ReportIssueDialogBuilder(
+                context,
+                "iop.org.voting_app.myfileprovider",
+                titleRes,
+                messageRes)
+        {
+            @Override
+            protected CharSequence subject() {
+                return WalletConstants.REPORT_SUBJECT_ISSUE + " " + module.getAppController().packageInfoWrapper().getVersionName();
+            }
+
+            @Override
+            protected CharSequence collectApplicationInfo() throws IOException
+            {
+                final StringBuilder applicationInfo = new StringBuilder();
+                CrashReporter.appendApplicationInfo(applicationInfo, appController);
+                return applicationInfo;
+            }
+
+            @Override
+            protected CharSequence collectStackTrace()
+            {
+                return null;
+            }
+
+            @Override
+            protected CharSequence collectDeviceInfo() throws IOException
+            {
+                final StringBuilder deviceInfo = new StringBuilder();
+                CrashReporter.appendDeviceInfo(deviceInfo, context);
+                return deviceInfo;
+            }
+
+            @Override
+            protected CharSequence collectWalletDump()
+            {
+                return module.getWalletManager().getWallet().toString(false, true, true, null);
+            }
+        };
+        return dialog;
     }
 
     public static AlertDialog buildDialog(Context context, String title, String message,DialogInterface.OnClickListener onOkClickListener) {

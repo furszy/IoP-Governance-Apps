@@ -16,7 +16,9 @@ import iop.org.iop_contributors_app.services.BlockchainService;
 import iop.org.iop_contributors_app.ui.ProposalSummaryActivity;
 import iop_sdk.governance.propose.Proposal;
 
-;import static org.iop.intents.constants.IntentsConstants.INTENT_EXTRA_PROPOSAL;
+import static org.iop.intents.constants.IntentsConstants.INTENT_EXTRA_PROPOSAL;
+
+;
 
 public class BroadcastContractDialog extends DialogFragment {
 

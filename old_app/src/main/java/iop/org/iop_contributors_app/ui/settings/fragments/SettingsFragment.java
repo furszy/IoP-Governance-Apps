@@ -1,7 +1,5 @@
 package iop.org.iop_contributors_app.ui.settings.fragments;
 
-import android.app.FragmentManager;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -22,7 +20,6 @@ import org.iop.WalletModule;
 
 import java.io.IOException;
 
-import iop.org.furszy_lib.dialogs.DialogBuilder;
 import iop.org.furszy_lib.dialogs.SimpleTwoButtonsDialog;
 import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.ui.OnboardingWithCenterAnimationActivity;
@@ -105,8 +102,10 @@ public class SettingsFragment extends PreferenceFragment {
 
 
             simpleTwoButtonsDialog.show();
-
-
+        } else if(preference.getKey().equals("id_donate")){
+            Intent intent = new Intent(getActivity(), IoPBalanceActivity.class);
+            intent.setAction("donate");
+            startActivity(intent);
         }
 
         return super.onPreferenceTreeClick(preferenceScreen, preference);

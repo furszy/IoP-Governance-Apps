@@ -17,6 +17,7 @@ import android.widget.TextView;
 
 import org.bitcoinj.core.Coin;
 import org.bitcoinj.core.Transaction;
+import org.bitcoinj.utils.BtcFormat;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -292,7 +293,7 @@ public class VotingVoteSummary extends VotingBaseActivity implements View.OnClic
         double hours = minutes/60;
         hours = round(hours,2);
         txt_end_date.setText(String.valueOf(hours)+" hours");
-        txt_total_amount.setText("Reward "+coinToString(voteWrapper.getProposal().getBlockReward())+" IoPs");
+        txt_total_amount.setText("Reward "+ BtcFormat.getInstance().format(voteWrapper.getProposal().getBlockReward(),4,1).replace("BTC","IoP"));
 
         long voteNo = voteWrapper.getProposal().getVoteNo();
         long voteYes = voteWrapper.getProposal().getVoteYes();
@@ -354,7 +355,7 @@ public class VotingVoteSummary extends VotingBaseActivity implements View.OnClic
         if (voteType== Vote.VoteType.YES)
             txt_vote_quantity.setText(String.valueOf(votingAmount));
         else if (voteType== Vote.VoteType.NO){
-            txt_vote_quantity.setText(String.valueOf(votingAmount*5));
+            txt_vote_quantity.setText(String.valueOf(votingAmount));
         }
         else if (voteType == Vote.VoteType.NEUTRAL){
             txt_vote_quantity.setText("0");

@@ -57,9 +57,9 @@ public class SettingsActivity  extends ContributorBaseActivity {
         super.onDestroy();
     }
 
-    @Override
-    protected void onActionDrawerClicked() {
-        finish();
-        super.onActionDrawerClicked();
-    }
+//    @Override
+//    protected void onActionDrawerClicked() {
+//        finish();
+//        super.onActionDrawerClicked();
+//    }
 }

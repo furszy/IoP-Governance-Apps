@@ -23,8 +23,8 @@ import java.io.IOException;
 
 import iop.org.furszy_lib.dialogs.DialogBuilder;
 import iop.org.iop_contributors_app.R;
+import iop.org.iop_contributors_app.ui.base.BaseActivity;
 import iop.org.iop_contributors_app.ui.dialogs.ReportIssueDialogBuilder;
-import iop.org.iop_contributors_app.ui.settings.IoPBalanceActivity;
 import iop.org.iop_contributors_app.utils.CrashReporter;
 import iop.org.voting_app.ui.DevActivity;
 import iop.org.voting_app.ui.VotingExportActivity;
@@ -92,6 +92,7 @@ public class SettingsFragment extends PreferenceFragment {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     module.cleanEverything();
+                    ((BaseActivity)getActivity()).cleanData();
                     startActivity(new Intent(getActivity(), VotingStartActivity.class));
                 }
             });

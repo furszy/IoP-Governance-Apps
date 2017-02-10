@@ -26,6 +26,7 @@ import android.widget.TextView;
 import org.bitcoinj.core.Address;
 import org.bitcoinj.core.Coin;
 import org.bitcoinj.core.InsufficientMoneyException;
+import org.bitcoinj.utils.BtcFormat;
 import org.bitcoinj.wallet.Wallet;
 import org.iop.AppController;
 import org.iop.WalletConstants;
@@ -34,6 +35,7 @@ import org.iop.exceptions.CantSendTransactionException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import iop.org.voting_app.R;
 
@@ -222,7 +224,7 @@ public class VotingExportActivity extends AppCompatActivity {
                                     runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
-                                            showErrorDialog("Succed","Tokens exported from wallet");
+                                            showErrorDialog("Succed","Tokens exported from wallet\nRemember wait 10 minutes until coins are confirmed by the network");
                                             loadBalances();
                                         }
                                     });
@@ -285,9 +287,13 @@ public class VotingExportActivity extends AppCompatActivity {
         txt_voting_power_available = (TextView) findViewById(R.id.txt_voting_power_available);
         txt_voting_power_locked = (TextView) findViewById(R.id.txt_voting_power_locked);
 
-        txt_balance.setText(module.getWalletManager().getWallet().getBalance(Wallet.BalanceType.AVAILABLE_SPENDABLE).toFriendlyString());
-        txt_voting_power_available.setText("Available: "+module.getAvailableBalanceStr()+" IoPs");
-        txt_voting_power_locked.setText("Locked: "+module.getLockedBalance()+ " IoPs");
+        BtcFormat btcFormat = BtcFormat.getInstance(Locale.GERMANY);
+        String balance = btcFormat.format(module.getBalance(),4,1).replace("BTC","IoP");
+        txt_balance.setText(balance);
+        String spendableValue = btcFormat.format(module.getAvailableBalance(),4,1).replace("BTC","IoP");
+        txt_voting_power_available.setText(spendableValue);
+        String lockedBalance = btcFormat.format(module.getLockedBalance(),4,1).replace("BTC","IoP");
+        txt_voting_power_locked.setText(lockedBalance);
     }
 
     private void showErrorDialog(String title, String message) {

@@ -11,7 +11,6 @@ import java.util.List;
 import iop_sdk.governance.propose.Proposal;
 import iop_sdk.governance.propose.ProposalTransactionBuilder;
 import iop_sdk.governance.propose.ProposalsContractDao;
-import iop_sdk.governance.vote.Vote;
 
 ;
 

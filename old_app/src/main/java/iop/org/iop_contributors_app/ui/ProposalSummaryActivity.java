@@ -1,6 +1,7 @@
 package iop.org.iop_contributors_app.ui;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
@@ -18,11 +19,14 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.bitcoinj.core.Transaction;
+import org.bitcoinj.utils.BtcFormat;
 import org.iop.db.CantGetProposalException;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import iop.org.furszy_lib.dialogs.SimpleTwoButtonsDialog;
 import iop.org.furszy_lib.utils.SizeUtils;
 import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.ui.dialogs.BroadcastContractDialog;
@@ -48,6 +52,7 @@ import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_TYPE;
 import static org.iop.intents.constants.IntentsConstants.INTENT_DIALOG;
 import static org.iop.intents.constants.IntentsConstants.INTENT_EXTRA_PROPOSAL;
 import static org.iop.intents.constants.IntentsConstants.INVALID_PROPOSAL_DIALOG;
+import static org.iop.intents.constants.IntentsConstants.MAX_INPUTS_EXCEDED_IN_A_TRANSACTION_DIALOG;
 import static org.iop.intents.constants.IntentsConstants.UNKNOWN_ERROR_DIALOG;
 
 /**
@@ -177,7 +182,7 @@ public class ProposalSummaryActivity extends ContributorBaseActivity implements 
         txt_start_block.setText(Html.fromHtml(transformToHtmlWithColor("Start block: ", "#cccccc") + transformToHtmlWithColor(String.valueOf(proposal.getStartBlock()), "#ffffff")));
         txt_end_block.setText(Html.fromHtml(transformToHtmlWithColor("End block: ", "#cccccc") + transformToHtmlWithColor(String.valueOf(proposal.getEndBlock()), "#ffffff")));
         loadBeneficiaries(proposal.getBeneficiaries());
-        txt_total_amount.setText("Total: " + coinToString(proposal.getBlockReward() * proposal.getEndBlock()) + " IoPs");
+        txt_total_amount.setText("Total\n"+BtcFormat.getInstance().format(proposal.getBlockReward() * proposal.getEndBlock(),4,1).replace("BTC","IoP"));
 
         if (!proposal.isActive()) {
             setProposalFinished();
@@ -194,8 +199,8 @@ public class ProposalSummaryActivity extends ContributorBaseActivity implements 
         for (Beneficiary beneficiary : beneficiaries) {
             TextView textView = new TextView(this);
             textView.setTextColor(Color.WHITE);
-            textView.setTextSize(SizeUtils.convertDpToPx(getResources(),5));
-            String first = coinToString(beneficiary.getAmount())+" IoPs "+ "<font color='#EE0000'> -> </font>"+" "+beneficiary.getAddress();
+            textView.setTextSize(SizeUtils.convertDpToPx(getResources(),4));
+            String first = beneficiary.getAmount()+" Toshis "+ "<font color='#EE0000'> -> </font>"+" "+beneficiary.getAddress();
             textView.setText(Html.fromHtml(first));
             containerBeneficiaries.addView(textView);
         }
@@ -236,6 +241,11 @@ public class ProposalSummaryActivity extends ContributorBaseActivity implements 
                 case COMMON_ERROR_DIALOG:
                     showErrorDialog(this,"Error", data.getString(INTENTE_EXTRA_MESSAGE));
                     break;
+                case MAX_INPUTS_EXCEDED_IN_A_TRANSACTION_DIALOG:
+                    showErrorDialog(this,"Error", "Max permitted inputs overcomed in a transaction\nplease export some tokens from your wallet");
+                    break;
+//                    long requieredAmount = data.getInt(INTENTE_EXTRA_MESSAGE);
+//                    showMaxInputsExcededInATransactionDialog(this,requieredAmount);
                 default:
                     Log.e(TAG,"BroadcastReceiver fail");
                     break;
@@ -244,6 +254,27 @@ public class ProposalSummaryActivity extends ContributorBaseActivity implements 
             lockBroadcast.set(false);
         }
         return false;
+    }
+
+    /**
+     * Todo: complete this
+     * @param context
+     * @param requieredAmount
+     */
+    private void showMaxInputsExcededInATransactionDialog(Context context, long requieredAmount) {
+        List<Transaction> txs = module.buildTransactionsForAmount(requieredAmount);
+
+        SimpleDialogs.buildSimpleTwoBtnsDialogForContributors(context, "Send fail", "Max inputs size in a transactins is overcome\nYou need to join some outputs\nSize: "+txs.size()+"\nFee: "+String.valueOf(txs.size()*Transaction.DEFAULT_TX_FEE.getValue()), new SimpleTwoButtonsDialog.SimpleTwoBtnsDialogListener() {
+            @Override
+            public void onRightBtnClicked(SimpleTwoButtonsDialog dialog) {
+
+            }
+
+            @Override
+            public void onLeftBtnClicked(SimpleTwoButtonsDialog dialog) {
+
+            }
+        });
     }
 
     @Override
@@ -385,9 +416,9 @@ public class ProposalSummaryActivity extends ContributorBaseActivity implements 
         alertDialog.show();
     }
 
-    @Override
-    protected void onActionDrawerClicked() {
-        finish();
-        super.onActionDrawerClicked();
-    }
+//    @Override
+//    protected void onActionDrawerClicked() {
+//        finish();
+//        super.onActionDrawerClicked();
+//    }
 }

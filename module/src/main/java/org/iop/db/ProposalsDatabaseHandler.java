@@ -14,7 +14,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -29,7 +28,7 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
 
     // All Static variables
     // Database Version
-    private static final int DATABASE_VERSION = 20;
+    private static final int DATABASE_VERSION = 21;
 
     // Database Name
     private static final String DATABASE_NAME = "walletManager";
@@ -63,6 +62,8 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
     private static final String KEY_PROPOSAL_VOTES_YES = "votes_yes";
     private static final String KEY_PROPOSAL_VOTES_NO = "votes_no";
 
+    private static final String KEY_PROPOSAL_PENDING_BLOCKS = "pendingBlocks";
+
     private static final int KEY_PROPOSAL_POS_ID =                      0;
     private static final int KEY_PROPOSAL_POS_TITLE =                   1;
     private static final int KEY_PROPOSAL_POS_SUBTITLE =                2;
@@ -87,6 +88,8 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
 
     private static final int KEY_PROPOSAL_POS_VOTES_YES =               19;
     private static final int KEY_PROPOSAL_POS_VOTES_NO =                20;
+
+    private static final int KEY_PROPOSAL_POS_PENDING_BLOCKS =          21;
 
 
     public ProposalsDatabaseHandler(Context context) {
@@ -119,7 +122,8 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
                 + KEY_PROPOSAL_STATE + " TEXT,"
                 + KEY_PROPOSAL_GENESIS_HASH + " TEXT,"
                 + KEY_PROPOSAL_VOTES_YES + " INTEGER,"
-                + KEY_PROPOSAL_VOTES_NO + " INTEGER"
+                + KEY_PROPOSAL_VOTES_NO + " INTEGER,"
+                + KEY_PROPOSAL_PENDING_BLOCKS + " INTEGER"
                 + ")";
         db.execSQL(CREATE_CONTACTS_TABLE);
     }
@@ -163,7 +167,8 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
                 KEY_PROPOSAL_STATE,
                 KEY_PROPOSAL_GENESIS_HASH,
                 KEY_PROPOSAL_VOTES_YES,
-                KEY_PROPOSAL_VOTES_NO
+                KEY_PROPOSAL_VOTES_NO,
+                KEY_PROPOSAL_PENDING_BLOCKS
         };
     }
 
@@ -854,6 +859,8 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
         int votesYes = cursor.getInt(KEY_PROPOSAL_POS_VOTES_YES);
         int votesNo = cursor.getInt(KEY_PROPOSAL_POS_VOTES_NO);
 
+        int pendingBlocks = cursor.getInt(KEY_PROPOSAL_POS_PENDING_BLOCKS);
+
 
         Proposal proposal = new Proposal(
                 isMine,
@@ -877,6 +884,7 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
         proposal.setGenesisTxHash(blockchainHashHex);
         proposal.setVoteYes(votesYes);
         proposal.setVoteNo(votesNo);
+        proposal.setPendingBlocks(pendingBlocks);
         return proposal;
     }
 
@@ -907,6 +915,7 @@ public class ProposalsDatabaseHandler extends SQLiteOpenHelper {
         values.put(KEY_PROPOSAL_GENESIS_HASH,proposal.getGenesisTxHash());
         values.put(KEY_PROPOSAL_VOTES_YES,proposal.getVoteYes());
         values.put(KEY_PROPOSAL_VOTES_NO,proposal.getVoteNo());
+        values.put(KEY_PROPOSAL_PENDING_BLOCKS,proposal.getPendingBlocks());
         return values;
     }
 

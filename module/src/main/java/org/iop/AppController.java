@@ -22,4 +22,5 @@ public interface AppController extends ContextWrapper {
     long getTimeCreateApplication();
 
     Class<?> getProfileActivity();
+
 }

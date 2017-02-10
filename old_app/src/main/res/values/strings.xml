@@ -22,7 +22,7 @@
     <string name="encrypt_keys_dialog_password_strength_fair">fair</string>
     <string name="encrypt_keys_dialog_password_strength_good">good</string>
     <string name="encrypt_keys_dialog_password_strength_strong">strong</string>
-    <string name="export_keys_dialog_success"><t1>Congratulations!</t1><p>Your wallet has been backed up to <tt>%s</tt></p><p>If your device has a removable SD card, your backup <i>should</i> be on that card. Remove it and keep it at a safe place. If the card is <i>not</i> removable, you need to archive your backup to some other place than your device.</p><p><b>If the only place your backup exists is on your device, you run the risk of losing both at the same time!</b></p><p>In any case, make sure you remember your backup password. Do you want to archive your wallet now?</p>></string>
+    <string name="export_keys_dialog_success"><![CDATA[<t1>Congratulations!</t1><p>Your wallet has been backed up to <tt>%s</tt></p><p>If your device has a removable SD card, your backup <i>should</i> be on that card. Remove it and keep it at a safe place. If the card is <i>not</i> removable, you need to archive your backup to some other place than your device.</p><p><b>If the only place your backup exists is on your device, you run the risk of losing both at the same time!</b></p><p>In any case, make sure you remember your backup password. Do you want to archive your wallet now?</p>]]></string>
     <string name="export_keys_dialog_button_archive">Achieve</string>
     <string name="button_dismiss">Dismiss</string>
     <string name="export_keys_dialog_mail_subject">IoP contributors walet bacup</string>

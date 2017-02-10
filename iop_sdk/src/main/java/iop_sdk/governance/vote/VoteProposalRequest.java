@@ -82,8 +82,19 @@ public class VoteProposalRequest {
         if (vote.getLockedOutputHex()!=null){
             LOG.info("Reusing the previous vote tx, adding the frozen output as input of the tx");
             Map<Sha256Hash, Transaction> pool = wallet.getTransactionPool(WalletTransaction.Pool.UNSPENT);
-            TransactionOutput prevFrozenOutput = pool.get(Sha256Hash.wrap(vote.getLockedOutputHex())).getOutput(0);
-            unspentTransactions.add(prevFrozenOutput);
+            Sha256Hash sha256Hash = Sha256Hash.wrap(vote.getLockedOutputHex());
+            Transaction tx = pool.get(sha256Hash);
+            if (tx!=null) {
+                TransactionOutput prevFrozenOutput = tx.getOutput(0);
+                unspentTransactions.add(prevFrozenOutput);
+            }else {
+                Transaction txTmp = wallet.getTransaction(sha256Hash);
+                if (txTmp!=null){
+                    throw new CantSendVoteException("Locked output hash transaction exist but is already spent, tx: "+txTmp.toString());
+                }else {
+                    throw new CantSendVoteException("Locked output hash transaction don't exist in this wallet, tx: "+txTmp.toString());
+                }
+            }
         }
         // fill the tx with valid inputs
         if (!sumValue(unspentTransactions).isGreaterThan(totalOuputsValue) && !totalOuputsValue.isNegative() && totalOuputsValue.getValue()!=0) {

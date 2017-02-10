@@ -161,7 +161,6 @@
                 android:foregroundTint="#808080"
                 android:layout_centerHorizontal="true"
                 android:paddingRight="12dp"
-
                 android:gravity="center"
                 android:textSize="16sp"
                 android:digits="0123456789 abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ñÑ ,.,_ @"/>

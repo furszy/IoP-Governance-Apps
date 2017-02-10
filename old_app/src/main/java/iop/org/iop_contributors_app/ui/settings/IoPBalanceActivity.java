@@ -34,8 +34,6 @@ import org.iop.exceptions.CantSendTransactionException;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import iop.org.iop_contributors_app.R;
 
@@ -64,9 +62,14 @@ public class IoPBalanceActivity extends AppCompatActivity {
     private EditText edit_amount;
     private Spinner spinner_coin;
     private Button btn_send;
+    private TextView txt_danger;
+    private TextView txt_danger_expl;
 
     private boolean isAddressFine;
     private boolean isAmountFine;
+
+    private boolean isDonation;
+    private String donationAddress;
 
     private BroadcastReceiver notificationReceiver = new BroadcastReceiver() {
         @Override
@@ -91,11 +94,30 @@ public class IoPBalanceActivity extends AppCompatActivity {
         module = ((AppController)getApplication()).getModule();
         localBroadcastManager = LocalBroadcastManager.getInstance(this);
 
+        Intent intent = getIntent();
+        if (intent!=null && intent.getAction()!=null && intent.getAction().equals("donate")){
+            isDonation = true;
+        }
+
         setContentView(R.layout.iop_balance_main);
 
-        setTitle("Export");
+        String title;
+        String explanation;
+
+        if (isDonation){
+            setTitle("Donation");
+            donationAddress = WalletConstants.DONATION_ADDRESS;
+            title="Contribute";
+            explanation="Thanks for support the development of IoP :) ";
+        }else {
+            setTitle("Export");
+            title="Danger!";
+            explanation="If you send your funds out\\nyou will not be able to contribute";
+        }
+
+        initText(title,explanation);
         initToolbar();
-        initEditTexts();
+        initEditTexts(donationAddress);
         initSpinner();
         initSendBtn();
     }
@@ -119,9 +141,22 @@ public class IoPBalanceActivity extends AppCompatActivity {
         }
     }
 
-    private void initEditTexts() {
+    private void initText(String title,String explanation){
+        txt_danger = (TextView) findViewById(R.id.txt_danger);
+        txt_danger_expl = (TextView) findViewById(R.id.txt_danger_expl);
+
+        txt_danger.setText(title);
+        txt_danger_expl.setText(explanation);
+    }
+
+    private void initEditTexts(String donationAddres) {
         edit_address = (EditText) findViewById(R.id.edit_address);
         edit_amount = (EditText) findViewById(R.id.edit_amount);
+
+        if (donationAddres!=null){
+            edit_address.setText(donationAddres);
+            isAddressFine=true;
+        }
 
         edit_address.addTextChangedListener(new TextWatcher() {
             @Override
@@ -143,6 +178,8 @@ public class IoPBalanceActivity extends AppCompatActivity {
                     }catch (Exception e){
                         // nothing
                     }
+                }else {
+                    isAddressFine=false;
                 }
 
             }
@@ -163,6 +200,8 @@ public class IoPBalanceActivity extends AppCompatActivity {
             public void afterTextChanged(Editable s) {
                 if (s.length()>0){
                     isAmountFine = true;
+                }else {
+                    isAmountFine=false;
                 }
             }
         });
@@ -264,6 +303,9 @@ public class IoPBalanceActivity extends AppCompatActivity {
 
             }
         });
+        if (isDonation){
+            btn_send.setText("Donate!");
+        }
     }
 
     @Override
@@ -287,7 +329,7 @@ public class IoPBalanceActivity extends AppCompatActivity {
 
         txt_balance.setText(module.getWalletManager().getWallet().getBalance(Wallet.BalanceType.AVAILABLE_SPENDABLE).toFriendlyString());
         txt_voting_power_available.setText("Available: "+module.getAvailableBalanceStr()+" IoPs");
-        txt_voting_power_locked.setText("Locked: "+module.getLockedBalance()+ " IoPs");
+        txt_voting_power_locked.setText("Locked: "+module.getLockedBalanceStr()+ " IoPs");
     }
 
     private void showErrorDialog(String title, String message) {

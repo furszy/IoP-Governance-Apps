@@ -57,6 +57,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:id="@+id/txt_danger"
                 android:text="Danger!"
                 android:gravity="center"
                 android:textSize="18sp"
@@ -69,6 +70,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="If you send your funds out\nyou will not be able to contribute"
+                android:id="@+id/txt_danger_expl"
                 android:gravity="center"
                 android:paddingTop="8dp"
                 android:textColor="#aaffffff"

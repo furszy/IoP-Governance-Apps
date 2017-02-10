@@ -10,9 +10,7 @@ import iop.org.furszy_lib.adapter.FermatAdapterImproved;
 import iop.org.furszy_lib.adapter.FermatListItemListeners;
 import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.ui.base.BaseActivity;
-import iop.org.iop_contributors_app.utils.ForumUtils;
 import iop.org.voting_app.ui.ForumActivity;
-import iop_sdk.governance.propose.Proposal;
 import iop_sdk.governance.vote.VoteWrapper;
 
 /**

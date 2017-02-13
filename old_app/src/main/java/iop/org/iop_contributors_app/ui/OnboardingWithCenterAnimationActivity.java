@@ -42,6 +42,7 @@ import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.ui.settings.DevActivity;
 import iop_sdk.forum.ForumProfile;
 import iop_sdk.forum.InvalidUserParametersException;
+import iop_sdk.forum.wrapper.AdminNotificationException;
 import iop_sdk.global.exceptions.ConnectionRefusedException;
 
 import static iop_sdk.utils.StringUtils.cleanString;
@@ -331,6 +332,14 @@ public class OnboardingWithCenterAnimationActivity extends AppCompatActivity {
                             @Override
                             public void run() {
                                 buildFailDialog("Cant connect\n"+e.getMessage());
+                                progressBar.setVisibility(View.GONE);
+                            }
+                        });
+                    } catch (final AdminNotificationException e) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(OnboardingWithCenterAnimationActivity.this,e.getMessage(),Toast.LENGTH_LONG).show();
                                 progressBar.setVisibility(View.GONE);
                             }
                         });

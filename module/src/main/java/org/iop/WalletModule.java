@@ -1,7 +1,5 @@
 package org.iop;
 
-import android.util.Log;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -14,7 +12,7 @@ import org.bitcoinj.core.Sha256Hash;
 import org.bitcoinj.core.Transaction;
 import org.bitcoinj.core.TransactionOutput;
 import org.bitcoinj.utils.BtcFormat;
-import org.bitcoinj.wallet.CoinSelector;
+import org.bitcoinj.wallet.DefaultCoinSelector;
 import org.bitcoinj.wallet.Wallet;
 import org.iop.db.CantGetProposalException;
 import org.iop.db.CantSaveProposalException;
@@ -52,6 +50,7 @@ import iop_sdk.forum.ForumClientDiscourseImp;
 import iop_sdk.forum.ForumConfigurations;
 import iop_sdk.forum.ForumProfile;
 import iop_sdk.forum.InvalidUserParametersException;
+import iop_sdk.forum.wrapper.AdminNotificationException;
 import iop_sdk.forum.wrapper.CantGetProposalsFromServer;
 import iop_sdk.forum.wrapper.ServerWrapper;
 import iop_sdk.global.ContextWrapper;
@@ -59,19 +58,21 @@ import iop_sdk.global.IntentWrapper;
 import iop_sdk.global.exceptions.ConnectionRefusedException;
 import iop_sdk.global.exceptions.NotValidParametersException;
 import iop_sdk.governance.propose.CantCompleteProposalException;
+import iop_sdk.governance.propose.CantCompleteProposalMaxTransactionExcededException;
 import iop_sdk.governance.propose.Proposal;
 import iop_sdk.governance.propose.ProposalTransactionBuilder;
 import iop_sdk.governance.propose.ProposalTransactionRequest;
 import iop_sdk.governance.vote.Vote;
+import iop_sdk.governance.vote.VoteProposalRequest;
 import iop_sdk.governance.vote.VoteWrapper;
 import iop_sdk.governance.vote.VotesDao;
+import iop_sdk.profile_server.ProfileServerConfigurations;
 import iop_sdk.wallet.BlockchainManager;
-import iop_sdk.wallet.VoteProposalRequest;
 import iop_sdk.wallet.WalletManager;
 import iop_sdk.wallet.WalletPreferenceConfigurations;
 import iop_sdk.wallet.exceptions.InsuficientBalanceException;
 
-;import static iop_sdk.governance.propose.Proposal.ProposalState.CANCELED_BY_OWNER;
+import static iop_sdk.governance.propose.Proposal.ProposalState.CANCELED_BY_OWNER;
 import static iop_sdk.governance.propose.Proposal.ProposalState.EXECUTED;
 import static iop_sdk.governance.propose.Proposal.ProposalState.EXECUTION_CANCELLED;
 import static iop_sdk.governance.propose.Proposal.ProposalState.FORUM;
@@ -86,6 +87,8 @@ import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_TYPE;
 import static org.iop.intents.constants.IntentsConstants.INTENT_DATA;
 import static org.iop.intents.constants.IntentsConstants.INTENT_EXTRA_PROPOSAL;
 import static org.iop.intents.constants.IntentsConstants.INTENT_NOTIFICATION;
+
+;
 
 /**
  * Created by mati on 12/11/16.
@@ -109,6 +112,8 @@ public class WalletModule {
     private Profile profile;
 
     private WalletPreferenceConfigurations configuration;
+    // profile server
+    private ProfileServerConfigurations profileServerConfigurations;
 
     private ForumClient forumClient;
     private ServerWrapper serverWrapper;
@@ -127,6 +132,9 @@ public class WalletModule {
 
     // esto no va a quedar acá..
     private TransactionStorage transactionStorage;
+
+    /** Admin notification */
+    private boolean hasAdminNotification;
 
 
     public WalletModule(android.content.Context context, WalletPreferenceConfigurations configuration, ForumConfigurations forumConfigurations, VotesDao votesDao) {
@@ -195,10 +203,31 @@ public class WalletModule {
         return walletManager;
     }
 
+    public List<Transaction> buildTransactionsForAmount(long requieredAmount) {
+        long div = requieredAmount%500;
+        if (div<1) throw new IllegalArgumentException("requieredAmount must be greather than 500");
+        List<Transaction> tx = new ArrayList<>();
+        try {
+            long amount = 500;
+            for (int i = 0; i < div; i++) {
+                amount = amount * (i + 1);
+                tx.add(walletManager.createTransactionFromLowInputsValue(getReceiveAddress(), amount));
+            }
+        } catch (InsufficientMoneyException e) {
+            e.printStackTrace();
+        } catch (InsuficientBalanceException e) {
+            e.printStackTrace();
+        }
+        return tx;
+    }
 
-    public Proposal sendProposal(Proposal proposal) throws CantSendProposalException, InsuficientBalanceException, CantSaveProposalException, InvalidProposalException, NotConnectedPeersException, CantCompleteProposalException {
 
-        LOG.info("SendProposal, title: "+proposal.getTitle());
+    public Proposal sendProposal(Proposal proposal) throws CantSendProposalException, InsuficientBalanceException, CantSaveProposalException, InvalidProposalException, NotConnectedPeersException, CantCompleteProposalException, AdminNotificationException, CantCompleteProposalMaxTransactionExcededException {
+
+        LOG.info("SendProposal, title: "+proposal.getTitle()+", forum id: "+proposal.getForumId());
+
+        if (proposal.getForumId()<=1) throw new CantSendProposalException("Forum id is wrong, please contact furszy");
+
         // lock to not to spend the same UTXO twice for error.
         synchronized (lock) {
             try {
@@ -220,7 +249,7 @@ public class WalletModule {
                     // check if we have at least one peer connected
                     if(blockchainManager.getConnectedPeers().isEmpty()) throw new NotConnectedPeersException();
 
-                    ProposalTransactionRequest proposalTransactionRequest = new ProposalTransactionRequest(blockchainManager, walletManager, proposalsDao);
+                    ProposalTransactionRequest proposalTransactionRequest = new ProposalTransactionRequest(blockchainManager, walletManager);
                     proposalTransactionRequest.forProposal(proposal);
                     proposalTransactionRequest.broadcast();
 
@@ -253,22 +282,27 @@ public class WalletModule {
                 } catch (CantSendTransactionException e) {
                     LOG.error("CantSendTransactionException",e);
                     throw new CantSendProposalException(e.getMessage());
+                } catch (CantCompleteProposalMaxTransactionExcededException e) {
+                    throw e;
                 }
             }catch (CantSendProposalException e){
                 throw e;
             } catch (NotValidParametersException e) {
                 throw new InvalidProposalException("Proposal is not the same as in the forum, "+e.getMessage());
+            } catch (AdminNotificationException e) {
+                throw e;
             }
         }
     }
+
 
     private void rollbackTx(){
 
     }
 
-    public boolean sendProposal(Proposal proposal,byte[] transactionHashDest) throws InsuficientBalanceException, InsufficientMoneyException, NotConnectedPeersException, CantCompleteProposalException, CantSendTransactionException {
+    public boolean sendProposal(Proposal proposal,byte[] transactionHashDest) throws InsuficientBalanceException, InsufficientMoneyException, NotConnectedPeersException, CantCompleteProposalException, CantSendTransactionException, CantCompleteProposalMaxTransactionExcededException {
 
-        ProposalTransactionRequest proposalTransactionRequest = new ProposalTransactionRequest(blockchainManager, walletManager, proposalsDao);
+        ProposalTransactionRequest proposalTransactionRequest = new ProposalTransactionRequest(blockchainManager, walletManager);
         proposalTransactionRequest.forProposal(proposal);
         proposalTransactionRequest.broadcast();
 
@@ -362,8 +396,6 @@ public class WalletModule {
 
             }
 
-
-
             // save vote
             votesDaoImp.addUpdateIfExistVote(vote);
             // send vote
@@ -424,6 +456,74 @@ public class WalletModule {
         }
     }
 
+    public void sendTransactionFromAvailableBalance(String address,long amount) throws InsuficientBalanceException, InsufficientMoneyException, CantSendTransactionException {
+
+        Context.propagate(WalletConstants.CONTEXT);
+        Coin totalAmount = Coin.valueOf(amount).plus(Transaction.DEFAULT_TX_FEE);
+        Address addressTo = Address.fromBase58(WalletConstants.NETWORK_PARAMETERS,address);
+        boolean inputsSatisfiedContractValue = false;
+        List<TransactionOutput> outputList = new ArrayList<>();
+        Coin totalInputsValue = Coin.ZERO;
+        for (TransactionOutput transactionOutput : walletManager.getWallet().getUnspents()) {
+            if (context.isVotingApp()){
+                if (votesDaoImp.isLockedOutput(transactionOutput.getParentTransactionHash().toString(), 0)) {
+                    LOG.info("output locked: " + transactionOutput.getParentTransactionHash().toString());
+                    continue;
+                }
+            }else {
+                if (proposalsDao.isLockedOutput(transactionOutput.getParentTransactionHash().toString(), 0)) {
+                    LOG.info("output locked: " + transactionOutput.getParentTransactionHash().toString());
+                    continue;
+                }
+            }
+
+            if (DefaultCoinSelector.isSelectable(transactionOutput.getParentTransaction())) {
+                LOG.info("adding non locked transaction to spend as an input: postion:" + transactionOutput.getIndex() + ", parent hash: " + transactionOutput.toString());
+                totalInputsValue = totalInputsValue.add(transactionOutput.getValue());
+                outputList.add(transactionOutput);
+                if (totalInputsValue.isGreaterThan(totalAmount)) {
+                    inputsSatisfiedContractValue = true;
+                    break;
+                }
+            }
+        }
+
+        if (!inputsSatisfiedContractValue){
+            throw new InsuficientBalanceException("Inputs not satisfied vote value");
+        }
+
+        Transaction tx = new Transaction(WalletConstants.NETWORK_PARAMETERS);
+
+        for (TransactionOutput transactionOutput : outputList) {
+            tx.addInput(transactionOutput);
+        }
+
+        TransactionOutput transactionOutput = new TransactionOutput(WalletConstants.NETWORK_PARAMETERS,tx,totalAmount,addressTo);
+        tx.addOutput(transactionOutput);
+
+        // refund output
+        Coin refundValue = totalInputsValue.minus(totalAmount);
+        TransactionOutput refundOutput = new TransactionOutput(configuration.getNetworkParams(),tx,refundValue,newReceiveAddress());
+        tx.addOutput(refundOutput);
+
+        //lock
+        tx = walletManager.lockAndCommitTransaction(tx);
+
+        try {
+            blockchainManager.broadcastTransaction(tx.getHash().getBytes()).get();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (Wallet.DustySendRequested e){
+            throw new CantSendTransactionException("Dusty send transaction",e);
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+
+
+    }
+
 
     public List<Proposal> getProposals() {
         return proposalsDao.listProposals();
@@ -455,23 +555,37 @@ public class WalletModule {
         return address;
     }
 
+    public Address newReceiveAddress() {
+        Address address = walletManager.getWallet().freshReceiveAddress();
+        LOG.info("Fresh new address: "+address);
+        return address;
+    }
+
     public CharSequence getAvailableBalanceStr() {
-        long balance = walletManager.getWallet().getBalance(Wallet.BalanceType.AVAILABLE_SPENDABLE).value-lockedBalance;
+        long balance = getAvailableBalance();
         return BtcFormat.getCoinInstance().format(balance);
     }
 
     public CharSequence getUnnavailableBalanceStr() {
-        long balance = walletManager.getWallet().getBalance(Wallet.BalanceType.ESTIMATED_SPENDABLE).value-walletManager.getWallet().getBalance(Wallet.BalanceType.AVAILABLE_SPENDABLE).value;
+        long balance = getUnnavailableBalance();
         return BtcFormat.getCoinInstance().format(balance);
     }
 
-    public long getAvailableBalance() {
-        return walletManager.getWallet().getBalance(Wallet.BalanceType.AVAILABLE_SPENDABLE).value-lockedBalance;
+    public long getUnnavailableBalance(){
+        return  walletManager.getWallet().getBalance(Wallet.BalanceType.ESTIMATED_SPENDABLE).minus(walletManager.getWallet().getBalance(Wallet.BalanceType.AVAILABLE_SPENDABLE)).value;
     }
 
+    public long getAvailableBalance() {
+        long walletBalance = walletManager.getWallet().getBalance(Wallet.BalanceType.AVAILABLE_SPENDABLE).value;
+        long balance = walletBalance-lockedBalance;
+        return (balance<0)?0:balance;
+    }
 
+    public long getLockedBalance(){
+        return lockedBalance;
+    }
 
-    public String getLockedBalance() {
+    public String getLockedBalanceStr() {
         return BtcFormat.getCoinInstance().format(lockedBalance);
     }
 
@@ -532,7 +646,7 @@ public class WalletModule {
         }
     }
 
-    public int createForumProposal(Proposal proposal) throws CantCreateTopicException, CantSaveProposalException, CantSaveProposalExistException {
+    public int createForumProposal(Proposal proposal) throws CantCreateTopicException, CantSaveProposalException, CantSaveProposalExistException, AdminNotificationException {
         LOG.info("createForumProposal");
         proposal.setCategory("Voting system");
         int forumId = forumClient.createTopic(proposal.getTitle(),proposal.getCategory(),proposal.toForumBody());
@@ -578,11 +692,11 @@ public class WalletModule {
         return forumClient.getForumProfile();
     }
 
-    public boolean registerForumUser(String username, String password, String email) throws InvalidUserParametersException {
+    public boolean registerForumUser(String username, String password, String email) throws InvalidUserParametersException, AdminNotificationException {
         return forumClient.registerUser(username,password,email);
     }
 
-    public boolean connectToForum(String username,String password) throws InvalidUserParametersException, ConnectionRefusedException {
+    public boolean connectToForum(String username,String password) throws InvalidUserParametersException, ConnectionRefusedException, AdminNotificationException {
         boolean ret = forumClient.connect(username,password);
         if (context.isVotingApp()) {
             if (ret) {
@@ -607,6 +721,8 @@ public class WalletModule {
                 e.printStackTrace();
             } catch (CantGetProposalException e) {
                 e.printStackTrace();
+            } catch (AdminNotificationException e) {
+                e.printStackTrace();
             }
         }
     }
@@ -618,7 +734,6 @@ public class WalletModule {
         cleanProposalDb();
         cleanVotesDb();
         profile = null;
-
     }
 
     public void setNewNode(String newNode) {
@@ -684,7 +799,7 @@ public class WalletModule {
     public ServerWrapper.RequestProposalsResponse requestProposals(int chainHeadHeight)  {
         try {
             // request tx hashes from node
-            ServerWrapper.RequestProposalsResponse requestProposalsResponse = serverWrapper.getVotingProposalsNew(0);
+            ServerWrapper.RequestProposalsResponse requestProposalsResponse = serverWrapper.getVotingProposalsNew(chainHeadHeight);
 
             return requestProposalsResponse;
         } catch (CantGetProposalsFromServer e) {
@@ -703,7 +818,7 @@ public class WalletModule {
     public ServerWrapper.RequestProposalsResponse requestProposalsFullTx(int chainHeadHeight) {
         try {
             // request tx hashes from node
-            ServerWrapper.RequestProposalsResponse requestProposalsResponse = serverWrapper.getVotingProposalsNew(0);
+            ServerWrapper.RequestProposalsResponse requestProposalsResponse = serverWrapper.getVotingProposalsNew(chainHeadHeight);
 
             return requestProposalsResponse;
         } catch (CantGetProposalsFromServer e) {
@@ -714,12 +829,19 @@ public class WalletModule {
         return null;
     }
 
+
+    public ServerWrapper.RequestProposalsResponse requestUpdateFromProposals(List<Proposal> list){
+        return requestProposalsFullTx(0,list);
+    }
+
     /**
      * Request proposal by his genesis hash.
+     *
+     * @param chainHeadHeight
      * @param list
      * @return
      */
-    public ServerWrapper.RequestProposalsResponse requestProposalsFullTx(List<Proposal> list) {
+    public ServerWrapper.RequestProposalsResponse requestProposalsFullTx(int chainHeadHeight, List<Proposal> list) {
         try {
             LOG.info("requestProposalsFullTx hashes -> "+ Arrays.toString(list.toArray()));
             List<String> hashes = new ArrayList<>();
@@ -727,7 +849,7 @@ public class WalletModule {
                 hashes.add(proposal.getGenesisTxHash());
             }
             // request tx hashes from node
-            ServerWrapper.RequestProposalsResponse requestProposalsResponse = serverWrapper.getVotingProposalsNew(hashes);
+            ServerWrapper.RequestProposalsResponse requestProposalsResponse = serverWrapper.getVotingProposalsNew(chainHeadHeight,hashes);
 
             return requestProposalsResponse;
         } catch (CantGetProposalsFromServer e) {
@@ -787,7 +909,7 @@ public class WalletModule {
         return ret;
     }
 
-    public Proposal proposalArrive(Proposal proposal) throws CantSaveProposalException, CantSaveProposalExistException, CantGetProposalException {
+    public Proposal proposalArrive(Proposal proposal) throws CantSaveProposalException, CantSaveProposalExistException, CantGetProposalException, AdminNotificationException {
 
         // check if the proposal exist and is not in a final state
         Proposal proposalDb = proposalsDao.findProposal(proposal.getForumId());
@@ -848,7 +970,6 @@ public class WalletModule {
                             intentWrapper.put(INTENT_EXTRA_PROPOSAL,proposal);
                             context.sendLocalBroadcast(intentWrapper);
                         }
-
                     }
                 }else {
                     if (forumProposal.getState() == EXECUTED || forumProposal.getState() == EXECUTION_CANCELLED || forumProposal.getState() == CANCELED_BY_OWNER){
@@ -861,11 +982,7 @@ public class WalletModule {
                         intentWrapper.put(INTENT_BROADCAST_DATA_TYPE, INTENT_BROADCAST_DATA_PROPOSAL_FROZEN_FUNDS_UNLOCKED);
                         intentWrapper.put(INTENT_EXTRA_PROPOSAL,proposal);
                         context.sendLocalBroadcast(intentWrapper);
-
-
                     }
-
-
                 }
 
 
@@ -962,4 +1079,28 @@ public class WalletModule {
     }
 
 
+    public boolean hasAdminNotification() {
+        return hasAdminNotification;
+    }
+
+
+    public boolean isOutputLocked(String hash, long index) {
+        if (context.isVotingApp()){
+            return votesDaoImp.isLockedOutput(hash, index);
+        }else
+            return proposalsDao.isLockedOutput(hash,index);
+    }
+
+
+    public ProfileServerConfigurations getProfileServerConfigurations() {
+        return profileServerConfigurations;
+    }
+
+    public long getBalance() {
+        return walletManager.getWallet().getBalance(Wallet.BalanceType.AVAILABLE).value;
+    }
+
+    public boolean hasTxUnspendable() {
+        return getUnnavailableBalance()>0;
+    }
 }

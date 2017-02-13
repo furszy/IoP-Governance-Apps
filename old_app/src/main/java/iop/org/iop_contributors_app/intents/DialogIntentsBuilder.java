@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Handler;
 
+import org.iop.WalletModule;
 import org.iop.intents.constants.IntentsConstants;
 
 import java.util.concurrent.TimeUnit;
@@ -13,6 +14,7 @@ import java.util.concurrent.TimeUnit;
 import iop.org.furszy_lib.dialogs.DialogBuilder;
 import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.services.BlockchainServiceImpl;
+import iop.org.iop_contributors_app.ui.dialogs.SimpleDialogs;
 import iop_sdk.wallet.WalletManager;
 
 /**

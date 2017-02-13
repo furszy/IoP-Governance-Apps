@@ -1,8 +1,6 @@
 package iop.org.iop_contributors_app.ui;
 
 import android.content.Context;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.View;
 
 import java.util.List;
@@ -10,7 +8,6 @@ import java.util.List;
 import iop.org.furszy_lib.adapter.FermatAdapterImproved;
 import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.ui.validators.CreateProposalActivityValidator;
-import iop.org.iop_contributors_app.ui.validators.ValidationException;
 import iop_sdk.governance.propose.Beneficiary;
 
 /**

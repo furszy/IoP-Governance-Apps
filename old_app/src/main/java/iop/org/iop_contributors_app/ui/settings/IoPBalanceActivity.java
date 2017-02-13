@@ -258,7 +258,7 @@ public class IoPBalanceActivity extends AppCompatActivity {
                             @Override
                             public void run() {
                                 try {
-                                    module.sendTransaction(address, realAmount);
+                                    module.sendTransactionFromAvailableBalance(address, realAmount);
                                     runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
@@ -283,7 +283,8 @@ public class IoPBalanceActivity extends AppCompatActivity {
                                         }
                                     });
                                 } catch (final Exception e) {
-                                    Log.e(TAG,e.getMessage());
+                                    e.printStackTrace();
+//                                    Log.e(TAG,e.getMessage());
                                     runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {

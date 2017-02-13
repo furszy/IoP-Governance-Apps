@@ -6,6 +6,7 @@ import android.text.format.DateUtils;
 import org.bitcoinj.core.Context;
 import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.params.RegTestParams;
+import org.bitcoinj.params.TestNet3Params;
 
 import java.io.File;
 
@@ -15,7 +16,7 @@ import java.io.File;
 
 public class WalletConstants {
 
-    public static final NetworkParameters NETWORK_PARAMETERS = RegTestParams.get();
+    public static final NetworkParameters NETWORK_PARAMETERS = RegTestParams.get(); //TestNet3Params.get();
 
     public static final boolean TEST = true;
 
@@ -34,6 +35,9 @@ public class WalletConstants {
     public static final String REPORT_EMAIL = "matias.furszyfer@fermat.org";
     /** Subject line for manually reported issues. */
     public static final String REPORT_SUBJECT_ISSUE = "Reported issue";
+
+    /** Donation address  */
+    public static final String DONATION_ADDRESS = "pCWe7BzS5Bc6QpnpddQtzdSxDD7q4ERijF";
 
 
     public static final class Files{
@@ -54,7 +58,7 @@ public class WalletConstants {
         /** Path to external storage */
         public static final File EXTERNAL_STORAGE_DIR = Environment.getExternalStorageDirectory();
         /** Filename of the manual wallet backup. */
-        public static final String EXTERNAL_WALLET_BACKUP = "bitcoin-wallet-backup" + FILENAME_NETWORK_SUFFIX;
+        public static final String EXTERNAL_WALLET_BACKUP = "iop-wallet-backup" + FILENAME_NETWORK_SUFFIX;
         /** Manual backups go here. */
         public static final File EXTERNAL_WALLET_BACKUP_DIR = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
     }

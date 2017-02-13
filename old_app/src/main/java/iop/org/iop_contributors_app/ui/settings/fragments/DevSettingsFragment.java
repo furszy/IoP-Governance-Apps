@@ -39,12 +39,9 @@ import org.bitcoinj.wallet.SendRequest;
 import org.bitcoinj.wallet.Wallet;
 import org.iop.WalletConstants;
 import org.iop.WalletModule;
-import org.iop.db.CantSaveProposalException;
 import org.iop.db.CantSaveProposalExistException;
-import org.iop.exceptions.CantSendProposalException;
 import org.iop.exceptions.CantSendTransactionException;
 import org.iop.exceptions.InvalidAddressException;
-import org.iop.exceptions.InvalidProposalException;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -53,10 +50,8 @@ import java.util.concurrent.TimeUnit;
 
 import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.utils.Cache;
-import iop_sdk.blockchain.NotConnectedPeersException;
 import iop_sdk.blockchain.OpReturnOutputTransaction;
 import iop_sdk.forum.CantCreateTopicException;
-import iop_sdk.governance.propose.CantCompleteProposalException;
 import iop_sdk.governance.propose.Proposal;
 import iop_sdk.wallet.exceptions.InsuficientBalanceException;
 
@@ -154,7 +149,7 @@ public class DevSettingsFragment extends PreferenceFragment implements Preferenc
 
         if (preference.getKey().equals("id_restart_blockchain")){
             module.getWalletManager().resetBlockchain();
-            module.cleanEverything();
+            //module.cleanEverything();
             Toast.makeText(getActivity(),"Reseting blockchain...\nApp will be closed to clean data in 5 seconds",Toast.LENGTH_LONG).show();
             handler.postDelayed(new Runnable() {
                 @Override

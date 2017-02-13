@@ -8,9 +8,9 @@ import org.bitcoinj.core.Coin;
 import org.bitcoinj.core.InsufficientMoneyException;
 import org.bitcoinj.core.Sha256Hash;
 import org.bitcoinj.core.Transaction;
-import org.bitcoinj.core.TransactionInput;
 import org.bitcoinj.core.TransactionOutput;
 import org.bitcoinj.crypto.MnemonicCode;
+import org.bitcoinj.wallet.CoinSelection;
 import org.bitcoinj.wallet.Protos;
 import org.bitcoinj.wallet.SendRequest;
 import org.bitcoinj.wallet.UnreadableWalletException;
@@ -35,16 +35,19 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import iop_sdk.crypto.Crypto;
 import iop_sdk.global.ContextWrapper;
-import iop_sdk.global.IntentWrapper;
 import iop_sdk.global.utils.Io;
+import iop_sdk.governance.propose.ProposalTransactionRequest;
+import iop_sdk.wallet.exceptions.InsuficientBalanceException;
 import iop_sdk.wallet.utils.WalletUtils;
+
+import static iop_sdk.wallet.utils.WalletUtils.sortOutputsLowToHigValue;
 
 
 /**
@@ -421,6 +424,34 @@ public class WalletManager {
     }
 
 
+    public Transaction createTransactionFromLowInputsValue(String address, long amount) throws InsufficientMoneyException, InsuficientBalanceException {
+
+        Address to = Address.fromBase58(walletConfiguration.getNetworkParams(),address);
+        Coin value = Coin.valueOf(amount);
+
+        Transaction transaction = new Transaction(walletConfiguration.getNetworkParams());
+
+        List<TransactionOutput> unspent = getInputsForAmount(value,sortOutputsLowToHigValue(wallet.getUnspents()));
+
+        for (TransactionOutput transactionOutput : unspent) {
+            transaction.addInput(transactionOutput);
+        }
+
+        Coin valueMinusfee = value.minus(Transaction.DEFAULT_TX_FEE);
+
+        TransactionOutput changeAddressOutput = new TransactionOutput(walletConfiguration.getNetworkParams(),transaction,valueMinusfee,to);
+
+        transaction.addOutput(changeAddressOutput);
+
+        SendRequest sendRequest = SendRequest.forTx(transaction);
+
+        sendRequest.signInputs = true;
+
+        wallet.completeTx(sendRequest);
+
+        return sendRequest.tx;
+    }
+
     public Transaction createAndLockTransaction(String address, long amount) throws InsufficientMoneyException {
 
         Address to = Address.fromBase58(walletConfiguration.getNetworkParams(),address);
@@ -432,6 +463,19 @@ public class WalletManager {
 
         wallet.completeTx(sendRequest);
 
+        wallet.commitTx(sendRequest.tx);
+
+        return sendRequest.tx;
+    }
+
+    public Transaction lockAndCommitTransaction(Transaction transaction) throws InsufficientMoneyException {
+
+        SendRequest sendRequest = SendRequest.forTx(transaction);
+
+        sendRequest.signInputs = true;
+        sendRequest.changeAddress = null;
+        sendRequest.coinSelector = new MyCoinSelector();
+        wallet.completeTx(sendRequest);
         wallet.commitTx(sendRequest.tx);
 
         return sendRequest.tx;
@@ -464,6 +508,27 @@ public class WalletManager {
         return sendRequest.tx;
 
     }
+
+
+    public List<TransactionOutput> getInputsForAmount(Coin totalAmount,List<TransactionOutput> unspent) throws InsuficientBalanceException {
+        return WalletUtils.getInputsForAmount(wallet, totalAmount, unspent, new WalletUtils.OutputsLockedListener() {
+            @Override
+            public boolean isOutputLocked(String hash, long index) {
+                return listener.isOutputLocked(hash,index);
+            }
+        });
+    }
+
+    public List<TransactionOutput> getInputsForAmount(Coin totalAmount) throws InsuficientBalanceException {
+        return WalletUtils.getInputsForAmount(wallet, totalAmount, wallet.getUnspents(), new WalletUtils.OutputsLockedListener() {
+            @Override
+            public boolean isOutputLocked(String hash, long index) {
+                return listener.isOutputLocked(hash,index);
+            }
+        });
+    }
+
+
 
     /**
      * Check if a transaction output is already spent
@@ -502,6 +567,13 @@ public class WalletManager {
             // make wallets world accessible in test mode
             if (conf.isTest())
                 Io.chmod(file, 0777);
+        }
+    }
+
+    private class MyCoinSelector implements org.bitcoinj.wallet.CoinSelector {
+        @Override
+        public CoinSelection select(Coin coin, List<TransactionOutput> list) {
+            return new CoinSelection(coin,new ArrayList<TransactionOutput>());
         }
     }
 }

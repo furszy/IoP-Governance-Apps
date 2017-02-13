@@ -312,10 +312,18 @@ public class VotingVoteSummary extends VotingBaseActivity implements View.OnClic
         txt_vote_yes.setText(numberToNumberWithDots(voteYes));
         txt_vote_no.setText(numberToNumberWithDots(voteNo));
 
-        if (totalValue>0){
-            txt_vote_result.setText((voteYes>voteNo)?"Yes is winning":"No is winning");
+        if (voteWrapper.getProposal().isActive()){
+            if (totalValue>0){
+                txt_vote_result.setText((voteYes>voteNo)?"Yes is winning":"No is winning");
+            }else {
+                txt_vote_result.setText("No votes yet");
+            }
         }else {
-            txt_vote_result.setText("No votes yet");
+            if (totalValue>0){
+                txt_vote_result.setText((voteYes>voteNo)?"Yes won":"No won");
+            }else {
+                txt_vote_result.setText("No votes");
+            }
         }
 
         seek_bar_switch.setPosition(getPositionByVoteType(voteWrapper.getVote().getVote()));

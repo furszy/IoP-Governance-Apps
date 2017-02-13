@@ -23,6 +23,7 @@ public interface BlockchainService {
     public static final String ACTION_CANCEL_COINS_RECEIVED = BlockchainService.class.getPackage().getName() + ".cancel_coins_received";
     public static final String ACTION_RESET_BLOCKCHAIN = BlockchainService.class.getPackage().getName() + ".reset_blockchain";
     public static final String ACTION_BROADCAST_TRANSACTION = BlockchainService.class.getPackage().getName() + ".broadcast_transaction";
+    public static final String ACTION_BUILD_AND_BROADCAST_TRANSACTION = BlockchainService.class.getPackage().getName() + ".build_and_broadcast_transaction";
     public static final String ACTION_BROADCAST_PROPOSAL_TRANSACTION = BlockchainService.class.getPackage().getName() + ".broadcast_proposal_transaction";
     public static final String ACTION_BROADCAST_CANCEL_PROPOSAL_TRANSACTION = BlockchainService.class.getPackage().getName() + ".broadcast_cancel_proposal_transaction";
     public static final String ACTION_BROADCAST_TRANSACTION_HASH = "hash";

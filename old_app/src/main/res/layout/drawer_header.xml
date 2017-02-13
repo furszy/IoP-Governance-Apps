@@ -39,6 +39,7 @@
             android:layout_marginStart="20dp"
             android:id="@+id/txt_drawer_name"
             android:text="Unknown"
+            android:textSize="15sp"
             android:layout_marginTop="5dp"
             android:textAppearance="@style/TextAppearance.AppCompat.Body2"/>
 
@@ -47,63 +48,79 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:paddingBottom="7dp"
             android:paddingTop="1dp"
             android:paddingRight="7dp"
             android:layout_marginLeft="20dp"
-            android:layout_marginBottom="7dp">
+            android:layout_marginBottom="7dp"
+            android:gravity="center">
 
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:layout_weight="1"
+                android:layout_gravity="center"
                 >
 
 
                 <TextView
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:text="Available: "
-                    android:textSize="11sp"/>
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:textSize="13sp"/>
 
                 <TextView
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:paddingLeft="4dp"
                     android:id="@+id/txt_available_balance"
                     android:text="0 IoPs"
+                    android:gravity="center"
+                    android:layout_gravity="center"
                     android:textColor="#fff"
-                    android:textSize="12sp"/>
+                    android:paddingRight="7dp"
+                    android:textSize="13sp"/>
+
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_clock"
+                    android:id="@+id/img_unspendable_tx"/>
 
 
             </LinearLayout>
 
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_weight="1"
-                >
+            <!--<LinearLayout-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:orientation="horizontal"-->
+                <!--android:gravity="start"-->
+                <!--android:layout_weight="1"-->
+                <!--&gt;-->
 
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Locked: "
-                    android:textSize="11sp"/>
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="0 IoPs"
-                    android:paddingLeft="4dp"
-                    android:textColor="#fff"
-                    android:id="@+id/txt_lock_balance"
-                    android:textSize="12sp"/>
+                <!--<TextView-->
+                    <!--android:layout_width="wrap_content"-->
+                    <!--android:layout_height="wrap_content"-->
+                    <!--android:text="Locked: "-->
+                    <!--android:textSize="11sp"/>-->
+
+                <!--<TextView-->
+                    <!--android:layout_width="wrap_content"-->
+                    <!--android:layout_height="wrap_content"-->
+                    <!--android:text="0 IoPs"-->
+                    <!--android:paddingLeft="4dp"-->
+                    <!--android:textColor="#fff"-->
+                    <!--android:id="@+id/txt_lock_balance"-->
+                    <!--android:textSize="12sp"/>-->
 
 
-            </LinearLayout>
+            <!--</LinearLayout>-->
 
 
 

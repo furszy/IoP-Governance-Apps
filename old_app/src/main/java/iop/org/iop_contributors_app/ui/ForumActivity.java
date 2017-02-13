@@ -36,6 +36,7 @@ public class ForumActivity extends ContributorBaseActivity {
     private ProgressBar progressBar;
     private String address;
     private FloatingActionButton fab_edit;
+    private boolean isLogin;
 
     //public static String FORUM_URL;//"http://test.fermat.community/";//104.199.78.250/";//"fermat.community/";
 
@@ -64,6 +65,7 @@ public class ForumActivity extends ContributorBaseActivity {
         }
         else {
             address = forumUrl;
+            isLogin = true;
         }
 
         Log.d(TAG,"Url a cargar: "+address);
@@ -156,9 +158,19 @@ public class ForumActivity extends ContributorBaseActivity {
         @Override
         public void onPageFinished(WebView view, String url) {
 
+            Log.i(TAG,"URL: "+url);
+
             // TODO Auto-generated method stub
             progressBar.setVisibility(View.GONE);
             view.loadUrl("javascript:window.onhashchange = function() { myjsi.doStuff(); };");
+
+//            if(isLogin) {
+//
+//                address = address+"/login/";
+//                view.loadUrl(address);
+//
+//              //  webView.loadUrl("javascript:document.forms['hidden-login-form'].submit()");
+//            }
         }
 
         @Override

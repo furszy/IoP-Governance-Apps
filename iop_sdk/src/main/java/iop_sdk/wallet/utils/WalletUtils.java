@@ -4,6 +4,7 @@ package iop_sdk.wallet.utils;
 import org.apache.commons.codec.Charsets;
 import org.bitcoinj.core.Address;
 import org.bitcoinj.core.AddressFormatException;
+import org.bitcoinj.core.Coin;
 import org.bitcoinj.core.DumpedPrivateKey;
 import org.bitcoinj.core.ECKey;
 import org.bitcoinj.core.NetworkParameters;
@@ -11,12 +12,15 @@ import org.bitcoinj.core.ScriptException;
 import org.bitcoinj.core.Sha256Hash;
 import org.bitcoinj.core.Transaction;
 import org.bitcoinj.core.TransactionInput;
+import org.bitcoinj.core.TransactionOutPoint;
 import org.bitcoinj.core.TransactionOutput;
 import org.bitcoinj.script.Script;
+import org.bitcoinj.wallet.DefaultCoinSelector;
 import org.bitcoinj.wallet.KeyChainGroup;
 import org.bitcoinj.wallet.UnreadableWalletException;
 import org.bitcoinj.wallet.Wallet;
 import org.bitcoinj.wallet.WalletProtobufSerializer;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -30,13 +34,20 @@ import java.io.InputStreamReader;
 import java.io.Writer;
 import java.text.DateFormat;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import iop_sdk.wallet.exceptions.InsuficientBalanceException;
+
 public class WalletUtils
 {
+
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger("WalletUtils");
 
 	public static long longHash(final Sha256Hash hash)
 	{
@@ -295,4 +306,85 @@ public class WalletUtils
 //	{
 //		return transaction.getOutputsSize() > 20;
 //	}
+
+	/**
+	 * Return a list of unspent transaction satisfasing the total param amount
+	 *
+	 * @param totalAmount
+	 * @return
+	 */
+	public static List<TransactionOutput> getInputsForAmount(Wallet wallet,Coin totalAmount,List<TransactionOutput> unspent,OutputsLockedListener outputsLockedListener) throws InsuficientBalanceException {
+		List<TransactionOutput> unspentTransactions = new ArrayList<>();
+		Coin totalInputsValue = Coin.ZERO;
+		boolean inputsSatisfiedContractValue = false;
+
+		for (TransactionOutput transactionOutput : wallet.getUnspents()) {
+			//
+			TransactionOutPoint transactionOutPoint = transactionOutput.getOutPointFor();
+			if (outputsLockedListener.isOutputLocked(transactionOutPoint.getHash().toString(), transactionOutPoint.getIndex())) {
+				continue;
+			}
+			if (DefaultCoinSelector.isSelectable(transactionOutput.getParentTransaction())) {
+				LOG.info("adding non locked transaction to spend as an input: postion:" + transactionOutPoint.getIndex() + ", parent hash: " + transactionOutPoint.toString());
+				totalInputsValue = totalInputsValue.add(transactionOutput.getValue());
+				unspentTransactions.add(transactionOutput);
+				if (totalInputsValue.isGreaterThan(totalAmount)) {
+					inputsSatisfiedContractValue = true;
+					break;
+				}
+			}
+		}
+
+		if (!inputsSatisfiedContractValue)
+			throw new InsuficientBalanceException("Inputs not satisfied vote value");
+
+		return unspentTransactions;
+	}
+
+
+	public interface OutputsLockedListener {
+		boolean isOutputLocked(String hash, long index);
+	}
+
+
+	/**
+	 * @param list
+	 * @return
+	 */
+	public static Coin sumValue(List<TransactionOutput> list){
+		Coin ret = Coin.ZERO;
+		for (TransactionOutput transactionOutput : list) {
+			ret = ret.add(transactionOutput.getValue());
+		}
+		return ret;
+	}
+
+
+	public static List<TransactionOutput> sortOutputsHighToLowValue(List<TransactionOutput> unspents) {
+		Collections.sort(unspents, new Comparator<TransactionOutput>() {
+			@Override
+			public int compare(TransactionOutput z1, TransactionOutput z2) {
+				if (z1.getValue().isGreaterThan(z2.getValue()))
+					return -1;
+				if (z1.getValue().isLessThan(z2.getValue()))
+					return 1;
+				return 0;
+			}
+		});
+		return unspents;
+	}
+
+	public static List<TransactionOutput> sortOutputsLowToHigValue(List<TransactionOutput> unspents) {
+		Collections.sort(unspents, new Comparator<TransactionOutput>() {
+			@Override
+			public int compare(TransactionOutput z1, TransactionOutput z2) {
+				if (z1.getValue().isGreaterThan(z2.getValue()))
+					return 1;
+				if (z1.getValue().isLessThan(z2.getValue()))
+					return -1;
+				return 0;
+			}
+		});
+		return unspents;
+	}
 }

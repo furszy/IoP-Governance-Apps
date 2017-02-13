@@ -26,12 +26,10 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import iop_sdk.crypto.CryptoBytes;
 import iop_sdk.forum.InvalidUserParametersException;
 import iop_sdk.forum.discourge.com.wareninja.opensource.discourse.utils.RequestParameter;
 import iop_sdk.forum.discourge.com.wareninja.opensource.discourse.utils.StringRequestParameter;
@@ -40,6 +38,9 @@ import iop_sdk.governance.propose.Beneficiary;
 import iop_sdk.governance.propose.Proposal;
 import iop_sdk.governance.propose.ProposalTransactionBuilder;
 
+import static iop_sdk.forum.wrapper.ResponseMessageConstants.ADMIN_NOTIFICATION;
+import static iop_sdk.forum.wrapper.ResponseMessageConstants.ADMIN_NOTIFICATION_MESSAGE;
+import static iop_sdk.forum.wrapper.ResponseMessageConstants.ADMIN_NOTIFICATION_TYPE;
 import static iop_sdk.forum.wrapper.ResponseMessageConstants.BEST_CHAIN_HEIGHT_HASH;
 import static iop_sdk.forum.wrapper.ResponseMessageConstants.USER_ERROR_STR;
 import static iop_sdk.utils.StreamsUtils.convertInputStreamToString;
@@ -73,7 +74,7 @@ public class ServerWrapper {
      * @param parameters
      * @return api_key
      */
-    public String connect(Map<String, String> parameters) throws InvalidUserParametersException, ConnectionRefusedException {
+    public String connect(Map<String, String> parameters) throws InvalidUserParametersException, ConnectionRefusedException,AdminNotificationException {
 
         String url = this.url+"/requestkey";
 
@@ -121,6 +122,9 @@ public class ServerWrapper {
 
 
             if (httpResponse.getStatusLine().getStatusCode()==200){
+
+                checkAdminNotification(jsonObject);
+
                 apiKey = jsonObject.get(ResponseMessageConstants.API_KEY).getAsString();
                 return apiKey;
             }else {
@@ -337,8 +341,8 @@ public class ServerWrapper {
         return requestProposalsResponse;
     }
 
-    public RequestProposalsResponse getVotingProposalsNew(List<String> hashes) throws CantGetProposalsFromServer {
-        return getProposals(0,hashes);
+    public RequestProposalsResponse getVotingProposalsNew(int blockHeight,List<String> hashes) throws CantGetProposalsFromServer {
+        return getProposals(blockHeight,hashes);
     }
 
     public RequestProposalsResponse getVotingProposalsNew(int blockHeight) throws CantGetProposalsFromServer{
@@ -359,9 +363,8 @@ public class ServerWrapper {
             }
             jsonObjectToSend.add("hashes",jsonElements);
         }
-
-
-
+        // adding the height
+        jsonObjectToSend.addProperty("blockHeight",blockHeight);
 
         HttpResponse httpResponse = null;
         String result = null;
@@ -424,6 +427,7 @@ public class ServerWrapper {
                             Proposal.ProposalState state = Proposal.ProposalState.valueOf(StateStr);
                             long voteYes = tx.get("voteyes").getAsLong();
                             long voteNo = tx.get("voteno").getAsLong();
+                            long blocksPending = tx.get("blockpending").getAsLong();
 
                             List<Beneficiary> beneficiaries = new ArrayList<>();
                             JsonArray beneficiariesJson = tx.get("beneficiaries").getAsJsonArray();
@@ -447,6 +451,7 @@ public class ServerWrapper {
                             proposal.setVoteYes(voteYes);
                             proposal.setBeneficiaries(beneficiaries);
                             proposal.setState(state);
+                            proposal.setPendingBlocks((int) blocksPending);
 
                             ret.add(proposal);
                         } catch (DecoderException e) {
@@ -672,5 +677,17 @@ public class ServerWrapper {
     public void setWrapperUrl(String wrapperUrl) {
         this.wrapperUrl = wrapperUrl;
         changeUrl();
+    }
+
+    private void checkAdminNotification(JsonObject jsonObject) throws AdminNotificationException {
+        JsonElement json;
+        if ((json = jsonObject.get(ResponseMessageConstants.ADMIN_NOTIFICATION))!=null) {
+            if (!json.isJsonNull()){
+                JsonObject adminNotJson = jsonObject.getAsJsonObject(ADMIN_NOTIFICATION);
+                int admNotType = adminNotJson.get(ADMIN_NOTIFICATION_TYPE).getAsInt();
+                String message = adminNotJson.get(ADMIN_NOTIFICATION_MESSAGE).getAsString();
+                throw new AdminNotificationException(admNotType, message);
+            }
+        }
     }
 }

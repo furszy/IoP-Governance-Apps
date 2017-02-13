@@ -19,7 +19,6 @@ import android.webkit.WebView;
 import android.widget.ProgressBar;
 
 import iop.org.iop_contributors_app.R;
-import iop.org.iop_contributors_app.ui.ContributorBaseActivity;
 import iop.org.iop_contributors_app.ui.CreateProposalActivity;
 import iop.org.iop_contributors_app.ui.ProposalSummaryActivity;
 import iop.org.voting_app.base.VotingBaseActivity;

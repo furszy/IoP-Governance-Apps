@@ -24,6 +24,7 @@ import org.bitcoinj.utils.BtcFormat;
 import org.iop.db.CantGetProposalException;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import iop.org.furszy_lib.dialogs.SimpleTwoButtonsDialog;
@@ -148,6 +149,12 @@ public class ProposalSummaryActivity extends ContributorBaseActivity implements 
         // extra data
         container_more_data = (ViewGroup) root.findViewById(R.id.container_more_data);
         txt_genesis_hash = (TextView) root.findViewById(R.id.txt_genesis_hash);
+        txt_genesis_hash.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.i(TAG,"genesis hash: "+proposal.getGenesisTxHash());
+            }
+        });
 
 
         container_arrow.setAnimation(AnimationUtils.loadAnimation(this, iop.org.furszy_lib.R.anim.float_anim));
@@ -182,7 +189,7 @@ public class ProposalSummaryActivity extends ContributorBaseActivity implements 
         txt_start_block.setText(Html.fromHtml(transformToHtmlWithColor("Start block: ", "#cccccc") + transformToHtmlWithColor(String.valueOf(proposal.getStartBlock()), "#ffffff")));
         txt_end_block.setText(Html.fromHtml(transformToHtmlWithColor("End block: ", "#cccccc") + transformToHtmlWithColor(String.valueOf(proposal.getEndBlock()), "#ffffff")));
         loadBeneficiaries(proposal.getBeneficiaries());
-        txt_total_amount.setText("Total\n"+BtcFormat.getInstance().format(proposal.getBlockReward() * proposal.getEndBlock(),4,1).replace("BTC","IoP"));
+        txt_total_amount.setText("Total\n"+BtcFormat.getInstance(Locale.GERMANY).format(proposal.getBlockReward() * proposal.getEndBlock(),4,1).replace("BTC","IoP"));
 
         if (!proposal.isActive()) {
             setProposalFinished();
@@ -200,7 +207,7 @@ public class ProposalSummaryActivity extends ContributorBaseActivity implements 
             TextView textView = new TextView(this);
             textView.setTextColor(Color.WHITE);
             textView.setTextSize(SizeUtils.convertDpToPx(getResources(),4));
-            String first = beneficiary.getAmount()+" Toshis "+ "<font color='#EE0000'> -> </font>"+" "+beneficiary.getAddress();
+            String first = beneficiary.getAmount()+" IoPtoshis "+ "<font color='#EE0000'> -> </font>"+" "+beneficiary.getAddress();
             textView.setText(Html.fromHtml(first));
             containerBeneficiaries.addView(textView);
         }

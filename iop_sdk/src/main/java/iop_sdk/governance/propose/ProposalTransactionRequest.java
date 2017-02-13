@@ -6,10 +6,8 @@ import org.bitcoinj.core.Address;
 import org.bitcoinj.core.Coin;
 import org.bitcoinj.core.InsufficientMoneyException;
 import org.bitcoinj.core.Transaction;
-import org.bitcoinj.core.TransactionOutPoint;
 import org.bitcoinj.core.TransactionOutput;
 import org.bitcoinj.wallet.CoinSelection;
-import org.bitcoinj.wallet.DefaultCoinSelector;
 import org.bitcoinj.wallet.SendRequest;
 import org.bitcoinj.wallet.Wallet;
 import org.iop.exceptions.CantSendTransactionException;
@@ -17,8 +15,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -29,6 +25,9 @@ import iop_sdk.wallet.BlockchainManager;
 import iop_sdk.wallet.WalletManager;
 import iop_sdk.wallet.WalletPreferenceConfigurations;
 import iop_sdk.wallet.exceptions.InsuficientBalanceException;
+
+import static iop_sdk.wallet.utils.WalletUtils.sortOutputsHighToLowValue;
+import static iop_sdk.wallet.utils.WalletUtils.sumValue;
 
 ;
 
@@ -44,7 +43,6 @@ public class ProposalTransactionRequest {
 
     private BlockchainManager blockchainManager;
     private WalletManager walletManager;
-    private ProposalsContractDao proposalsDao;
     private WalletPreferenceConfigurations conf;
 
     private Proposal proposal;
@@ -54,14 +52,13 @@ public class ProposalTransactionRequest {
 
     private SendRequest sendRequest;
 
-    public ProposalTransactionRequest(BlockchainManager blockchainManager, WalletManager walletManager, ProposalsContractDao proposalsDao) {
+    public ProposalTransactionRequest(BlockchainManager blockchainManager, WalletManager walletManager) {
         this.blockchainManager = blockchainManager;
         this.walletManager = walletManager;
-        this.proposalsDao = proposalsDao;
         this.conf = walletManager.getConfigurations();
     }
 
-    public void forProposal(Proposal proposal) throws InsuficientBalanceException,CantCompleteProposalException {
+    public void forProposal(Proposal proposal) throws InsuficientBalanceException, CantCompleteProposalException, CantCompleteProposalMaxTransactionExcededException {
 
         this.proposal = proposal;
 
@@ -87,30 +84,11 @@ public class ProposalTransactionRequest {
         if (extraFee.isLessThan(Coin.COIN)) throw new CantCompleteProposalException("Proposal fee is lesser than 1 IoP");
         totalOuputsValue = totalOuputsValue.add(extraFee);
 
-        List<TransactionOutput> unspentTransactions = new ArrayList<>();
-        Coin totalInputsValue = Coin.ZERO;
-        boolean inputsSatisfiedContractValue = false;
-        List<TransactionOutput> unspentOutputs = sortOutputsHighToLowValue(wallet.getUnspents());
-        for (TransactionOutput transactionOutput : unspentOutputs) {
-            //
-            TransactionOutPoint transactionOutPoint = transactionOutput.getOutPointFor();
-            if (proposalsDao.isLockedOutput(transactionOutPoint.getHash().toString(), transactionOutPoint.getIndex())) {
-                continue;
-            }
-            if (DefaultCoinSelector.isSelectable(transactionOutput.getParentTransaction()) && transactionOutput.getParentTransaction().isMature()) {
-                LOG.info("adding non locked transaction to spend as an input: postion:" + transactionOutPoint.getIndex() + ", parent hash: " + transactionOutPoint.toString());
-                totalInputsValue = totalInputsValue.add(transactionOutput.getValue());
-                unspentTransactions.add(transactionOutput);
-                if (totalInputsValue.isGreaterThan(totalOuputsValue)) {
-                    inputsSatisfiedContractValue = true;
-                    break;
-                }
-            }
-        }
+        // unspent inputs
+        List<TransactionOutput> unspentTransactions = walletManager.getInputsForAmount(totalOuputsValue,sortOutputsHighToLowValue(wallet.getUnspents()));
 
-        if (!inputsSatisfiedContractValue)
-            throw new InsuficientBalanceException("Inputs not satisfied contract value, total contract value: "+totalOuputsValue.toFriendlyString());
-
+        // inputs value
+        Coin totalInputsValue = sumValue(unspentTransactions);
         // put inputs..
         proposalTransactionBuilder.addInputs(unspentTransactions);
 
@@ -172,26 +150,12 @@ public class ProposalTransactionRequest {
         } catch (Wallet.ExceededMaxTransactionSize e){
             e.printStackTrace();
             LOG.error("ExceededMaxTransactionSize: "+sendRequest.tx+", wallet: "+wallet);
-            throw new CantCompleteProposalException("ExceededMaxTransactionSize");
+            throw new CantCompleteProposalMaxTransactionExcededException("ExceededMaxTransactionSize",e);
         }
 
         LOG.info("inputs value: " + tran.getInputSum().toFriendlyString() + ", outputs value: " + tran.getOutputSum().toFriendlyString() + ", fee: " + tran.getFee().toFriendlyString());
         LOG.info("total en el aire: " + tran.getInputSum().minus(tran.getOutputSum().minus(tran.getFee())).toFriendlyString());
 
-    }
-
-    private List<TransactionOutput> sortOutputsHighToLowValue(List<TransactionOutput> unspents) {
-        Collections.sort(unspents, new Comparator<TransactionOutput>() {
-            @Override
-            public int compare(TransactionOutput z1, TransactionOutput z2) {
-                if (z1.getValue().isGreaterThan(z2.getValue()))
-                    return -1;
-                if (z1.getValue().isLessThan(z2.getValue()))
-                    return 1;
-                return 0;
-            }
-        });
-        return unspents;
     }
 
     public void broadcast() throws NotConnectedPeersException,CantSendTransactionException {
@@ -204,7 +168,6 @@ public class ProposalTransactionRequest {
             Transaction tx = future.get(1,TimeUnit.MINUTES);
 
 
-
             // now that the transaction is complete lock the output
             // lock address
             String parentTransactionHashHex = sendRequest.tx.getHash().toString();
@@ -213,6 +176,11 @@ public class ProposalTransactionRequest {
             proposal.setLockedOutputIndex(lockedOutputPosition);
             lockedOutputHashHex = parentTransactionHashHex;
             lockedOutputPosition = 0;
+
+            if (sendRequest.tx.getHash().toString().equals("")) {
+                LOG.error("something bad happen broadcast: "+tx.toString());
+                new CantSendTransactionException("Tx hash is null, please send log");
+            }
 
             LOG.info("TRANSACCION BROADCASTEADA EXITOSAMENTE, hash: "+sendRequest.tx.getHash().toString());
 

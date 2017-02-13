@@ -127,5 +127,16 @@ public class DefaultForumConfiguration extends Configurations implements ForumCo
         return new File(privateDirUrl+"img.png");
     }
 
+    public void removeProfileImg(){
+        File img = getUserImgFile();
+        if (img.exists()){
+            img.delete();
+        }
+    }
 
+    @Override
+    public void remove() {
+        super.remove();
+        removeProfileImg();
+    }
 }

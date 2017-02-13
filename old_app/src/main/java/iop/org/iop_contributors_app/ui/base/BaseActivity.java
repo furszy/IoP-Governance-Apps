@@ -10,6 +10,7 @@ import android.content.IntentFilter;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.content.LocalBroadcastManager;
@@ -31,6 +32,7 @@ import android.widget.Toast;
 import com.squareup.picasso.Picasso;
 
 import org.bitcoinj.core.Context;
+import org.bitcoinj.utils.BtcFormat;
 import org.iop.AppController;
 import org.iop.WalletConstants;
 import org.iop.WalletModule;
@@ -38,26 +40,31 @@ import org.iop.intents.constants.IntentsConstants;
 
 import java.io.File;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import iop.org.furszy_lib.adapter.FermatListItemListeners;
 import iop.org.furszy_lib.base.NavViewHelper;
+import iop.org.furszy_lib.dialogs.SimpleTwoButtonsDialog;
 import iop.org.furszy_lib.nav_view.NavMenuItem;
 import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.intents.DialogIntentsBuilder;
 import iop.org.iop_contributors_app.services.BlockchainServiceImpl;
 import iop.org.iop_contributors_app.ui.BalanceActivity;
-import iop.org.iop_contributors_app.ui.TransactionsActivity;
+import iop.org.iop_contributors_app.ui.dialogs.SimpleDialogs;
 import iop.org.iop_contributors_app.utils.Cache;
 
 import static android.graphics.Color.WHITE;
 import static iop.org.furszy_lib.utils.QrUtils.encodeAsBitmap;
 import static iop.org.furszy_lib.utils.SizeUtils.convertDpToPx;
+import static iop.org.iop_contributors_app.ui.dialogs.SimpleDialogs.showQrDialog;
+import static org.bitcoinj.utils.BtcFormat.COIN_SCALE;
 import static org.iop.intents.constants.IntentsConstants.ACTION_NOTIFICATION;
+import static org.iop.intents.constants.IntentsConstants.ADMIN_NOTIFICATION_DIALOG;
 import static org.iop.intents.constants.IntentsConstants.INTENTE_BROADCAST_DIALOG_TYPE;
+import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_BLOCKCHAIN_STATE;
 import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_ON_COIN_RECEIVED;
-import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_PROPOSAL_TRANSACTION_SUCCED;
 import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_TYPE;
 import static org.iop.intents.constants.IntentsConstants.INTENT_DATA;
 import static org.iop.intents.constants.IntentsConstants.INTENT_DIALOG;
@@ -86,6 +93,7 @@ public abstract class BaseActivity extends AppCompatActivity {
     private ViewGroup container_balance;
     private TextView txt_available_balance;
     private TextView txt_lock_balance;
+    private ImageView img_unspendable_tx;
     private TextView txt_drawer_name;
     private ImageView imgQr;
     private ImageView img_photo;
@@ -96,7 +104,6 @@ public abstract class BaseActivity extends AppCompatActivity {
     protected WalletModule module;
 
     protected ExecutorService executor;
-
 
     @Override
     public final void onCreate(Bundle savedInstanceState) {
@@ -130,7 +137,11 @@ public abstract class BaseActivity extends AppCompatActivity {
         super.onResume();
         if (hasDrawer())
             updateBasicValues();
+        if (module.hasAdminNotification()){
+
+        }
     }
+
 
     private void updateBasicValues(){
         try {
@@ -208,7 +219,8 @@ public abstract class BaseActivity extends AppCompatActivity {
         }
         container_balance = (ViewGroup) headerView.findViewById(R.id.container_balance);
         txt_available_balance = (TextView) headerView.findViewById(R.id.txt_available_balance);
-        txt_lock_balance = (TextView) headerView.findViewById(R.id.txt_lock_balance);
+        //txt_lock_balance = (TextView) headerView.findViewById(R.id.txt_lock_balance);
+        img_unspendable_tx = (ImageView) headerView.findViewById(R.id.img_unspendable_tx);
         txt_drawer_name = (TextView) headerView.findViewById(R.id.txt_drawer_name);
         img_photo = (ImageView) headerView.findViewById(R.id.img_photo);
 
@@ -217,7 +229,7 @@ public abstract class BaseActivity extends AppCompatActivity {
         imgQr.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showQrDialog(BaseActivity.this);
+                showQrDialog(BaseActivity.this,module);
             }
         });
 
@@ -260,8 +272,17 @@ public abstract class BaseActivity extends AppCompatActivity {
     protected void updateBalances(){
         try {
             if (hasDrawer()) {
-                txt_available_balance.setText(module.getAvailableBalanceStr() + " IoPs");
-                txt_lock_balance.setText(module.getLockedBalance() + " IoPs");
+                // voy a tener un problema mostrando los satoshis acá.., no se ven si el monto es muy bajo..
+                BtcFormat btcFormat = BtcFormat.getInstance(COIN_SCALE, Locale.GERMANY);
+                long spendableValuelong = module.getAvailableBalance();
+                String spendableValue = (spendableValuelong>0)?btcFormat.format(spendableValuelong,2,1)+" IoPs":"0";
+                txt_available_balance.setText(spendableValue);
+                if(module.hasTxUnspendable()){
+                    img_unspendable_tx.setVisibility(View.VISIBLE);
+                }else {
+                    img_unspendable_tx.setVisibility(View.INVISIBLE);
+                }
+                //txt_lock_balance.setText(module.getLockedBalanceStr() + " IoPs");
             }
         }catch (Exception e){
             e.printStackTrace();
@@ -341,6 +362,15 @@ public abstract class BaseActivity extends AppCompatActivity {
     }
 
     @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+//        if (!backButtonTouched)
+//            backButtonTouched = true;
+//        else
+//            finishAffinity();
+    }
+
+    @Override
     protected void onStop() {
         localBroadcastManager.unregisterReceiver(notificationReceiver);
         super.onStop();
@@ -353,70 +383,6 @@ public abstract class BaseActivity extends AppCompatActivity {
         if (navViewHelper!=null)
             navViewHelper.onDestroy();
     }
-
-    private void showQrDialog(Activity activity){
-
-        try {
-            final Dialog dialog = new Dialog(activity);
-            dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-            dialog.setContentView(R.layout.qr_dialog);
-
-
-            // set the custom dialog components - text, image and button
-            TextView text = (TextView) dialog.findViewById(R.id.txt_share);
-
-            dialog.findViewById(R.id.txt_exit).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    dialog.dismiss();
-                }
-            });
-
-            ImageView image = (ImageView) dialog.findViewById(R.id.img_qr);
-
-            final String address = module.getReceiveAddress();
-            // qr
-            Bitmap qrBitmap = Cache.getQrBigBitmapCache();
-            if (qrBitmap == null) {
-                Resources r = getResources();
-                int px = convertDpToPx(getResources(),175);
-                qrBitmap = encodeAsBitmap(address, px, px, Color.parseColor("#1A1A1A"), WHITE );
-                Cache.setQrBigBitmapCache(qrBitmap);
-            }
-            image.setImageBitmap(qrBitmap);
-
-            // cache address
-            TextView txt_qr = (TextView)dialog.findViewById(R.id.txt_qr);
-            txt_qr.setText(address);
-//            txt_qr.setOnLongClickListener();
-
-            View.OnClickListener clickListener = new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    textToClipboard(address);
-                    Toast.makeText(BaseActivity.this,"Copied",Toast.LENGTH_LONG).show();
-                }
-            };
-
-            dialog.findViewById(R.id.txt_copy).setOnClickListener(clickListener);
-
-            text.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    shareText(BaseActivity.this,"Qr",address);
-                    dialog.dismiss();
-                }
-            });
-
-
-
-            dialog.show();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
 
     /**
      * metodo llamado cuando un permiso es otorgado
@@ -464,6 +430,14 @@ public abstract class BaseActivity extends AppCompatActivity {
      */
     protected abstract boolean hasDrawer();
 
+    protected void cleanUserData(){
+        img_photo.setImageResource(0);
+    }
+
+    public void cleanData() {
+        cleanUserData();
+    }
+
     private class NotificationReceiver extends BroadcastReceiver{
 
 
@@ -482,17 +456,35 @@ public abstract class BaseActivity extends AppCompatActivity {
                     // tipo de dialog
                     int dialogType = bundle.getInt(INTENTE_BROADCAST_DIALOG_TYPE);
 
+                    if (dialogType == ADMIN_NOTIFICATION_DIALOG){
+
+                        SimpleDialogs.buildSimpleTwoBtnsDialogForContributors(BaseActivity.this, "Notification", "App need an update from the play store", new SimpleTwoButtonsDialog.SimpleTwoBtnsDialogListener() {
+                            @Override
+                            public void onRightBtnClicked(SimpleTwoButtonsDialog dialog) {
+                                Intent intent = new Intent(Intent.ACTION_VIEW , Uri.parse("market://search?q="+getPackageName()));
+                                startActivity(intent);
+                            }
+
+                            @Override
+                            public void onLeftBtnClicked(SimpleTwoButtonsDialog dialog) {
+                                dialog.dismiss();
+                            }
+                        });
+
+                    }else
                     if (dialogType == RESTORE_SUCCED_DIALOG){
                         DialogIntentsBuilder.buildSuccedRestoreDialog(BaseActivity.this,module.getWalletManager(),intent)
                                 .show();
 
-                    }else {
+                    } else {
                         onBroadcastReceive(bundle);
                     }
                 }else
                     if (type.equals(INTENT_DATA)){
                         Log.e(TAG,"llegó algo al intent_data inesperado!");
-
+                        if(bundle.containsKey(INTENT_BROADCAST_DATA_BLOCKCHAIN_STATE)){
+                            updateBalances();
+                        }
                     }
                 else
                     if (type.equals(INTENT_NOTIFICATION)){
@@ -510,20 +502,16 @@ public abstract class BaseActivity extends AppCompatActivity {
                     }
                 else if (type.equals(INTENT_DATA+INTENT_NOTIFICATION)){
 
-
-
                         if (bundle.containsKey(INTENT_BROADCAST_DATA_TYPE)){
                             String dataType = bundle.getString(INTENT_BROADCAST_DATA_TYPE);
 
                             if (dataType.equals(INTENT_BROADCAST_DATA_ON_COIN_RECEIVED)){
                                 updateBalances();
-                            }else {
-                                if (!onBroadcastReceive(bundle)) {
-                                    // nothing yet.
-                                }
                             }
 
-
+                            if (!onBroadcastReceive(bundle)) {
+                                // nothing yet.
+                            }
                         }else {
 
                             android.support.v4.app.NotificationCompat.Builder mBuilder =
@@ -541,23 +529,5 @@ public abstract class BaseActivity extends AppCompatActivity {
         }
     }
 
-    private void textToClipboard(String text) {
-        if(android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB) {
-            ClipboardManager clipboard = (ClipboardManager) getSystemService(android.content.Context.CLIPBOARD_SERVICE);
-            clipboard.setText(text);
-        } else {
-            ClipboardManager clipboard = (ClipboardManager) getSystemService(android.content.Context.CLIPBOARD_SERVICE);
-            android.content.ClipData clip = android.content.ClipData.newPlainText("Copied Text", text);
-            clipboard.setPrimaryClip(clip);
-        }
-    }
 
-
-    private void shareText(Activity activity,String title,String text){
-        Intent sendIntent = new Intent();
-        sendIntent.setAction(Intent.ACTION_SEND);
-        sendIntent.putExtra(Intent.EXTRA_TEXT, text);
-        sendIntent.setType("text/plain");
-        activity.startActivity(Intent.createChooser(sendIntent, title));
-    }
 }

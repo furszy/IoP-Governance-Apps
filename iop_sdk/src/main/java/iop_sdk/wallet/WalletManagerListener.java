@@ -8,4 +8,6 @@ public interface WalletManagerListener {
 
     void onWalletRestored();
 
+    boolean isOutputLocked(String hash, long index);
+
 }

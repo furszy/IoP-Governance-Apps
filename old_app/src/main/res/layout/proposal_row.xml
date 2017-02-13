@@ -77,7 +77,7 @@
                 android:textColor="#CCCCCC"
                 android:id="@+id/txt_body"
                 android:text="Soy un fucking cuerpo y me aburre escribir mucho, por eso escribo cualquier cosa..\n despues puede decirles que sigo aburrido por hacer pantallas..."
-                 />
+                />
 
             <Button
                 android:layout_width="75dp"

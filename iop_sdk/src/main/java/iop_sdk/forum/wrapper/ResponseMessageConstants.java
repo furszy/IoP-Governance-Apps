@@ -15,6 +15,12 @@ public class ResponseMessageConstants {
     // request topic
     public static final String TOPIC_POST = "topic_post";
 
+    // admin notification
+    public static final String ADMIN_NOTIFICATION = "adm_notif";
+    public static final String ADMIN_NOTIFICATION_TYPE = "adm_notif_type";
+    public static final String ADMIN_NOTIFICATION_MESSAGE = "adm_notif_msg";
+
+
 
 
 

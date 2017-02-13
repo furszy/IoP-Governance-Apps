@@ -56,7 +56,8 @@ public class ProfSerConnectionManager {
 
     private void initContext(SslContextFactory sslContextFactory) throws Exception {
         if (sslContextFactory==null) throw new IllegalArgumentException("ssl context factory null");
-        this.sslContext = SslContextFactory.buildContext();
+        //todo: hay que ver esto..
+        //this.sslContext = sslContextFactory.buildContext();
     }
 
     public boolean connectToSecurePort(final IopProfileServer.ServerRoleType portType, final int port) throws CantConnectException {

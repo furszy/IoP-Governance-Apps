@@ -36,6 +36,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import iop.org.furszy_lib.AsteriskPasswordTransformationMethod;
 import iop.org.furszy_lib.dialogs.DialogBuilder;
 import iop.org.iop_contributors_app.R;
 import iop_sdk.forum.ForumProfile;
@@ -212,6 +213,8 @@ public class ProfileActivity extends ContributorBaseActivity implements View.OnC
         };
 
         txt_password.addTextChangedListener(passwordWatcher);
+
+        txt_password.setTransformationMethod(new AsteriskPasswordTransformationMethod());
 
         txt_email.addTextChangedListener(new TextWatcher() {
             @Override

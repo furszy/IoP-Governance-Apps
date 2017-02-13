@@ -19,12 +19,16 @@ import java.util.Map;
 import iop_sdk.forum.discourge.com.wareninja.opensource.discourse.DiscourseApiClient;
 import iop_sdk.forum.discourge.com.wareninja.opensource.discourse.DiscouseApiConstants;
 import iop_sdk.forum.discourge.com.wareninja.opensource.discourse.utils.ResponseModel;
+import iop_sdk.forum.wrapper.AdminNotificationException;
 import iop_sdk.forum.wrapper.ResponseMessageConstants;
 import iop_sdk.forum.wrapper.ServerWrapper;
 import iop_sdk.global.exceptions.ConnectionRefusedException;
 import iop_sdk.global.exceptions.NotValidParametersException;
 import iop_sdk.governance.propose.Proposal;
 
+import static iop_sdk.forum.wrapper.ResponseMessageConstants.ADMIN_NOTIFICATION;
+import static iop_sdk.forum.wrapper.ResponseMessageConstants.ADMIN_NOTIFICATION_MESSAGE;
+import static iop_sdk.forum.wrapper.ResponseMessageConstants.ADMIN_NOTIFICATION_TYPE;
 import static iop_sdk.forum.wrapper.ResponseMessageConstants.REGISTER_ERROR_STR;
 import static iop_sdk.utils.StreamsUtils.convertInputStreamToString;
 
@@ -84,7 +88,7 @@ public class ForumClientDiscourseImp implements ForumClient {
      * @return
      */
     @Override
-    public boolean connect(String username, String password) throws InvalidUserParametersException, ConnectionRefusedException {
+    public boolean connect(String username, String password) throws InvalidUserParametersException, ConnectionRefusedException, AdminNotificationException {
         //init();
         LOG.info("connect");
         if (apiKey == null) {
@@ -99,11 +103,11 @@ public class ForumClientDiscourseImp implements ForumClient {
                 if (apiKey != null) {
                     conf.setApiKey(apiKey);
                     this.client.setApiKey(apiKey);
-                    if (forumProfile!=null){
-                        if (!forumProfile.getUsername().equals(username) && !forumProfile.getPassword().equals(password)){
+                    if (forumProfile != null) {
+                        if (!forumProfile.getUsername().equals(username) && !forumProfile.getPassword().equals(password)) {
                             forumProfile = new ForumProfile(username, password, null);
                         }
-                    }else {
+                    } else {
                         forumProfile = new ForumProfile(username, password, null);
                     }
                     saveForumData(true, username, password, null);
@@ -111,7 +115,9 @@ public class ForumClientDiscourseImp implements ForumClient {
                 } else
                     return false;
 
-            }catch (ConnectionRefusedException e){
+            } catch (ConnectionRefusedException e) {
+                throw e;
+            } catch (AdminNotificationException e){
                 throw e;
             }catch (Exception e){
                 e.printStackTrace();
@@ -131,7 +137,7 @@ public class ForumClientDiscourseImp implements ForumClient {
      * @throws CantCreateTopicException
      */
     @Override
-    public int createTopic(String title, String category, String raw) throws CantCreateTopicException {
+    public int createTopic(String title, String category, String raw) throws CantCreateTopicException, AdminNotificationException {
         LOG.info("CreateTopic");
         try {
             Map<String, String> parameters = new HashMap<>();
@@ -150,28 +156,32 @@ public class ForumClientDiscourseImp implements ForumClient {
                     if (errorDetail.contains("<!DOCTYPE html>")) {
                         throw new CantCreateTopicException("Cant create topic, something bad happen with the forum");
                     } else {
-                        LOG.error("forum fail with proposal: title=" + title + ", category=" + category + ", raw=" + raw+ "\n"+responseModel.data.toString());
+                        LOG.error("forum fail with proposal: title=" + title + ", category=" + category + ", raw=" + raw + "\n" + responseModel.data.toString());
                         LOG.error("####");
                         throw new CantCreateTopicException(errorDetail);
                     }
                 }
             } else {
                 LOG.info("topic created.");
-                LOG.info("### data: "+responseModel.data.toString());
+                LOG.info("### data: " + responseModel.data.toString());
 //                JSONObject jsonObject = new JSONObject(responseModel.data.toString());
                 JsonObject jsonObject = (JsonObject) new JsonParser().parse(responseModel.data.toString());
+
+                checkAdminNotification(jsonObject);
                 // post id
                 int postId = Integer.valueOf(jsonObject.get("id").getAsString());
                 // forum id
                 int topic_id = Integer.valueOf(jsonObject.get("topic_id").getAsString());
-                LOG.info("## Forum id obtained: "+topic_id);
+                LOG.info("## Forum id obtained: " + topic_id);
                 return topic_id;
             }
-        } catch (CantCreateTopicException e){
+        } catch (CantCreateTopicException e) {
             throw e;
         } catch (ResponseFailException e) {
             throw new CantCreateTopicException(e.getMessage());
-        } catch (Exception e){
+        } catch(AdminNotificationException e){
+            throw e;
+        }catch (Exception e){
             e.printStackTrace();
         }
         return -1;
@@ -219,7 +229,7 @@ public class ForumClientDiscourseImp implements ForumClient {
      * @param forumId
      * @return
      */
-    public Proposal getProposal(int forumId) {
+    public Proposal getProposal(int forumId) throws AdminNotificationException {
         LOG.info("getForumProposal");
         Proposal proposal = null;
         Map<String, String> parameters = new HashMap<String, String>();
@@ -229,6 +239,9 @@ public class ForumClientDiscourseImp implements ForumClient {
         try {
 //            JSONObject jsonObject = new JSONObject(responseModel.data.toString());
             JsonObject jsonObject = (JsonObject) new JsonParser().parse(responseModel.data.toString());
+
+            checkAdminNotification(jsonObject);
+
             jsonObject = (JsonObject) jsonObject.get("post_stream");
             JsonArray jsonArray = jsonObject.get("posts").getAsJsonArray();
 //            JSONArray jsonArray = new JSONArray(jsonObject.get("posts"));
@@ -255,8 +268,8 @@ public class ForumClientDiscourseImp implements ForumClient {
      * @return
      */
     @Override
-    public Proposal getProposalFromWrapper(int forumId) {
-        LOG.info("getForumProposal");
+    public Proposal getProposalFromWrapper(int forumId) throws AdminNotificationException {
+        LOG.info("getForumProposal for id: "+forumId);
         Proposal proposal = null;
         Map<String, String> parameters = new HashMap<String, String>();
         parameters.put("id", String.valueOf(forumId));
@@ -269,6 +282,9 @@ public class ForumClientDiscourseImp implements ForumClient {
         try {
 //            JSONObject jsonObject = new JSONObject(topicPost);
             JsonObject jsonObject = (JsonObject) new JsonParser().parse(topicPost);
+
+            checkAdminNotification(jsonObject);
+
             String formatedBody = jsonObject.get(ResponseMessageConstants.TOPIC_POST).getAsString();
             proposal = Proposal.buildFromBody(formatedBody);
             proposal.setForumId(forumId);
@@ -283,7 +299,7 @@ public class ForumClientDiscourseImp implements ForumClient {
     }
 
     @Override
-    public void getAndCheckValid(Proposal proposal) throws NotValidParametersException {
+    public void getAndCheckValid(Proposal proposal) throws NotValidParametersException, AdminNotificationException {
         Proposal forumProposal = getProposal(proposal.getForumId());
         proposal.equals(forumProposal);
     }
@@ -357,7 +373,7 @@ public class ForumClientDiscourseImp implements ForumClient {
     }
 
     @Override
-    public boolean registerUser(String username, String password, String email) throws InvalidUserParametersException {
+    public boolean registerUser(String username, String password, String email) throws InvalidUserParametersException, AdminNotificationException {
         //if (forumProfile!=null) throw new IllegalStateException("Forum profile already exist");
         LOG.debug("registerUser");
         Map<String, String> parameters = new HashMap<String, String>();
@@ -380,12 +396,14 @@ public class ForumClientDiscourseImp implements ForumClient {
             if (inputStream != null)
                 result = convertInputStreamToString(inputStream);
 
-            System.out.println("###########################");
-            System.out.println(result);
-            System.out.println("###########################");
+            LOG.info("###########################");
+            LOG.info(result);
+            LOG.info("###########################");
 
             JsonParser jsonParser = new JsonParser();
             JsonObject jsonObject = (JsonObject) jsonParser.parse(result);
+
+            checkAdminNotification(jsonObject);
 
             if (httpResponse.getStatusLine().getStatusCode()==200){
                 saveForumData(false,username,password,email);
@@ -402,8 +420,10 @@ public class ForumClientDiscourseImp implements ForumClient {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
+        } catch (AdminNotificationException e) {
+            throw e;
         } catch (Exception e){
-            e.getMessage();
+            e.printStackTrace();
         }
         return false;
     }
@@ -455,5 +475,17 @@ public class ForumClientDiscourseImp implements ForumClient {
 
     public void setForunLink(String forunLink) {
         this.forunLink = forunLink;
+    }
+
+    private void checkAdminNotification(JsonObject jsonObject) throws AdminNotificationException {
+        JsonElement json = jsonObject.get(ResponseMessageConstants.ADMIN_NOTIFICATION);
+        if (json!=null) {
+            if (!json.isJsonNull()) {
+                JsonObject adminNotJson = jsonObject.getAsJsonObject(ADMIN_NOTIFICATION);
+                int admNotType = adminNotJson.get(ADMIN_NOTIFICATION_TYPE).getAsInt();
+                String message = adminNotJson.get(ADMIN_NOTIFICATION_MESSAGE).getAsString();
+                throw new AdminNotificationException(admNotType, message);
+            }
+        }
     }
 }

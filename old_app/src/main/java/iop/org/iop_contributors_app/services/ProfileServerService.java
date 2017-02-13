@@ -85,6 +85,9 @@ public class ProfileServerService extends Service implements ModuleProfileServer
 
             //init
             initProfileServer();
+
+            profSerEngine.start();
+
         }catch (Exception e){
             e.printStackTrace();
         }

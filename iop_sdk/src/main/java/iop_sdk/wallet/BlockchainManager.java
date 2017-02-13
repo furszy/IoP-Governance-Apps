@@ -5,7 +5,6 @@ import com.google.common.util.concurrent.ListenableFuture;
 
 import org.bitcoinj.core.BlockChain;
 import org.bitcoinj.core.Peer;
-import org.bitcoinj.core.PeerAddress;
 import org.bitcoinj.core.PeerGroup;
 import org.bitcoinj.core.Sha256Hash;
 import org.bitcoinj.core.StoredBlock;
@@ -289,6 +288,9 @@ public class BlockchainManager {
                             if (needsTrimPeersWorkaround)
                                 while (peers.size() >= maxConnectedPeers)
                                     peers.remove(peers.size() - 1);
+
+                            InetSocketAddress inetSocketAddress = new InetSocketAddress(conf.getNode(),7685);
+                            peers.add(inetSocketAddress);
 
                             return peers.toArray(new InetSocketAddress[0]);
                         }

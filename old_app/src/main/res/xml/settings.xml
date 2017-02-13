@@ -2,13 +2,9 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     >
 
-    <PreferenceCategory android:title="Profile">
+    <PreferenceCategory android:title="User">
 
         <Preference android:key="id_profile" android:title="Sign out" />
-
-    </PreferenceCategory>
-
-    <PreferenceCategory android:title="Wallet">
 
         <Preference android:key="id_balance" android:title="Export coins" />
 
@@ -18,11 +14,13 @@
 
         <Preference android:key="id_report" android:title="Report issue" />
 
+        <Preference android:key="id_dev" android:title="Advance configurations" />
+
     </PreferenceCategory>
 
-    <PreferenceCategory android:title="Devs">
+    <PreferenceCategory android:title="Community">
 
-        <Preference android:key="id_dev" android:title="Advance configurations" />
+        <Preference android:key="id_donate" android:title="Donate" />
 
     </PreferenceCategory>
 

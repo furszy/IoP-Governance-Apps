@@ -904,7 +904,7 @@ this.post('posts', { 'title': title, 'raw': raw, 'category': category, 'archetyp
      */
 	public ResponseModel getTopic(Map<String, String> parameters){
 
-		final String TAG = "getTopic";
+
 		if (!parameters.containsKey("id")) throw new IllegalArgumentException("Request parameters does not contains id (topic id)");
 
 		MyWebClient webClient = new MyWebClient(this.api_url);

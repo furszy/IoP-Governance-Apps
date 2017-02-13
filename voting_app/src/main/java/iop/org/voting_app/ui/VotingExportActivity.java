@@ -220,7 +220,7 @@ public class VotingExportActivity extends AppCompatActivity {
                             @Override
                             public void run() {
                                 try {
-                                    module.sendTransaction(address, realAmount);
+                                    module.sendTransactionFromAvailableBalance(address, realAmount);
                                     runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
@@ -245,7 +245,7 @@ public class VotingExportActivity extends AppCompatActivity {
                                         }
                                     });
                                 } catch (final Exception e) {
-                                    Log.e(TAG,e.getMessage());
+                                    e.printStackTrace();
                                     runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {

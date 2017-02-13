@@ -1,7 +1,5 @@
 package iop.org.iop_contributors_app;
 
-import android.app.Application;
-
 import junit.framework.Assert;
 
 import org.apache.commons.codec.DecoderException;
@@ -18,8 +16,6 @@ import iop_sdk.blockchain.OpReturnOutputTransaction;
 import iop_sdk.crypto.CryptoBytes;
 import iop_sdk.governance.propose.Proposal;
 import iop_sdk.governance.propose.ProposalTransactionBuilder;
-
-import static android.support.test.InstrumentationRegistry.getInstrumentation;
 
 /**
  * Created by mati on 18/11/16.
@@ -126,13 +122,15 @@ public class ProposalTransactionTest {
         Assert.assertEquals(blockReward,getData2(opReturnOutputTransaction.getData(),CONTRACT_REWARD_POSITION,CONTRACT_REWARD_SIZE));
 
 
+
+
     }
 
 
     @Test
     public void decodeContract(){
 
-        String contractHash = "4343000100000a000a7a1200d4817aa5497628e7c77e6b606107042bbba3130888c5f47a375e6179be789fbb0017";
+        String contractHash = "3e50cb73af308e0c4861c57b209554a30a4ccf261f65b237a3f92c44dc9f2b14";
 
 
         byte[] bytes = org.spongycastle.util.encoders.Hex.decode(contractHash);

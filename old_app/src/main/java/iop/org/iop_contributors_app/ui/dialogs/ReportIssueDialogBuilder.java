@@ -50,7 +50,6 @@ import java.util.ArrayList;
 
 import iop.org.furszy_lib.dialogs.DialogBuilder;
 import iop.org.iop_contributors_app.R;
-import iop.org.iop_contributors_app.providers.FileAttachmentProvider;
 import iop.org.iop_contributors_app.utils.CrashReporter;
 import iop_sdk.global.utils.Io;
 

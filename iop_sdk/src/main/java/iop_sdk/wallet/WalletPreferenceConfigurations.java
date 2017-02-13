@@ -22,6 +22,10 @@ public interface WalletPreferenceConfigurations {
 
     String getReceiveAddress();
 
+    /** Admin notification popup to alert users about something from the server */
+    int getAdminNotification();
+
+    void setAdminNotification(int type);
 
     /****** PREFERENCE CONSTANTS   ******/
 

@@ -18,15 +18,19 @@ public class BeneficiariesAdapter extends FermatAdapterImproved<Beneficiary,Bene
 
     /** field validator */
     private CreateProposalActivityValidator validator;
+    private QrListener onQrListener;
 
-    protected BeneficiariesAdapter(Context context,CreateProposalActivityValidator validator) {
-        super(context);
+    public interface QrListener{
+
+        void onItemQrTouched(Beneficiary data, int position);
 
     }
 
-    public BeneficiariesAdapter(Context context, List<Beneficiary> extraBeneficiaries, CreateProposalActivityValidator validator) {
+
+    public BeneficiariesAdapter(Context context, List<Beneficiary> extraBeneficiaries, CreateProposalActivityValidator validator,QrListener qrListener) {
         super(context, extraBeneficiaries);
         this.validator = validator;
+        this.onQrListener = qrListener;
     }
 
     @Override
@@ -40,13 +44,20 @@ public class BeneficiariesAdapter extends FermatAdapterImproved<Beneficiary,Bene
     }
 
     @Override
-    protected void bindHolder(BeneficiaryHolder holder, final Beneficiary data, int position) {
+    protected void bindHolder(final BeneficiaryHolder holder, final Beneficiary data, final int position) {
 
         holder.edit_beneficiary_address.setText(data.getAddress());
 
         if (data.getAmount()!=0) {
             holder.edit_beneficiary_value.setText(String.valueOf(data.getAmount()));
         }
+
+        holder.img_qr.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onQrListener.onItemQrTouched(data,position);
+            }
+        });
 
 //        holder.edit_beneficiary_value.addTextChangedListener(new TextWatcher() {
 //            @Override

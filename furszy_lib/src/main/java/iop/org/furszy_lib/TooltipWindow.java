@@ -72,7 +72,7 @@ public class TooltipWindow {
 // direction as well
 // to show left, right, above or below of anchor view
         int x = (contentViewWidth / 2);
-        int position_x = anchor_rect.centerX() - 562;//-
+        int position_x = anchor_rect.centerX() - x;//562;//-
         int position_y = anchor_rect.bottom - (anchor_rect.height() / 2);
  
         tipWindow.showAtLocation(anchor, Gravity.NO_GRAVITY, position_x,position_y);

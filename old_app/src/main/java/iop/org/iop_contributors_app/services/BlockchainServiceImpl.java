@@ -59,6 +59,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -500,9 +501,9 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
 
                     mBuilder =
                             new NotificationCompat.Builder(getApplicationContext())
-                                    .setSmallIcon(R.drawable.icon_alert_block_iop)
+                                    .setSmallIcon(R.drawable.ic_iop_token)
                                     .setContentTitle("IoPs received!")
-                                    .setContentText("Transaction received for a value of " + BtcFormat.getInstance().format(notificationAccumulatedAmount.getValue()).replace("BTC",""))
+                                    .setContentText("Transaction received for a value of " + BtcFormat.getInstance(Locale.GERMAN).format(notificationAccumulatedAmount.getValue()).replace("BTC","IoP"))
                                     .setAutoCancel(false)
                                     .setDeleteIntent(deleteIntent);
 
@@ -844,7 +845,7 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
             blockchainSyncBuilder = new NotificationCompat.Builder(this);
             blockchainSyncBuilder.setContentTitle("Blockchain Syncing")
                     .setContentText("Blocks left: "+blockLeft)
-                    .setSmallIcon(R.drawable.ic__launcher);
+                    .setSmallIcon(R.drawable.ic_iop_token);
             // Sets an activity indicator for an operation of indeterminate length
             blockchainSyncBuilder.setProgress(0, 0, true);
             // Displays the progress bar for the first time.
@@ -1103,7 +1104,7 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
 
             android.support.v4.app.NotificationCompat.Builder mBuilder =
                     new NotificationCompat.Builder(getApplicationContext())
-                            .setSmallIcon(R.drawable.ic__launcher)
+                            .setSmallIcon(R.drawable.ic_iop_token)
                             .setContentTitle("Obstacle")
                             .setContentText("Fail: "+stringBuilder.toString());
 

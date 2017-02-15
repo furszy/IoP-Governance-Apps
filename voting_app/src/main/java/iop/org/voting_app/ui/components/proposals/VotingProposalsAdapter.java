@@ -3,10 +3,12 @@ package iop.org.voting_app.ui.components.proposals;
 import android.content.Intent;
 import android.view.View;
 
+import org.bitcoinj.utils.BtcFormat;
 import org.iop.ForumHelper;
 import org.iop.WalletModule;
 
 import java.util.List;
+import java.util.Locale;
 
 import iop.org.furszy_lib.adapter.FermatAdapterImproved;
 import iop.org.iop_contributors_app.R;
@@ -66,7 +68,7 @@ public class VotingProposalsAdapter extends FermatAdapterImproved<Proposal,Votin
         holder.btn_read_more.setVisibility(View.INVISIBLE);
         holder.txt_start_block.setText(String.valueOf(data.getStartBlock()));
         holder.txt_end_block.setText(String.valueOf(data.getEndBlock()));
-        holder.txt_total_amount.setText("Reward "+coinToString(data.getBlockReward())+" IoPs");
+        holder.txt_total_amount.setText("Reward "+BtcFormat.getInstance(Locale.GERMAN).format(data.getBlockReward(),2).replace("BTC","IoP"));
         holder.txt_go_forum.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -90,6 +92,9 @@ public class VotingProposalsAdapter extends FermatAdapterImproved<Proposal,Votin
                     onVoteTouchedListener.goVote(data,position);
                 }
             });
+            holder.txt_go_vote.setVisibility(View.VISIBLE);
+            holder.view_btns_divider.setVisibility(View.VISIBLE);
+            holder.view_proposal_state.setBackgroundResource(R.drawable.gradientecards_verde);
         }
     }
 

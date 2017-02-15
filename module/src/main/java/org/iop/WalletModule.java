@@ -430,7 +430,7 @@ public class WalletModule {
             throw e;
         } catch (Exception e){
             rollbackVote(vote);
-            e.printStackTrace();
+            LOG.error("Cant send vote",e);
             throw new CantSendVoteException("Uknown error, please send log",e);
         }
     }
@@ -467,12 +467,12 @@ public class WalletModule {
         for (TransactionOutput transactionOutput : walletManager.getWallet().getUnspents()) {
             boolean isOutputLocked = false;
             if (context.isVotingApp()){
-                if (votesDaoImp.isLockedOutput(transactionOutput.getParentTransactionHash().toString(), 0)) {
+                if (votesDaoImp.isLockedOutput(transactionOutput.getParentTransactionHash().toString(), transactionOutput.getIndex())) {
                     LOG.info("output locked: " + transactionOutput.getParentTransactionHash().toString());
                     isOutputLocked = true;
                 }
             }else {
-                if (proposalsDao.isLockedOutput(transactionOutput.getParentTransactionHash().toString(), 0)) {
+                if (proposalsDao.isLockedOutput(transactionOutput.getParentTransactionHash().toString(), transactionOutput.getIndex())) {
                     LOG.info("output locked: " + transactionOutput.getParentTransactionHash().toString());
                     isOutputLocked = true;
                 }

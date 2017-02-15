@@ -58,8 +58,6 @@ public class VotingProposalsActivity extends VotingBaseActivity implements VoteC
 
     }
 
-
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId()==R.id.action_show_all){

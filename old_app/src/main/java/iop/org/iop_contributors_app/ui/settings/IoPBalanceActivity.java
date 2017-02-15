@@ -13,6 +13,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
+import android.text.InputType;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
@@ -26,6 +27,7 @@ import android.widget.TextView;
 import org.bitcoinj.core.Address;
 import org.bitcoinj.core.Coin;
 import org.bitcoinj.core.InsufficientMoneyException;
+import org.bitcoinj.utils.BtcFormat;
 import org.bitcoinj.wallet.Wallet;
 import org.iop.AppController;
 import org.iop.WalletConstants;
@@ -34,9 +36,11 @@ import org.iop.exceptions.CantSendTransactionException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import iop.org.iop_contributors_app.R;
 
+import static org.bitcoinj.utils.BtcFormat.COIN_SCALE;
 import static org.iop.intents.constants.IntentsConstants.ACTION_NOTIFICATION;
 import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_ON_COIN_RECEIVED;
 import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_TYPE;
@@ -49,6 +53,12 @@ import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_T
 public class IoPBalanceActivity extends AppCompatActivity {
 
     private static final String TAG = "IoPBalanceActivity";
+
+    enum IoPCode{
+
+        IoP,mIoP
+
+    }
 
     private WalletModule module;
     protected LocalBroadcastManager localBroadcastManager;
@@ -67,6 +77,8 @@ public class IoPBalanceActivity extends AppCompatActivity {
 
     private boolean isAddressFine;
     private boolean isAmountFine;
+
+    private IoPCode ioPCodeTouched;
 
     private boolean isDonation;
     private String donationAddress;
@@ -219,15 +231,21 @@ public class IoPBalanceActivity extends AppCompatActivity {
         dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner_coin.setAdapter(dataAdapter);
 
+        ioPCodeTouched = IoPCode.IoP;
+
         spinner_coin.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 switch (position){
                     case 0:
-
+                        ioPCodeTouched = IoPCode.IoP;
+                        edit_amount.setHint("0.00");
+                        edit_amount.setInputType(InputType.TYPE_NUMBER_FLAG_DECIMAL);
                         break;
                     case 1:
-
+                        ioPCodeTouched = IoPCode.mIoP;
+                        edit_amount.setHint("0");
+                        edit_amount.setInputType(InputType.TYPE_CLASS_NUMBER);
                         break;
                 }
             }
@@ -249,20 +267,17 @@ public class IoPBalanceActivity extends AppCompatActivity {
 
                     if (isAmountFine) {
                         final String address = edit_address.getText().toString();
-                        final long amount = Long.parseLong(edit_amount.getText().toString());
-
-                        final long realAmount = Coin.valueOf((int) amount,0).getValue();
-
+                        final long amount =  parseAmount(edit_amount.getText().toString(),ioPCodeTouched);
 
                         Thread thread = new Thread(new Runnable() {
                             @Override
                             public void run() {
                                 try {
-                                    module.sendTransactionFromAvailableBalance(address, realAmount);
+                                    module.sendTransactionFromAvailableBalance(address, amount);
                                     runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
-                                            showErrorDialog("Succed","Tokens exported from wallet");
+                                            showErrorDialog("Succed","Tokens exported from wallet\nRemember wait 10 minutes until coins are confirmed by the network");
                                             loadBalances();
                                         }
                                     });
@@ -309,6 +324,31 @@ public class IoPBalanceActivity extends AppCompatActivity {
         }
     }
 
+    private long parseAmount(String amount,IoPCode ioPCode) {
+        long value = 0;
+        Log.d(TAG,"value to parse: "+amount);
+        if (ioPCode==IoPCode.IoP){
+            if (amount.contains(".")) {
+                double valueDouble = Double.parseDouble(amount);
+                String str = new Double(valueDouble).toString();
+                //
+                str = str.substring(0, str.indexOf('.'));
+                int parteEntera = Integer.valueOf(str);
+
+                // decimal part
+                str = str.substring(str.indexOf('.') + 1);
+                int decimal = Integer.valueOf(str);
+
+                value = Coin.valueOf(parteEntera, decimal).value;
+            }else {
+                value = Coin.valueOf(Integer.parseInt(amount),0).value;
+            }
+        }else {
+            value = Coin.valueOf(Long.parseLong(amount)).value;
+        }
+        return value;
+    }
+
     @Override
     protected void onStop() {
         localBroadcastManager.unregisterReceiver(notificationReceiver);
@@ -329,7 +369,10 @@ public class IoPBalanceActivity extends AppCompatActivity {
         txt_voting_power_locked = (TextView) findViewById(R.id.txt_voting_power_locked);
 
         txt_balance.setText(module.getWalletManager().getWallet().getBalance(Wallet.BalanceType.AVAILABLE_SPENDABLE).toFriendlyString());
-        txt_voting_power_available.setText("Available: "+module.getAvailableBalanceStr()+" IoPs");
+        BtcFormat btcFormat = BtcFormat.getInstance(COIN_SCALE, Locale.GERMANY);
+        long spendableValuelong = module.getAvailableBalance();
+        String spendableValue = (spendableValuelong>0)?btcFormat.format(spendableValuelong,4,1)+" IoPs":"0";
+        txt_voting_power_available.setText("Available: "+spendableValue);
         txt_voting_power_locked.setText("Locked: "+module.getLockedBalanceStr()+ " IoPs");
     }
 

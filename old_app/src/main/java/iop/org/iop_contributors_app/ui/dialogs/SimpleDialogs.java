@@ -19,6 +19,7 @@ import org.iop.WalletConstants;
 import org.iop.WalletModule;
 
 import java.io.IOException;
+import java.util.List;
 
 import iop.org.furszy_lib.dialogs.SimpleTwoButtonsDialog;
 import iop.org.iop_contributors_app.R;
@@ -58,6 +59,12 @@ public class SimpleDialogs {
         final ReportIssueDialogBuilder dialog = new ReportIssueDialogBuilder(
                 context,
                 "iop.org.voting_app.myfileprovider",
+                new DatabaseCollector() {
+                    @Override
+                    public List collectData() {
+                        return module.listMyVotes();
+                    }
+                },
                 titleRes,
                 messageRes)
         {

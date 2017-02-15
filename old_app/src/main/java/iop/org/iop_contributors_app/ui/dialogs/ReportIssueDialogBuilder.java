@@ -47,6 +47,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.List;
 
 import iop.org.furszy_lib.dialogs.DialogBuilder;
 import iop.org.iop_contributors_app.R;
@@ -57,8 +58,9 @@ import iop_sdk.global.utils.Io;
 /**
  * @author Andreas Schildbach
  */
-public abstract class ReportIssueDialogBuilder extends DialogBuilder implements OnClickListener
-{
+public abstract class ReportIssueDialogBuilder extends DialogBuilder implements OnClickListener {
+
+
 	private final Context context;
 
 	private String authorities;
@@ -68,12 +70,16 @@ public abstract class ReportIssueDialogBuilder extends DialogBuilder implements 
 	private CheckBox viewCollectInstalledPackages;
 	private CheckBox viewCollectApplicationLog;
 	private CheckBox viewCollectWalletDump;
+	private CheckBox viewCollectDb;
+
+	private DatabaseCollector databaseCollector;
 
 	private static final Logger log = LoggerFactory.getLogger(ReportIssueDialogBuilder.class);
 
-	public ReportIssueDialogBuilder(final Context context,String authorities, final int titleResId, final int messageResId) {
+	public ReportIssueDialogBuilder(final Context context,String authorities,DatabaseCollector databaseCollector, final int titleResId, final int messageResId) {
 		super(context);
 
+		this.databaseCollector = databaseCollector;
 		this.authorities = authorities;
 
 		this.context = context;
@@ -89,6 +95,7 @@ public abstract class ReportIssueDialogBuilder extends DialogBuilder implements 
 		viewCollectInstalledPackages = (CheckBox) view.findViewById(R.id.report_issue_dialog_collect_installed_packages);
 		viewCollectApplicationLog = (CheckBox) view.findViewById(R.id.report_issue_dialog_collect_application_log);
 		viewCollectWalletDump = (CheckBox) view.findViewById(R.id.report_issue_dialog_collect_wallet_dump);
+		viewCollectDb = (CheckBox) view.findViewById(R.id.report_issue_dialog_collect_db_data);
 
 		setTitle(titleResId);
 		setView(view);
@@ -221,6 +228,28 @@ public abstract class ReportIssueDialogBuilder extends DialogBuilder implements 
 				log.info("problem writing attachment", x);
 			}
 		}
+
+
+		if (viewCollectDb.isChecked()){
+			try{
+				List data = databaseCollector.collectData();
+				if (data!=null && !data.isEmpty()){
+					final File file = File.createTempFile("db-dump", ".txt", cacheDir);
+					final Writer writer = new OutputStreamWriter(new FileOutputStream(file), Charsets.UTF_8);
+					for (Object o : data) {
+						writer.write(o.toString()+"\n");
+					}
+					writer.close();
+
+					attachments.add(FileProvider.getUriForFile(getContext(),authorities, file));
+				}
+
+			}catch (Exception e){
+				log.error("Exception",e);
+			}
+
+		}
+
 
 		if (CrashReporter.hasSavedBackgroundTraces())
 		{

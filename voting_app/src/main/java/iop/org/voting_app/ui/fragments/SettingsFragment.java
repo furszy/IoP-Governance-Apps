@@ -20,10 +20,12 @@ import org.iop.WalletConstants;
 import org.iop.WalletModule;
 
 import java.io.IOException;
+import java.util.List;
 
 import iop.org.furszy_lib.dialogs.DialogBuilder;
 import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.ui.base.BaseActivity;
+import iop.org.iop_contributors_app.ui.dialogs.DatabaseCollector;
 import iop.org.iop_contributors_app.ui.dialogs.ReportIssueDialogBuilder;
 import iop.org.iop_contributors_app.utils.CrashReporter;
 import iop.org.voting_app.ui.DevActivity;
@@ -116,6 +118,12 @@ public class SettingsFragment extends PreferenceFragment {
         final ReportIssueDialogBuilder dialog = new ReportIssueDialogBuilder(
                 getActivity(),
                 "iop.org.voting_app.myfileprovider",
+                new DatabaseCollector() {
+                    @Override
+                    public List collectData() {
+                        return module.listMyVotes();
+                    }
+                },
                 R.string.report_issue_dialog_title_issue,
                 R.string.report_issue_dialog_message_issue)
         {

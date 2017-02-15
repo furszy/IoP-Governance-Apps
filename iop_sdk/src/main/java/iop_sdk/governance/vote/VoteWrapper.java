@@ -27,4 +27,12 @@ public class VoteWrapper implements Serializable {
     public Proposal getProposal() {
         return proposal;
     }
+
+    @Override
+    public String toString() {
+        return "VoteWrapper{" +
+                "vote=" + vote +
+                ", proposal=" + proposal +
+                '}';
+    }
 }

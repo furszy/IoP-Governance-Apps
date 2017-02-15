@@ -446,7 +446,7 @@ public abstract class BaseActivity extends AppCompatActivity {
 
             Bundle bundle = intent.getExtras();
 
-            Log.i(TAG,"broadcast data received");
+            Log.i(TAG,"broadcast data received, "+bundle.toString());
 
             if (intent.getAction().equals(ACTION_NOTIFICATION)){
                 // tipo de broadcast
@@ -481,7 +481,7 @@ public abstract class BaseActivity extends AppCompatActivity {
                     }
                 }else
                     if (type.equals(INTENT_DATA)){
-                        Log.e(TAG,"llegó algo al intent_data inesperado!");
+                        //Log.e(TAG,"llegó algo al intent_data inesperado!");
                         if(bundle.containsKey(INTENT_BROADCAST_DATA_BLOCKCHAIN_STATE)){
                             updateBalances();
                         }

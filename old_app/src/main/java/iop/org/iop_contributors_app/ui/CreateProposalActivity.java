@@ -1,9 +1,12 @@
 package iop.org.iop_contributors_app.ui;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
@@ -278,13 +281,18 @@ public class CreateProposalActivity extends ContributorBaseActivity implements B
                                     if (proposal != null) {
 
                                         int forumId = 0;
-                                        if ((forumId = module.createForumProposal(proposal))>0) {
-                                            messageBody = "Proposal created!";
-                                            proposal.setForumId(forumId);
-                                            result = true;
-                                        } else {
+                                        if (isOnline()) {
+                                            if ((forumId = module.createForumProposal(proposal)) > 0) {
+                                                messageBody = "Proposal created!";
+                                                proposal.setForumId(forumId);
+                                                result = true;
+                                            } else {
+                                                errorTitle = "Error";
+                                                messageBody = "Uknown, proposal fail!\nplease send a report";
+                                            }
+                                        }else {
                                             errorTitle = "Error";
-                                            messageBody = "Uknown, proposal fail!\nplease send a report";
+                                            messageBody = "No internet connectivity";
                                         }
                                     } else {
                                         Log.e(TAG, "proposal null, see logs");
@@ -378,6 +386,13 @@ public class CreateProposalActivity extends ContributorBaseActivity implements B
             });
         }
 
+    }
+
+    public boolean isOnline() {
+        ConnectivityManager cm =
+                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        return netInfo != null && netInfo.isConnectedOrConnecting();
     }
 
     private void initBeneficiaryRecycler(){

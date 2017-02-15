@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
@@ -21,6 +22,7 @@ import org.iop.PrivateStorage;
 import org.iop.WalletConstants;
 import org.iop.WalletModule;
 import org.iop.configurations.DefaultForumConfiguration;
+import org.iop.configurations.ProfileServerConfigurationsImp;
 import org.iop.configurations.WalletPreferencesConfiguration;
 import org.iop.intents.constants.IntentsConstants;
 import org.slf4j.LoggerFactory;
@@ -54,6 +56,7 @@ import iop.org.iop_sdk_android.core.wrappers.PackageInfoAndroid;
 import iop_sdk.forum.ForumConfigurations;
 import iop_sdk.global.IntentWrapper;
 import iop_sdk.global.PackageInfoWrapper;
+import iop_sdk.profile_server.ModuleProfileServer;
 
 import static org.iop.WalletConstants.SHOW_BLOCKCHAIN_OFF_DIALOG;
 import static org.iop.WalletConstants.SHOW_IMPORT_EXPORT_KEYS_DIALOG_FAILURE;
@@ -71,8 +74,8 @@ public class ApplicationController extends Application implements AppController 
     private static ApplicationController instance;
 
     // profile server
-    //private ModuleProfileServer profileServerService;
-    //private ProfileServerConfigurationsImp profileServerPref;
+    private ModuleProfileServer profileServerService;
+    private ProfileServerConfigurationsImp profileServerPref;
     // wallet
     private WalletModule module;
     private WalletPreferencesConfiguration walletConfigurations;
@@ -83,8 +86,6 @@ public class ApplicationController extends Application implements AppController 
     private ActivityManager activityManager;
     // android services
     private LocalBroadcastManager localBroadcastManager;
-
-    private static String APP_TYPE ;
 
     @Override
     public void onCreate() {
@@ -102,11 +103,6 @@ public class ApplicationController extends Application implements AppController 
         initLogging();
 
         instance = this;
-
-        String packageName = packageInfo.packageName;
-        Intent launchIntent = getPackageManager().getLaunchIntentForPackage(packageName);
-        String className = launchIntent.getComponent().getClassName();
-        APP_TYPE = className;
 
         Threading.uncaughtExceptionHandler = new Thread.UncaughtExceptionHandler() {
             @Override
@@ -146,7 +142,7 @@ public class ApplicationController extends Application implements AppController 
         module.start();
 
         startBlockchainService();
-//        startProfileServerService();
+        //startProfileServerService();
 
 
 //        try {

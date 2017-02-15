@@ -36,7 +36,7 @@ public class ProposalsDao implements ProposalsContractDao {
      */
     public boolean isLockedOutput(String parentTransactionHashHex,long position){
         boolean ret = proposalsDatabaseHandler.isOutputLocked(parentTransactionHashHex,position);
-        LOG.info("isLockedOtput ret: "+ret);
+        LOG.info("isLockedOtput for: "+parentTransactionHashHex+", pos: "+position+" ret: "+ret);
         return ret;
     }
 

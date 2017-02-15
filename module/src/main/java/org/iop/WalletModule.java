@@ -387,8 +387,6 @@ public class WalletModule {
 
             Vote temp = null;
             if ((temp = votesDaoImp.getVote(vote.getGenesisHashHex()))!=null){
-
-
                 if (vote.getVotingPower()==0 && vote.getVote() == Vote.VoteType.NEUTRAL){
                     return cancelVote(vote);
                 }else
@@ -459,31 +457,36 @@ public class WalletModule {
     public void sendTransactionFromAvailableBalance(String address,long amount) throws InsuficientBalanceException, InsufficientMoneyException, CantSendTransactionException {
 
         Context.propagate(WalletConstants.CONTEXT);
-        Coin totalAmount = Coin.valueOf(amount).plus(Transaction.DEFAULT_TX_FEE);
+        Coin totalAmount = Coin.valueOf(amount);
+
+        Coin TotoalAmountToFill = totalAmount.plus(Transaction.DEFAULT_TX_FEE);
         Address addressTo = Address.fromBase58(WalletConstants.NETWORK_PARAMETERS,address);
         boolean inputsSatisfiedContractValue = false;
         List<TransactionOutput> outputList = new ArrayList<>();
         Coin totalInputsValue = Coin.ZERO;
         for (TransactionOutput transactionOutput : walletManager.getWallet().getUnspents()) {
+            boolean isOutputLocked = false;
             if (context.isVotingApp()){
                 if (votesDaoImp.isLockedOutput(transactionOutput.getParentTransactionHash().toString(), 0)) {
                     LOG.info("output locked: " + transactionOutput.getParentTransactionHash().toString());
-                    continue;
+                    isOutputLocked = true;
                 }
             }else {
                 if (proposalsDao.isLockedOutput(transactionOutput.getParentTransactionHash().toString(), 0)) {
                     LOG.info("output locked: " + transactionOutput.getParentTransactionHash().toString());
-                    continue;
+                    isOutputLocked = true;
                 }
             }
 
-            if (DefaultCoinSelector.isSelectable(transactionOutput.getParentTransaction())) {
-                LOG.info("adding non locked transaction to spend as an input: postion:" + transactionOutput.getIndex() + ", parent hash: " + transactionOutput.toString());
-                totalInputsValue = totalInputsValue.add(transactionOutput.getValue());
-                outputList.add(transactionOutput);
-                if (totalInputsValue.isGreaterThan(totalAmount)) {
-                    inputsSatisfiedContractValue = true;
-                    break;
+            if (!isOutputLocked) {
+                if (DefaultCoinSelector.isSelectable(transactionOutput.getParentTransaction())) {
+                    LOG.info("adding non locked transaction to spend as an input: postion:" + transactionOutput.getIndex() + ", parent hash: " + transactionOutput.toString());
+                    totalInputsValue = totalInputsValue.add(transactionOutput.getValue());
+                    outputList.add(transactionOutput);
+                    if (totalInputsValue.isGreaterThan(TotoalAmountToFill)) {
+                        inputsSatisfiedContractValue = true;
+                        break;
+                    }
                 }
             }
         }
@@ -502,21 +505,21 @@ public class WalletModule {
         tx.addOutput(transactionOutput);
 
         // refund output
-        Coin refundValue = totalInputsValue.minus(totalAmount);
+        Coin refundValue = totalInputsValue.minus(TotoalAmountToFill);
         TransactionOutput refundOutput = new TransactionOutput(configuration.getNetworkParams(),tx,refundValue,newReceiveAddress());
         tx.addOutput(refundOutput);
 
-        //lock
-        tx = walletManager.lockAndCommitTransaction(tx);
-
         try {
+            //lock
+            tx = walletManager.lockAndCommitTransaction(tx);
+
             blockchainManager.broadcastTransaction(tx.getHash().getBytes()).get();
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {
             e.printStackTrace();
         } catch (Wallet.DustySendRequested e){
-            throw new CantSendTransactionException("Dusty send transaction",e);
+            throw new CantSendTransactionException("Transaction value is too low",e);
         } catch (Exception e){
             e.printStackTrace();
         }

@@ -77,7 +77,7 @@ public class ProfileServerService extends Service implements ModuleProfileServer
 
             executor = Executors.newFixedThreadPool(3);
             // init client data
-            initClientData();
+//            initClientData();
             // init profile server
 //            profileServer = ApplicationController.getInstance().getProfileServerManager();
             //profileServerHanlder = new ProfileServerHanlder();
@@ -101,13 +101,13 @@ public class ProfileServerService extends Service implements ModuleProfileServer
 
         String host = configurationsPreferences.getHost();
         if (host==null){
-            host = HardCodedConstans.HOST;
+            host = "10.31.6.215";//HardCodedConstans.HOST;
             configurationsPreferences.setHost(host);
         }
 
         CryptoWrapper cryptoWrapper = new CryptoWrapperAndroid();
 
-        ProfServerData profServerData = new ProfServerData(HardCodedConstans.HOME_HOST);
+        ProfServerData profServerData = new ProfServerData(host);
         iop_sdk.profile_server.model.Profile profile = new iop_sdk.profile_server.model.Profile(
                 new byte[]{1,0,0},
                 "Mati",
@@ -131,38 +131,38 @@ public class ProfileServerService extends Service implements ModuleProfileServer
         //profileServer = new ProfSerImp(application,configurationsPreferences,null);
     }
 
-    private void initClientData() {
-        //todo: esto lo tengo que hacer cuando guarde la privkey encriptada.., por ahora lo dejo asI. Este es el profile que va a crear el usuario, está acá de ejemplo.
-
-        if (configurationsPreferences.isRegisteredInServer()) {
-
-            // load profile
-
-//            byte[] publicKey = configurationsPreferences.getUserPubKey();
-//            byte[] privKey = configurationsPreferences.getUserPrivKey();
-
-            KeyEd25519 keyEd25519 = (KeyEd25519) configurationsPreferences.getUserKeys();
-
-            Profile profile = new Profile(
-                    configurationsPreferences.getProtocolVersion(),
-                    configurationsPreferences.getUsername(),
-                    keyEd25519
-            );
-
-            module.setProfile(profile);
-
-        } else {
-
-            // save
-
-            Profile profile = new Profile(configurationsPreferences.getProfileVersion(), configurationsPreferences.getUsername());
-            module.setProfile(profile);
-            // save
-            configurationsPreferences.saveUserKeys(profile.getKey());
-        }
-
-
-    }
+//    private void initClientData() {
+//        //todo: esto lo tengo que hacer cuando guarde la privkey encriptada.., por ahora lo dejo asI. Este es el profile que va a crear el usuario, está acá de ejemplo.
+//
+//        if (configurationsPreferences.isRegisteredInServer()) {
+//
+//            // load profile
+//
+////            byte[] publicKey = configurationsPreferences.getUserPubKey();
+////            byte[] privKey = configurationsPreferences.getUserPrivKey();
+//
+//            KeyEd25519 keyEd25519 = (KeyEd25519) configurationsPreferences.getUserKeys();
+//
+//            Profile profile = new Profile(
+//                    configurationsPreferences.getProtocolVersion(),
+//                    configurationsPreferences.getUsername(),
+//                    keyEd25519
+//            );
+//
+//            module.setProfile(profile);
+//
+//        } else {
+//
+//            // save
+//
+//            Profile profile = new Profile(configurationsPreferences.getProfileVersion(), configurationsPreferences.getUsername());
+//            module.setProfile(profile);
+//            // save
+//            configurationsPreferences.saveUserKeys(profile.getKey());
+//        }
+//
+//
+//    }
 
 
     @Override

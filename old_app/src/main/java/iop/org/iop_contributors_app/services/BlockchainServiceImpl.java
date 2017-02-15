@@ -500,7 +500,7 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
 
                     mBuilder =
                             new NotificationCompat.Builder(getApplicationContext())
-                                    .setSmallIcon(R.drawable.ic__launcher)
+                                    .setSmallIcon(R.drawable.icon_alert_block_iop)
                                     .setContentTitle("IoPs received!")
                                     .setContentText("Transaction received for a value of " + BtcFormat.getInstance().format(notificationAccumulatedAmount.getValue()).replace("BTC",""))
                                     .setAutoCancel(false)

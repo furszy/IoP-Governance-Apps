@@ -91,12 +91,15 @@ public class Vote implements Serializable {
     @Override
     public String toString() {
         return "Vote{" +
-                "genesisHash=" + genesisHashHex +
-                ", vote=" + vote +
+                "outputFrozen=" + outputFrozen +
+                ", lockedOutputIndex=" + lockedOutputIndex +
+                ", lockedOutputHashHex='" + lockedOutputHashHex + '\'' +
                 ", votingPower=" + votingPower +
+                ", vote=" + vote +
+                ", genesisHashHex='" + genesisHashHex + '\'' +
+                ", voteId=" + voteId +
                 '}';
     }
-
 
     public void setLockedOutputHashHex(String lockedOutputHashHex) {
         this.lockedOutputHashHex = lockedOutputHashHex;

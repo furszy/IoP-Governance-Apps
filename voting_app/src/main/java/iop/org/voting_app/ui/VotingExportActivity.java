@@ -13,6 +13,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
+import android.text.InputType;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
@@ -37,6 +38,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import iop.org.iop_contributors_app.ui.settings.IoPBalanceActivity;
 import iop.org.voting_app.R;
 
 import static org.iop.intents.constants.IntentsConstants.ACTION_NOTIFICATION;
@@ -55,6 +57,13 @@ public class VotingExportActivity extends AppCompatActivity {
 
     private WalletModule module;
     protected LocalBroadcastManager localBroadcastManager;
+    private IoPCode ioPCodeTouched;
+
+    enum IoPCode{
+
+        IoP,mIoP
+
+    }
 
     private Toolbar toolbar;
 
@@ -182,15 +191,21 @@ public class VotingExportActivity extends AppCompatActivity {
         dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner_coin.setAdapter(dataAdapter);
 
+        ioPCodeTouched = IoPCode.IoP;
+
         spinner_coin.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                switch (position){
+                switch (position) {
                     case 0:
-
+                        ioPCodeTouched = IoPCode.IoP;
+                        edit_amount.setHint("0.00");
+                        edit_amount.setInputType(InputType.TYPE_NUMBER_FLAG_DECIMAL);
                         break;
                     case 1:
-
+                        ioPCodeTouched = IoPCode.mIoP;
+                        edit_amount.setHint("0");
+                        edit_amount.setInputType(InputType.TYPE_CLASS_NUMBER);
                         break;
                 }
             }
@@ -200,6 +215,31 @@ public class VotingExportActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    private long parseAmount(String amount,IoPCode ioPCode) {
+        long value = 0;
+        Log.d(TAG,"value to parse: "+amount);
+        if (ioPCode== IoPCode.IoP){
+            if (amount.contains(".")) {
+                double valueDouble = Double.parseDouble(amount);
+                String str = new Double(valueDouble).toString();
+                //
+                str = str.substring(0, str.indexOf('.'));
+                int parteEntera = Integer.valueOf(str);
+
+                // decimal part
+                str = str.substring(str.indexOf('.') + 1);
+                int decimal = Integer.valueOf(str);
+
+                value = Coin.valueOf(parteEntera, decimal).value;
+            }else {
+                value = Coin.valueOf(Integer.parseInt(amount),0).value;
+            }
+        }else {
+            value = Coin.valueOf(Long.parseLong(amount)).value;
+        }
+        return value;
     }
 
     private void initSendBtn() {
@@ -212,15 +252,14 @@ public class VotingExportActivity extends AppCompatActivity {
 
                     if (isAmountFine) {
                         final String address = edit_address.getText().toString();
-                        final long amount = Long.parseLong(edit_amount.getText().toString());
 
-                        final long realAmount = Coin.valueOf((int) amount,0).getValue();
+                        final long amount =  parseAmount(edit_amount.getText().toString(),ioPCodeTouched);
 
                         Thread thread = new Thread(new Runnable() {
                             @Override
                             public void run() {
                                 try {
-                                    module.sendTransactionFromAvailableBalance(address, realAmount);
+                                    module.sendTransactionFromAvailableBalance(address, amount);
                                     runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {

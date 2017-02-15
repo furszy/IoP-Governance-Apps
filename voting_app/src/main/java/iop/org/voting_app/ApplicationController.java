@@ -140,9 +140,9 @@ public class ApplicationController extends Application implements AppController 
         org.bitcoinj.core.Context.enableStrictMode();
         org.bitcoinj.core.Context.propagate(WalletConstants.CONTEXT);
         if (isVotingApp()){
-            module = new WalletModule(this,walletConfigurations,forumConfigurations,new VotesDaoImp(this));
+            module = new WalletModule(this,walletConfigurations,forumConfigurations,new VotesDaoImp(this),null);
         }else {
-            module = new WalletModule(this, walletConfigurations, forumConfigurations);
+            module = new WalletModule(this, walletConfigurations, forumConfigurations,null);
         }
         module.setTransactionStorage(new TransactionStorageSQlite(new PrivateStorage(this)));
         module.start();

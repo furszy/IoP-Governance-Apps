@@ -35,9 +35,9 @@ public class ProfSerImp implements ProfileServer {
     private ProfServerData configurations;
 
 
-    public ProfSerImp(ContextWrapper context, ProfServerData configurations, SslContextFactory sslContextFactory) throws Exception {
+    public ProfSerImp(ContextWrapper context, ProfServerData configurations, SslContextFactory sslContextFactory,IoHandler<IopProfileServer.Message> handler) throws Exception {
         this.configurations = configurations;
-        profSerConnectionManager = new ProfSerConnectionManager(configurations.getHost(),sslContextFactory);
+        profSerConnectionManager = new ProfSerConnectionManager(configurations.getHost(),sslContextFactory,handler);
     }
 
     public void connect() throws IOException {

@@ -5,13 +5,13 @@ import static iop_sdk.profile_server.engine.ProfSerConnectionState.NO_SERVER;
 /**
  * Created by mati on 05/02/17.
  */
-public class InvalidState extends Exception {
+public class InvalidStateException extends Exception {
 
-    public InvalidState(String s) {
+    public InvalidStateException(String s) {
         super(s);
     }
 
-    public InvalidState(String state, String validState) {
+    public InvalidStateException(String state, String validState) {
         super("State: "+state+" must be "+NO_SERVER.toString());
     }
 }

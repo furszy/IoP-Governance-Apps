@@ -10,7 +10,7 @@ public class HardCodedConstans {
 
     public static final String HOST = "test.fermat.community";//"186.23.58.203";//"192.168.0.111";//"192.169.1.152";//"192.168.1.12";//"192.168.0.111";//"192.168.0.111";//"192.168.0.111";//"192.169.1.85";//"192.168.1.12";
 
-    public static final String HOME_HOST = "192.168.0.111";
+    public static final String HOME_HOST = "10.0.2.2";//"192.168.0.111";
 
     public static final byte[] PROTOCOL_VERSION = new byte[]{1,0,0};
 

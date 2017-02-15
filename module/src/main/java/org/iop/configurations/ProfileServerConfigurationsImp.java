@@ -9,12 +9,13 @@ import org.iop.PrivateStorage;
 import iop.org.iop_sdk_android.core.crypto.KeyEd25519;
 import iop_sdk.crypto.CryptoBytes;
 import iop_sdk.global.HardCodedConstans;
+import iop_sdk.profile_server.*;
 
 /**
  * Created by mati on 09/11/16.
  * //todo: falta guardar la priv key del user y del cliente en un archivo encriptado..
  */
-public class ProfileServerConfigurationsImp extends Configurations implements ProfileServerConfigurations {
+public class ProfileServerConfigurationsImp extends Configurations implements iop_sdk.profile_server.ProfileServerConfigurations {
 
     public static final String PREFS_NAME = "MyPrefsFile";
 
@@ -46,7 +47,7 @@ public class ProfileServerConfigurationsImp extends Configurations implements Pr
 
 
     public String getHost() {
-        return prefs.getString(PREFS_HOST,HardCodedConstans.HOST);
+        return prefs.getString(PREFS_HOST,HardCodedConstans.HOME_HOST);
     }
 
     public int getPrimaryPort() {

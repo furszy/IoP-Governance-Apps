@@ -24,6 +24,7 @@ import iop_sdk.global.HardCodedConstans;
 import iop_sdk.profile_server.ModuleProfileServer;
 import iop_sdk.profile_server.ProfileServerConfigurations;
 import iop_sdk.profile_server.Signer;
+import iop_sdk.profile_server.engine.EngineListener;
 import iop_sdk.profile_server.engine.ProfSerEngine;
 import iop_sdk.profile_server.model.ProfServerData;
 
@@ -32,7 +33,7 @@ import iop_sdk.profile_server.model.ProfServerData;
  * Created by mati on 09/11/16.
  */
 
-public class ProfileServerService extends Service implements ModuleProfileServer {
+public class ProfileServerService extends Service implements ModuleProfileServer, EngineListener {
 
     private static final String TAG = "ProfileServerService";
 
@@ -47,7 +48,6 @@ public class ProfileServerService extends Service implements ModuleProfileServer
     private AppController application;
 
     private ProfSerEngine profSerEngine;
-
 
     public class ProfServerBinder extends Binder {
         public ProfileServerService getService() {
@@ -79,9 +79,9 @@ public class ProfileServerService extends Service implements ModuleProfileServer
             // init client data
 //            initClientData();
             // init profile server
-//            profileServer = ApplicationController.getInstance().getProfileServerManager();
+//            profile_server = ApplicationController.getInstance().getProfileServerManager();
             //profileServerHanlder = new ProfileServerHanlder();
-            //profileServer.addHandler(profileServerHanlder);
+            //profile_server.addHandler(profileServerHanlder);
 
             //init
             initProfileServer();
@@ -101,7 +101,7 @@ public class ProfileServerService extends Service implements ModuleProfileServer
 
         String host = configurationsPreferences.getHost();
         if (host==null){
-            host = "10.31.6.215";//HardCodedConstans.HOST;
+            host = HardCodedConstans.HOME_HOST;
             configurationsPreferences.setHost(host);
         }
 
@@ -113,14 +113,17 @@ public class ProfileServerService extends Service implements ModuleProfileServer
                 "Mati",
                 new KeyEd25519Android()
         );
+        profile.setType("Contributor");
 
         profSerEngine = new ProfSerEngine(
                 application,
                 profServerData,
                 profile,
                 cryptoWrapper,
-                new SslContextFactory()
+                new SslContextFactory(this)
                 );
+
+        profSerEngine.addEngineListener(this);
 
 
         // primary port
@@ -128,7 +131,7 @@ public class ProfileServerService extends Service implements ModuleProfileServer
 //        profileServerConfigurations.setClPort(clPort);
 //        profileServerConfigurations.setNonClPort(nonClPort);
 
-        //profileServer = new ProfSerImp(application,configurationsPreferences,null);
+        //profile_server = new ProfSerImp(application,configurationsPreferences,null);
     }
 
 //    private void initClientData() {
@@ -178,7 +181,7 @@ public class ProfileServerService extends Service implements ModuleProfileServer
 //        try{
 //            configurationsPreferences.setUsername(name);
 //
-//            return profileServer.updateProfileRequest(
+//            return profile_server.updateProfileRequest(
 //                    signer,
 //                    version,
 //                    name,
@@ -198,7 +201,7 @@ public class ProfileServerService extends Service implements ModuleProfileServer
 
     @Override
     public int updateExtraData(Signer signer, String extraData) throws Exception {
-        return 0;//profileServer.updateExtraData(signer,extraData);
+        return 0;//profile_server.updateExtraData(signer,extraData);
     }
 
     @Override
@@ -220,11 +223,17 @@ public class ProfileServerService extends Service implements ModuleProfileServer
     @Override
     public void onDestroy() {
         Log.d(TAG,"onDestroy");
-
+        profSerEngine.stop();
         executor.shutdown();
 
         super.onDestroy();
     }
+
+    @Override
+    public void onCheckInCompleted(iop_sdk.profile_server.model.Profile profile) {
+        // here i can update extra data field or just notify the connection to the UI
+    }
+
 
 
 

@@ -42,11 +42,12 @@ public class ProfSerConnectionManager {
     private IoHandler<IopProfileServer.Message> handler;
 
     /** seconds */
-    private static final long connectionTimeout = 30;
+    private static final long connectionTimeout = 45;
 
-    public ProfSerConnectionManager(String host, SslContextFactory sslContextFactory) throws Exception {
+    public ProfSerConnectionManager(String host, SslContextFactory sslContextFactory,IoHandler<IopProfileServer.Message> handler) throws Exception {
         this.host = host;
         serverSockets = new HashMap<>();
+        this.handler = handler;
         initContext(sslContextFactory);
     }
 
@@ -57,7 +58,7 @@ public class ProfSerConnectionManager {
     private void initContext(SslContextFactory sslContextFactory) throws Exception {
         if (sslContextFactory==null) throw new IllegalArgumentException("ssl context factory null");
         //todo: hay que ver esto..
-        //this.sslContext = sslContextFactory.buildContext();
+        this.sslContext = sslContextFactory.buildContext();
     }
 
     public boolean connectToSecurePort(final IopProfileServer.ServerRoleType portType, final int port) throws CantConnectException {
@@ -109,7 +110,7 @@ public class ProfSerConnectionManager {
             try {
                 isActive = future.get(connectionTimeout, TimeUnit.SECONDS);
             }catch (TimeoutException exception){
-                throw new CantConnectException("Timeout exception",exception);
+                throw new CantConnectException("Timeout exception, host "+host+":"+port+", type: "+portType,exception);
             }
             executorService.shutdownNow();
         }catch (Exception e){

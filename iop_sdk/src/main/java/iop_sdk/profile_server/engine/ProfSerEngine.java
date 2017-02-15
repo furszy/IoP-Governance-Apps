@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -58,6 +59,10 @@ public class ProfSerEngine {
     private CryptoWrapper crypto;
     /** Db */
     private ProfSerDb profSerDb;
+    /** Internal server handler */
+    private ProfileServerHanlder handler;
+    /** Engine listener*/
+    private final CopyOnWriteArrayList<EngineListener> engineListeners = new CopyOnWriteArrayList<>();
 
     private ExecutorService executor;
 
@@ -78,9 +83,9 @@ public class ProfSerEngine {
                         profile.getHexPublicKey()),
                 randomChallenge()
         );
-        this.profileServer = new ProfSerImp(contextWrapper,profServerData,sslContextFactory);
+        handler = new ProfileServerHanlder();
+        this.profileServer = new ProfSerImp(contextWrapper,profServerData,sslContextFactory,handler);
     }
-
 
     /**
      *
@@ -99,6 +104,19 @@ public class ProfSerEngine {
         byte[] connChallenge = new byte[32];
         crypto.random(connChallenge,32);
         return connChallenge;
+    }
+
+
+    /**
+     *
+     * @param listener
+     */
+    public void addEngineListener(EngineListener listener){
+        this.engineListeners.add(listener);
+    }
+
+    public void removeEngineListener(EngineListener listener){
+        this.engineListeners.remove(listener);
     }
 
     /**
@@ -123,6 +141,7 @@ public class ProfSerEngine {
     public void stop(){
 
         executor.shutdown();
+        executor = null;
 
     }
 
@@ -133,12 +152,14 @@ public class ProfSerEngine {
 
         try {
 
-            if (profSerConnectionState == NO_SERVER) {
-                // get the availables roles..
-                requestRoleList();
-            }
 
             if (!profNodeConnection.isRegistered()){
+
+                if (profSerConnectionState == NO_SERVER) {
+                    // get the availables roles..
+                    requestRoleList();
+                }
+
                 // init conversation to request a home request (if it not logged)
                 startConverNonClPort();
                 // Request home node request
@@ -147,18 +168,18 @@ public class ProfSerEngine {
 
             if (profNodeConnection.isRegistered()){
                 // Start conversation with customer port
-                if (profServerData.getCustPort()!=profServerData.getNonCustPort()){
-                    startConverClPort();
-                }else if (profSerConnectionState == HOME_NODE_REQUEST){
-                    profSerConnectionState = START_CONVERSATION_CL;
-                }
+                //if (profServerData.getCustPort()!=profServerData.getNonCustPort()){
+                startConverClPort();
+                //}else if (profSerConnectionState == HOME_NODE_REQUEST){
+                //    profSerConnectionState = START_CONVERSATION_CL;
+                //}
             }
 
             // Client connected, now the identity have to do the check in
             requestCheckin();
 
 
-        } catch (InvalidState e) {
+        } catch (InvalidStateException e) {
             e.printStackTrace();
         }
 
@@ -167,9 +188,9 @@ public class ProfSerEngine {
     /**
      * Request roles list to the server
      */
-    private void requestRoleList() throws InvalidState {
+    private void requestRoleList() throws InvalidStateException {
         LOG.info("requestRoleList for host: "+profServerData.getHost());
-        if (profSerConnectionState == NO_SERVER) throw new InvalidState(profSerConnectionState.toString(),NO_SERVER.toString());
+        if (profSerConnectionState != NO_SERVER) throw new InvalidStateException(profSerConnectionState.toString(),NO_SERVER.toString());
             profSerConnectionState = ProfSerConnectionState.GETTING_ROLE_LIST;
             executor.submit(new Runnable() {
                 @Override
@@ -378,8 +399,8 @@ public class ProfSerEngine {
                     switch (status){
                         // this happen when the connection is active and i send a startConversation or something else that i have to see..
                         case ERROR_BAD_CONVERSATION_STATUS:
-                            LOG.info("response: "+response.toString());
-                            profSerConnectionState = START_CONVERSATION_NON_CL;
+                            LOG.info("response: "+response.toString()+", engine state: "+profSerConnectionState.toString());
+//                            profSerConnectionState = START_CONVERSATION_NON_CL;
                             break;
                         // this happen whe the identity already exist or when the cl and non-cl port are the same in the StartConversation message
                         case ERROR_ALREADY_EXISTS:
@@ -517,6 +538,7 @@ public class ProfSerEngine {
         @Override
         public void execute(IopProfileServer.RegisterHostingResponse message) {
             LOG.info("HomeNodeRequestProcessor execute..");
+
             //todo: ver que parametros utilizar de este homeNodeResponse..
             profSerConnectionState = HOME_NODE_REQUEST;
             // save data
@@ -553,6 +575,10 @@ public class ProfSerEngine {
             LOG.info("CheckinProcessor execute..");
             profSerConnectionState = CHECK_IN;
             LOG.info("#### Check in completed!!  ####");
+            // notify check-in
+            for (EngineListener engineListener : engineListeners) {
+                engineListener.onCheckInCompleted(profNodeConnection.getProfile());
+            }
         }
     }
 

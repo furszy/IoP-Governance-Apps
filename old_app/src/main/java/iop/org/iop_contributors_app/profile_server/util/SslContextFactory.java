@@ -24,12 +24,17 @@ import iop.org.iop_contributors_app.R;
 
 public class SslContextFactory implements iop_sdk.profile_server.SslContextFactory{
 
-
     private static final String TAG = "SslContextFactory";
 
-    public SSLContext buildContext(Object context) throws Exception{
+    private final Context context;
+
+    public SslContextFactory(Context context) {
+        this.context = context;
+    }
+
+    public SSLContext buildContext() throws Exception{
         try {
-            InputStream inputStream = ((Context)context).getResources().openRawResource(R.raw.homenet);
+            InputStream inputStream = ((Context)context).getResources().openRawResource(R.raw.profile_server);
             CertificateFactory cf = CertificateFactory.getInstance("X.509");
             X509Certificate caCert = (X509Certificate) cf.generateCertificate(inputStream);
             Log.d(TAG, "ca=" + caCert.getSubjectDN());

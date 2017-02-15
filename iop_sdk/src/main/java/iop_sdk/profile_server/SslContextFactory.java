@@ -8,6 +8,6 @@ import javax.net.ssl.SSLContext;
 
 public interface SslContextFactory {
 
-    SSLContext buildContext(Object context) throws Exception;
+    SSLContext buildContext() throws Exception;
 
 }

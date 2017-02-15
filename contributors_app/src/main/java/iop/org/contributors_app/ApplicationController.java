@@ -115,7 +115,7 @@ public class ApplicationController extends Application implements AppController 
 
         // initialize preferences
         walletConfigurations = new WalletPreferencesConfiguration(getSharedPreferences(WalletPreferencesConfiguration.PREFS_NAME,0));
-        //profileServerPref = new ProfileServerConfigurationsImp(this,getSharedPreferences(ProfileServerConfigurationsImp.PREFS_NAME,0));
+        profileServerPref = new ProfileServerConfigurationsImp(this,getSharedPreferences(ProfileServerConfigurationsImp.PREFS_NAME,0));
         forumConfigurations = new DefaultForumConfiguration(getSharedPreferences(DefaultForumConfiguration.PREFS_NAME,0),getFilesDir().getAbsolutePath());
 
         // Crash reporter
@@ -137,12 +137,11 @@ public class ApplicationController extends Application implements AppController 
         Log.d(TAG,"initializing module");
         org.bitcoinj.core.Context.enableStrictMode();
         org.bitcoinj.core.Context.propagate(WalletConstants.CONTEXT);
-        module = new WalletModule(this, walletConfigurations, forumConfigurations);
+        module = new WalletModule(this, walletConfigurations, forumConfigurations,profileServerPref);
         module.setTransactionStorage(new TransactionStorageSQlite(new PrivateStorage(this)));
         module.start();
 
         startBlockchainService();
-        //startProfileServerService();
 
 
 //        try {

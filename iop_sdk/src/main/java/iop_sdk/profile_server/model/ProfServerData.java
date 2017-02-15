@@ -9,7 +9,7 @@ import iop_sdk.global.HardCodedConstans;
 public class ProfServerData {
 
     private String host;
-    private int pPort = 16988;
+    private int pPort = 16987;
     private int custPort;
     private int nonCustPort;
 

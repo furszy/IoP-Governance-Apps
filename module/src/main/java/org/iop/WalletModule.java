@@ -137,9 +137,10 @@ public class WalletModule {
     private boolean hasAdminNotification;
 
 
-    public WalletModule(android.content.Context context, WalletPreferenceConfigurations configuration, ForumConfigurations forumConfigurations, VotesDao votesDao) {
+    public WalletModule(android.content.Context context, WalletPreferenceConfigurations configuration, ForumConfigurations forumConfigurations, VotesDao votesDao,ProfileServerConfigurations profileServerConfigurations) {
         this.context = (AppController) context;
         this.configuration = configuration;
+        this.profileServerConfigurations = profileServerConfigurations;
         this.forumConfigurations = forumConfigurations;
         proposalsDao = new ProposalsDao(context);
         votesDaoImp = votesDao;
@@ -149,8 +150,8 @@ public class WalletModule {
         serverWrapper = new ServerWrapper(forumConfigurations.getWrapperUrl());
     }
 
-    public WalletModule(android.content.Context context, WalletPreferenceConfigurations configuration, ForumConfigurations forumConfigurations) {
-        this(context,configuration,forumConfigurations,null);
+    public WalletModule(android.content.Context context, WalletPreferenceConfigurations configuration, ForumConfigurations forumConfigurations,ProfileServerConfigurations profileServerConfigurations) {
+        this(context,configuration,forumConfigurations,null,profileServerConfigurations);
     }
 
     public void start(){

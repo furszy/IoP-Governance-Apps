@@ -130,6 +130,8 @@ public class VoteProposalRequest {
             // Si es un dust output tengo que agregar nuevos inputs para que lo supere.
             List<TransactionOutput> outputs = walletManager.getInputsForAmount(MIN_NONDUST_OUTPUT,unspentTransactions);
             voteTransactionBuilder.addInputs(outputs);
+            // agrego los inputs al flyingCoins
+            flyingCoins = flyingCoins.add(sumValue(outputs));
         }
         voteTransactionBuilder.addRefundOutput(flyingCoins, wallet.freshReceiveAddress());
 

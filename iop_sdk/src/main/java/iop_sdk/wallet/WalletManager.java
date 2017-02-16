@@ -431,7 +431,7 @@ public class WalletManager {
 
         Transaction transaction = new Transaction(walletConfiguration.getNetworkParams());
 
-        List<TransactionOutput> unspent = getInputsForAmount(value,sortOutputsLowToHigValue(wallet.getUnspents()));
+        List<TransactionOutput> unspent = getInputsForAmount(value,sortOutputsLowToHigValue(wallet.getUnspents()),null);
 
         for (TransactionOutput transactionOutput : unspent) {
             transaction.addInput(transactionOutput);
@@ -510,8 +510,8 @@ public class WalletManager {
     }
 
 
-    public List<TransactionOutput> getInputsForAmount(Coin totalAmount,List<TransactionOutput> unspent) throws InsuficientBalanceException {
-        return WalletUtils.getInputsForAmount(wallet, totalAmount, unspent, new WalletUtils.OutputsLockedListener() {
+    public List<TransactionOutput> getInputsForAmount(Coin totalAmount,List<TransactionOutput> unspent,List<TransactionOutput> usedOutputs) throws InsuficientBalanceException {
+        return WalletUtils.getInputsForAmount(wallet, totalAmount, unspent,usedOutputs, new WalletUtils.OutputsLockedListener() {
             @Override
             public boolean isOutputLocked(String hash, long index) {
                 return listener.isOutputLocked(hash,index);
@@ -519,8 +519,8 @@ public class WalletManager {
         });
     }
 
-    public List<TransactionOutput> getInputsForAmount(Coin totalAmount) throws InsuficientBalanceException {
-        return WalletUtils.getInputsForAmount(wallet, totalAmount, wallet.getUnspents(), new WalletUtils.OutputsLockedListener() {
+    public List<TransactionOutput> getInputsForAmount(Coin totalAmount,List<TransactionOutput> usedOutputs) throws InsuficientBalanceException {
+        return WalletUtils.getInputsForAmount(wallet, totalAmount, wallet.getUnspents(),usedOutputs, new WalletUtils.OutputsLockedListener() {
             @Override
             public boolean isOutputLocked(String hash, long index) {
                 return listener.isOutputLocked(hash,index);

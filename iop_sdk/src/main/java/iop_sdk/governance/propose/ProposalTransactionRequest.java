@@ -85,7 +85,7 @@ public class ProposalTransactionRequest {
         totalOuputsValue = totalOuputsValue.add(extraFee);
 
         // unspent inputs
-        List<TransactionOutput> unspentTransactions = walletManager.getInputsForAmount(totalOuputsValue,sortOutputsHighToLowValue(wallet.getUnspents()));
+        List<TransactionOutput> unspentTransactions = walletManager.getInputsForAmount(totalOuputsValue,sortOutputsHighToLowValue(wallet.getUnspents()),null);
 
         // inputs value
         Coin totalInputsValue = sumValue(unspentTransactions);

@@ -30,6 +30,7 @@ import iop_sdk.wallet.WalletPreferenceConfigurations;
 import iop_sdk.wallet.exceptions.InsuficientBalanceException;
 
 import static iop_sdk.wallet.utils.WalletUtils.sumValue;
+import static org.bitcoinj.core.Transaction.MIN_NONDUST_OUTPUT;
 
 /**
  * Created by mati on 21/12/16.
@@ -72,7 +73,7 @@ public class VoteProposalRequest {
         // vote transaction fee == voting power amount / 100 -> 10% of voting power
         Coin feeForVoting = Coin.valueOf(vote.getVotingPower()/100);
         // transaction fee
-        Coin transactionFee = Transaction.DEFAULT_TX_FEE;
+        Coin transactionFee = Transaction.REFERENCE_DEFAULT_MIN_TX_FEE;
         // total value of the vote transaction
         Coin totalOuputsValue = feeForVoting.plus(freezeOutputVotingPowerValue).plus(transactionFee);
 
@@ -103,15 +104,16 @@ public class VoteProposalRequest {
         }
         // fill the tx with valid inputs
         if (!sumValue(unspentTransactions).isGreaterThan(totalOuputsValue) && !totalOuputsValue.isNegative() && totalOuputsValue.getValue()!=0) {
-            unspentTransactions = walletManager.getInputsForAmount(totalOuputsValue);
+            // the second value is the already used outputs, todo: deberia restar el amount del input usado previamente en el totalOutputValue..
+            unspentTransactions.addAll(walletManager.getInputsForAmount(totalOuputsValue,unspentTransactions));
         }
         // inputs value
         totalInputsValue = sumValue(unspentTransactions);
         // put inputs..
         voteTransactionBuilder.addInputs(unspentTransactions);
         // first check if the value is non dust
-        if (Transaction.MIN_NONDUST_OUTPUT.isGreaterThan(Coin.valueOf(vote.getVotingPower()))){
-            throw new CantSendVoteException("Vote value is to small to be included, min value: "+Transaction.MIN_NONDUST_OUTPUT.toFriendlyString());
+        if (MIN_NONDUST_OUTPUT.isGreaterThan(Coin.valueOf(vote.getVotingPower()))){
+            throw new CantSendVoteException("Vote value is to small to be included, min value: "+ MIN_NONDUST_OUTPUT.toFriendlyString());
         }
         // freeze address -> voting power
         Address lockAddress = wallet.freshReceiveAddress();
@@ -121,8 +123,14 @@ public class VoteProposalRequest {
         // op return output
         voteTransactionBuilder.addContract(vote.isYesVote(),vote.getGenesisHash());
         // refunds output
-        // le resto el fee
+        //
         Coin flyingCoins = totalInputsValue.minus(totalOuputsValue);
+        // check si el refund output es dust o no
+        if (flyingCoins.isLessThan(MIN_NONDUST_OUTPUT)){
+            // Si es un dust output tengo que agregar nuevos inputs para que lo supere.
+            List<TransactionOutput> outputs = walletManager.getInputsForAmount(MIN_NONDUST_OUTPUT,unspentTransactions);
+            voteTransactionBuilder.addInputs(outputs);
+        }
         voteTransactionBuilder.addRefundOutput(flyingCoins, wallet.freshReceiveAddress());
 
         // build the transaction..

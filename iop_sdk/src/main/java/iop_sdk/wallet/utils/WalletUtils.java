@@ -313,7 +313,7 @@ public class WalletUtils
 	 * @param totalAmount
 	 * @return
 	 */
-	public static List<TransactionOutput> getInputsForAmount(Wallet wallet,Coin totalAmount,List<TransactionOutput> unspent,OutputsLockedListener outputsLockedListener) throws InsuficientBalanceException {
+	public static List<TransactionOutput> getInputsForAmount(Wallet wallet,Coin totalAmount,List<TransactionOutput> unspent,List<TransactionOutput> usedOutputs,OutputsLockedListener outputsLockedListener) throws InsuficientBalanceException {
 		List<TransactionOutput> unspentTransactions = new ArrayList<>();
 		Coin totalInputsValue = Coin.ZERO;
 		boolean inputsSatisfiedContractValue = false;
@@ -324,6 +324,11 @@ public class WalletUtils
 			if (outputsLockedListener.isOutputLocked(transactionOutPoint.getHash().toString(), transactionOutPoint.getIndex())) {
 				continue;
 			}
+			if (usedOutputs.contains(transactionOutput)){
+				LOG.info("Output already used");
+				continue;
+			}
+
 			if (DefaultCoinSelector.isSelectable(transactionOutput.getParentTransaction())) {
 				LOG.info("adding non locked transaction to spend as an input: postion:" + transactionOutPoint.getIndex() + ", parent hash: " + transactionOutPoint.toString());
 				totalInputsValue = totalInputsValue.add(transactionOutput.getValue());

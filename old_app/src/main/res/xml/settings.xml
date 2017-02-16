@@ -22,10 +22,9 @@
 
         <Preference android:key="id_donate" android:title="Donate" />
 
+        <!--<Preference android:key="id_about" android:title="About" />-->
+
     </PreferenceCategory>
 
-    <!--<Preference android:key="id_donate" android:title="Donate"/>-->
-
-    <!--<Preference android:key="id_about" android:title="About"/>-->
 
 </PreferenceScreen>

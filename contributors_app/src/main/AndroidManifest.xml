@@ -45,6 +45,7 @@
         <activity android:name="iop.org.iop_contributors_app.ui.ProposalsActivity" android:launchMode="singleInstance"/>
         <activity android:name="iop.org.iop_contributors_app.ui.settings.IoPBalanceActivity"/>
         <activity android:name="iop.org.iop_contributors_app.ui.settings.DevActivity" android:theme="@style/PreferenceScreen"/>
+        <activity android:name="iop.org.iop_contributors_app.ui.settings.fragments.NetworkInfoActivity"/>
 
         <activity android:name="iop.org.iop_contributors_app.ui.BalanceActivity"/>
         <activity android:name="iop.org.iop_contributors_app.ui.TransactionsActivity"/>

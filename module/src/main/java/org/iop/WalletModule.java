@@ -392,7 +392,6 @@ public class WalletModule {
                     return cancelVote(vote);
                 }else
                     if (vote.getVotingPower()>0 && vote.getVote()== Vote.VoteType.NEUTRAL)throw new CantSendVoteException("Voting power is greater than 0 in a NEUTRAL vote");
-
             }
 
             // save vote

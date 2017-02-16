@@ -64,23 +64,25 @@ public class VoteProposalRequest {
         if (vote.getVote() == Vote.VoteType.NEUTRAL) throw new IllegalArgumentException("Voto tipo neutral");
 
         this.vote = vote;
-
-        org.bitcoinj.core.Context.propagate(conf.getWalletContext());
-
         VoteTransactionBuilder voteTransactionBuilder = new VoteTransactionBuilder(conf.getNetworkParams());
-
         Wallet wallet = walletManager.getWallet();
 
-
+        // output value to freeze
         Coin freezeOutputVotingPowerValue = Coin.valueOf(vote.getVotingPower());
+        // vote transaction fee == voting power amount / 100 -> 10% of voting power
         Coin feeForVoting = Coin.valueOf(vote.getVotingPower()/100);
-        Coin totalOuputsValue = feeForVoting.plus(freezeOutputVotingPowerValue);
+        // transaction fee
+        Coin transactionFee = Transaction.DEFAULT_TX_FEE;
+        // total value of the vote transaction
+        Coin totalOuputsValue = feeForVoting.plus(freezeOutputVotingPowerValue).plus(transactionFee);
 
         List<TransactionOutput> unspentTransactions = new ArrayList<>();
         Coin totalInputsValue = Coin.ZERO;
         // check if the vote is already used, if the wallet have the genesisTx of the vote we reuse the freeze output as input of the new vote.
         if (vote.getLockedOutputHex()!=null){
             LOG.info("Reusing the previous vote tx, adding the frozen output as input of the tx");
+
+            //check if the transaction is confirmed
             Map<Sha256Hash, Transaction> pool = wallet.getTransactionPool(WalletTransaction.Pool.UNSPENT);
             Sha256Hash sha256Hash = Sha256Hash.wrap(vote.getLockedOutputHex());
             Transaction tx = pool.get(sha256Hash);
@@ -90,7 +92,10 @@ public class VoteProposalRequest {
             }else {
                 Transaction txTmp = wallet.getTransaction(sha256Hash);
                 if (txTmp!=null){
-                    throw new CantSendVoteException("Locked output hash transaction exist but is already spent, tx: "+txTmp.toString());
+                    if (!txTmp.isMature()){
+                        throw new CantSendVoteException("Vote transaction is not mature in blockchain\nPlease wait until it is accepted");
+                    }else
+                        throw new CantSendVoteException("Locked output hash transaction exist but is already spent, tx: "+txTmp.toString());
                 }else {
                     throw new CantSendVoteException("Locked output hash transaction don't exist in this wallet, tx: "+txTmp.toString());
                 }
@@ -117,7 +122,7 @@ public class VoteProposalRequest {
         voteTransactionBuilder.addContract(vote.isYesVote(),vote.getGenesisHash());
         // refunds output
         // le resto el fee
-        Coin flyingCoins = totalInputsValue.minus(totalOuputsValue).minus(feeForVoting).minus(conf.getWalletContext().getFeePerKb());
+        Coin flyingCoins = totalInputsValue.minus(totalOuputsValue);
         voteTransactionBuilder.addRefundOutput(flyingCoins, wallet.freshReceiveAddress());
 
         // build the transaction..

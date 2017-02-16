@@ -307,8 +307,12 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
                         @Override
                         public void run() {
                             try {
-                                //bestBlockHeight != -1 &&
-                                if (!transactionFinder.getLastBestChainHash().equals(block.getHash().toString())) {
+                                // todo: por alguna razón el getLastBestChainHash devuelve null..
+                                String lastBestChainHash = transactionFinder.getLastBestChainHash();
+                                if (lastBestChainHash==null){
+                                    transactionFinder.setLastBestChainHash(lastBestChainHash);
+                                }
+                                if (!lastBestChainHash.equals(block.getHash().toString())) {
                                     LOG.info("executing download-1");
 
                                     int bestBlockHeight = conf.maybeIncrementBestChainHeightEver(blockchainManager.getChainHeadHeight());
@@ -798,6 +802,7 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
                         try {
                             // Obtengo el voto del intent
                             Vote vote = (Vote) intent.getSerializableExtra(INTENT_EXTRA_PROPOSAL_VOTE);
+                            org.bitcoinj.core.Context.propagate(conf.getWalletContext());
                             if (walletModule.sendVote(vote)) {
                                 broadcastVoteSucced(vote);
                             }

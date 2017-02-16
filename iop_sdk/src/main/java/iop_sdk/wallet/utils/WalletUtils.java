@@ -324,7 +324,7 @@ public class WalletUtils
 			if (outputsLockedListener.isOutputLocked(transactionOutPoint.getHash().toString(), transactionOutPoint.getIndex())) {
 				continue;
 			}
-			if (usedOutputs.contains(transactionOutput)){
+			if (usedOutputs!=null && usedOutputs.contains(transactionOutput)){
 				LOG.info("Output already used");
 				continue;
 			}

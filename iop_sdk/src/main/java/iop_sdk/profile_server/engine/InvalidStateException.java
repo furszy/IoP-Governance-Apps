@@ -5,7 +5,7 @@ import static iop_sdk.profile_server.engine.ProfSerConnectionState.NO_SERVER;
 /**
  * Created by mati on 05/02/17.
  */
-public class InvalidStateException extends Exception {
+public class InvalidStateException extends RuntimeException {
 
     public InvalidStateException(String s) {
         super(s);

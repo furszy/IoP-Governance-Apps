@@ -114,6 +114,8 @@ public class ProfileServerService extends Service implements ModuleProfileServer
                 new KeyEd25519Android()
         );
         profile.setType("Contributor");
+        profile.addApplicationService("exchange_address");
+        profile.addApplicationService("chat");
 
         profSerEngine = new ProfSerEngine(
                 application,
@@ -232,6 +234,11 @@ public class ProfileServerService extends Service implements ModuleProfileServer
     @Override
     public void onCheckInCompleted(iop_sdk.profile_server.model.Profile profile) {
         // here i can update extra data field or just notify the connection to the UI
+
+        // voy a hacer una prueba trayendo los usuarios registrados..
+        profSerEngine.searchProfileByName("*Mati*");
+
+//        profSerEngine.getProfileServices();
     }
 
 

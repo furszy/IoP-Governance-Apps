@@ -19,6 +19,8 @@ import iop_sdk.profile_server.model.ProfServerData;
 import iop_sdk.profile_server.protocol.IopProfileServer;
 import iop_sdk.profile_server.protocol.MessageFactory;
 
+import static iop_sdk.profile_server.protocol.MessageFactory.NO_LOCATION;
+
 /**
  * Created by mati on 08/11/16.
  *
@@ -57,22 +59,14 @@ public class ProfSerImp implements ProfileServer {
     @Override
     public int listRolesRequest() throws CantConnectException,CantSendMessageException {
         IopProfileServer.Message message = MessageFactory.buildServerListRolesRequestMessage(configurations.getProtocolVersion());
-        profSerConnectionManager.write(
-                IopProfileServer.ServerRoleType.PRIMARY,
-                configurations.getpPort(),
-                message
-        );
+        writeToPrimaryPort(message);
         return message.getId();
     }
 
     @Override
     public int homeNodeRequest(byte[] identityPk,String identityType) throws CantConnectException,CantSendMessageException {
         IopProfileServer.Message message = MessageFactory.buildHomeNodeRequestRequest(identityPk,identityType,System.currentTimeMillis(),null);
-        profSerConnectionManager.write(
-                IopProfileServer.ServerRoleType.CL_NON_CUSTOMER,
-                configurations.getNonCustPort(),
-                message
-        );
+        writeToNonCustomerPort(message);
         return message.getId();
     }
 
@@ -83,11 +77,7 @@ public class ProfSerImp implements ProfileServer {
         logger.info("challenge: "+ Arrays.toString(challenge));
         IopProfileServer.Message message = MessageFactory.buildStartConversationRequest(clientPk,challenge,configurations.getProtocolVersion());
         logger.info("startConversationNonCl message id: "+message.getId());
-        profSerConnectionManager.write(
-                IopProfileServer.ServerRoleType.CL_NON_CUSTOMER,
-                configurations.getNonCustPort(),
-                message
-        );
+        writeToNonCustomerPort(message);
         return message.getId();
     }
 
@@ -101,11 +91,7 @@ public class ProfSerImp implements ProfileServer {
     public int startConversationCl(byte[] clientPk, byte[] challenge) throws CantConnectException,CantSendMessageException {
         IopProfileServer.Message message = MessageFactory.buildStartConversationRequest(clientPk,challenge,configurations.getProtocolVersion());
         logger.info("startConversationCl message id: "+message.getId());
-        profSerConnectionManager.write(
-                IopProfileServer.ServerRoleType.CL_CUSTOMER,
-                configurations.getCustPort(),
-                message
-        );
+        writeToCustomerPort(message);
         return message.getId();
     }
     // metodo rápido..
@@ -118,11 +104,7 @@ public class ProfSerImp implements ProfileServer {
     public int checkIn(byte[] nodeChallenge,Signer signer) throws CantConnectException,CantSendMessageException {
         IopProfileServer.Message message = MessageFactory.buildCheckInRequest(nodeChallenge,signer);
         logger.info("checkIn message id: "+message.getId());
-        profSerConnectionManager.write(
-                IopProfileServer.ServerRoleType.CL_CUSTOMER,
-                configurations.getCustPort(),
-                message
-        );
+        writeToCustomerPort(message);
         return message.getId();
     }
 
@@ -141,11 +123,7 @@ public class ProfSerImp implements ProfileServer {
     public int updateProfileRequest(Signer signer,byte[] version, String name, byte[] img, int latitude, int longitude, String extraData) throws CantConnectException,CantSendMessageException {
         logger.info("updateProfileRequest, Profile version: "+Arrays.toString(version)+", name: "+name+", extra data: "+extraData);
         IopProfileServer.Message message = MessageFactory.buildUpdateProfileRequest(signer,version,name,img,latitude,longitude,extraData);
-        profSerConnectionManager.write(
-                IopProfileServer.ServerRoleType.CL_CUSTOMER,
-                configurations.getCustPort(),
-                message
-        );
+        writeToCustomerPort(message);
         return message.getId();
     }
 
@@ -153,14 +131,49 @@ public class ProfSerImp implements ProfileServer {
     public int updateExtraData(Signer signer,String extraData) throws CantConnectException,CantSendMessageException{
         logger.info("UpdateExtraData, extra data: "+extraData);
         IopProfileServer.Message message = MessageFactory.buildUpdateProfileRequest(signer,null,null,null,0,0,extraData);
-        profSerConnectionManager.write(
-                IopProfileServer.ServerRoleType.CL_CUSTOMER,
-                configurations.getCustPort(),
-                message
-        );
+        writeToCustomerPort(message);
         return message.getId();
     }
 
+    @Override
+    public int searchProfilesRequest(boolean onlyHostedProfiles, boolean includeThumbnailImages, int maxResponseRecordCount, int maxTotalRecordCount, String profileType, String profileName, String extraData) throws CantConnectException, CantSendMessageException {
+        return searchProfilesRequest(onlyHostedProfiles,includeThumbnailImages,maxResponseRecordCount,maxTotalRecordCount,profileType,profileName,NO_LOCATION,NO_LOCATION,0,extraData);
+    }
+
+    @Override
+    public int searchProfilesRequest(boolean onlyHostedProfiles, boolean includeThumbnailImages, int maxResponseRecordCount, int maxTotalRecordCount, String profileType, String profileName, int latitude, int longitude, int radius, String extraData) throws CantConnectException, CantSendMessageException {
+        logger.info("searchProfilesRequest");
+        IopProfileServer.Message message = MessageFactory.buildProfileSearchRequest(
+                onlyHostedProfiles,
+                includeThumbnailImages,
+                maxResponseRecordCount,
+                maxTotalRecordCount,
+                profileType,
+                profileName,
+                latitude,
+                longitude,
+                radius,
+                extraData
+        );
+        writeToNonCustomerPort(message);
+        return message.getId();
+    }
+
+    @Override
+    public int addApplcationService(String applicationService) throws CantConnectException, CantSendMessageException {
+        logger.info("addApplcationService");
+        IopProfileServer.Message message = MessageFactory.buildApplicationServiceAddRequest(applicationService);
+        writeToCustomerPort(message);
+        return message.getId();
+    }
+
+    @Override
+    public int getIdentityInformationRequest(String profilePk,boolean applicationServices, boolean thumbnail, boolean profileImage) throws CantConnectException, CantSendMessageException {
+        logger.info("GetIdentityInformationRequest");
+        IopProfileServer.Message message = MessageFactory.buildGetIdentityInformationRequest(profilePk,applicationServices,thumbnail,profileImage);
+        writeToNonCustomerPort(message);
+        return message.getId();
+    }
 
     @Override
     public void addHandler(IoHandler hanlder) {
@@ -186,6 +199,26 @@ public class ProfSerImp implements ProfileServer {
                 break;
         }
         return port;
+    }
+
+    private void writeToPrimaryPort(IopProfileServer.Message message) throws CantConnectException, CantSendMessageException {
+        write(message,IopProfileServer.ServerRoleType.PRIMARY,configurations.getpPort());
+    }
+
+    private void writeToNonCustomerPort(IopProfileServer.Message message) throws CantConnectException, CantSendMessageException {
+        write(message,IopProfileServer.ServerRoleType.CL_NON_CUSTOMER,configurations.getNonCustPort());
+    }
+
+    private void writeToCustomerPort(IopProfileServer.Message message) throws CantConnectException, CantSendMessageException {
+        write(message,IopProfileServer.ServerRoleType.CL_CUSTOMER,configurations.getCustPort());
+    }
+
+    private void write(IopProfileServer.Message message, IopProfileServer.ServerRoleType serverRoleType,int port) throws CantConnectException, CantSendMessageException {
+        profSerConnectionManager.write(
+                serverRoleType,
+                port,
+                message
+        );
     }
 
 

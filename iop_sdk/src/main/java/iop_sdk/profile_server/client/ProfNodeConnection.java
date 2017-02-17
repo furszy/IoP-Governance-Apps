@@ -21,6 +21,10 @@ public class ProfNodeConnection {
     /** Node's identity */
     private byte[] nodePubKey;
 
+
+    /*  **/
+    private boolean needRegisterProfile;
+
     public ProfNodeConnection(Profile profile,boolean isRegistered,byte[] connectionChallenge) {
         this.profile = profile;
         this.connectionChallenge = connectionChallenge;
@@ -59,4 +63,15 @@ public class ProfNodeConnection {
         return isRegistered;
     }
 
+    /**
+     * No creo que estos metodos vayan acá..
+     */
+
+    public void setNeedRegisterProfile(boolean needRegisterProfile) {
+        this.needRegisterProfile = needRegisterProfile;
+    }
+
+    public boolean isNeedRegisterProfile() {
+        return needRegisterProfile;
+    }
 }

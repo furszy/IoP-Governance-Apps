@@ -3,6 +3,8 @@ package iop_sdk.profile_server.client;
 import java.io.IOException;
 
 import iop_sdk.IoHandler;
+import iop_sdk.profile_server.CantConnectException;
+import iop_sdk.profile_server.CantSendMessageException;
 import iop_sdk.profile_server.Signer;
 import iop_sdk.profile_server.protocol.IopProfileServer;
 
@@ -45,6 +47,34 @@ public interface ProfileServer {
     int updateProfileRequest(Signer signer, byte[] version, String name, byte[] img, int latitude, int longitude, String extraData) throws Exception;
 
     int updateExtraData(Signer signer, String extraData) throws Exception;
+
+    /**
+     * Search request
+     */
+
+    int searchProfilesRequest(boolean onlyHostedProfiles,
+                              boolean includeThumbnailImages,
+                              int maxResponseRecordCount,
+                              int maxTotalRecordCount,
+                              String profileType,
+                              String profileName,
+                              String extraData) throws CantConnectException, CantSendMessageException;
+
+    int searchProfilesRequest(boolean onlyHostedProfiles,
+                              boolean includeThumbnailImages,
+                              int maxResponseRecordCount,
+                              int maxTotalRecordCount,
+                              String profileType,
+                              String profileName,
+                              int latitude,
+                              int longitude,
+                              int radius,
+                              String extraData) throws CantConnectException, CantSendMessageException;
+
+    int addApplcationService(String applicationService) throws CantConnectException, CantSendMessageException;
+
+    int getIdentityInformationRequest(String profilePk,boolean applicationServices, boolean thumbnail, boolean profileImage) throws CantConnectException, CantSendMessageException;
+
 
     void addHandler(IoHandler hanlder);
 

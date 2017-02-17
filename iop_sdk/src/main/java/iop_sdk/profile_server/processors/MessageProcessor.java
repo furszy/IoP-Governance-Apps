@@ -6,6 +6,6 @@ package iop_sdk.profile_server.processors;
 
 public interface MessageProcessor<M> {
 
-    void execute(M message);
+    void execute(int messageId,M message);
 
 }

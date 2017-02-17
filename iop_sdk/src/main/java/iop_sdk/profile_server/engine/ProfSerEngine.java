@@ -13,6 +13,8 @@ import iop_sdk.IoHandler;
 import iop_sdk.crypto.CryptoBytes;
 import iop_sdk.crypto.CryptoWrapper;
 import iop_sdk.global.ContextWrapper;
+import iop_sdk.profile_server.CantConnectException;
+import iop_sdk.profile_server.CantSendMessageException;
 import iop_sdk.profile_server.IoSession;
 import iop_sdk.profile_server.SslContextFactory;
 import iop_sdk.profile_server.client.ProfNodeConnection;
@@ -145,6 +147,73 @@ public class ProfSerEngine {
 
     }
 
+
+    /**
+     * Public methods
+     */
+
+    /**
+     * Update the existing profile in the server
+     */
+    public int updateProfile(byte[] version,String name,byte[] img,int lat,int lon,String extraData){
+        LOG.info("updateProfileRequest, state: "+profSerConnectionState);
+        int msgId = 0;
+        if (profSerConnectionState == CHECK_IN){
+            try{
+                msgId = profileServer.updateProfileRequest(
+                        profNodeConnection.getProfile(),
+                        version,
+                        name,
+                        img,
+                        lat,
+                        lon,
+                        extraData
+                );
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+        return msgId;
+    }
+
+    public int addApplicationService(String applicationService){
+        profNodeConnection.getProfile().addApplicationService(applicationService);
+        return addApplicationServiceRequest(applicationService);
+    }
+
+    public void searchProfileByName(String name){
+        try {
+            profileServer.searchProfilesRequest(false,false,100,10000,null,name,null);
+        } catch (CantConnectException e) {
+            e.printStackTrace();
+        } catch (CantSendMessageException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void searchProfileByNameAndType(String name,String type){
+        try {
+            profileServer.searchProfilesRequest(false,false,100,10000,type,name,null);
+        } catch (CantConnectException e) {
+            e.printStackTrace();
+        } catch (CantSendMessageException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void searchProfiles(boolean onlyHostedProfiles,
+                               boolean includeThumbnailImages,
+                               int maxResponseRecordCount,
+                               int maxTotalRecordCount,
+                               String profileType,
+                               String profileName,
+                               String extraData){
+
+    }
+
+
+
+
     /**
      * Main method to init the connection with the server.
      */
@@ -168,11 +237,7 @@ public class ProfSerEngine {
 
             if (profNodeConnection.isRegistered()){
                 // Start conversation with customer port
-                //if (profServerData.getCustPort()!=profServerData.getNonCustPort()){
                 startConverClPort();
-                //}else if (profSerConnectionState == HOME_NODE_REQUEST){
-                //    profSerConnectionState = START_CONVERSATION_CL;
-                //}
             }
 
             // Client connected, now the identity have to do the check in
@@ -241,11 +306,11 @@ public class ProfSerEngine {
             try {
                 profileServer.homeNodeRequest(
                         profNodeConnection.getProfile().getPublicKey(),
-                        profNodeConnection.getProfile().getType());
+                        profNodeConnection.getProfile().getType()
+                );
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
         }
     }
 
@@ -288,29 +353,52 @@ public class ProfSerEngine {
         }
     }
 
-
     /**
-     * Update the existing profile in the server
+     * Add application service
+     *
+     * @param applicationService
+     * @return
      */
-    public void updateProfileRequest(byte[] version,String name,byte[] img,int lat,int lon,String extraData){
-        LOG.info("updateProfileRequest, state: "+profSerConnectionState);
-        if (profSerConnectionState == CHECK_IN){
-            try{
-                profileServer.updateProfileRequest(
-                        profNodeConnection.getProfile(),
-                        version,
-                        name,
-                        img,
-                        lat,
-                        lon,
-                        extraData
-                );
-            }catch (Exception e){
-                e.printStackTrace();
-            }
+    private int addApplicationServiceRequest(String applicationService){
+        if (!profNodeConnection.isRegistered()) throw new InvalidStateException("profile is not registered in the server");
+        int msgId = 0;
+        try {
+            msgId = profileServer.addApplcationService(applicationService);
+        } catch (CantSendMessageException e) {
+            e.printStackTrace();
+        } catch (CantConnectException e) {
+            e.printStackTrace();
         }
+        return msgId;
     }
-    
+
+
+    private void initProfile(){
+        try {
+            Profile profile = profNodeConnection.getProfile();
+
+            // update data
+            int msgId = updateProfile(
+                    profile.getVersion(),
+                    profile.getName(),
+                    profile.getImg(),
+                    profile.getLatitude(),
+                    profile.getLongitude(),
+                    profile.getExtraData()
+            );
+            // register application services
+            for (String service : profile.getApplicationServices()) {
+                addApplicationServiceRequest(service);
+            }
+
+            profNodeConnection.setNeedRegisterProfile(false);
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+    }
+
     /** Messages processors  */
 
     public class ProfileServerHanlder implements IoHandler<IopProfileServer.Message> {
@@ -323,6 +411,8 @@ public class ProfSerEngine {
         private static final int HOME_START_CONVERSATION_CL_PROCESSOR = 4;
         private static final int HOME_CHECK_IN_PROCESSOR = 5;
         private static final int HOME_UPDATE_PROFILE_PROCESSOR = 6;
+        private static final int HOME_PROFILE_SEARCH_PROCESSOR = 7;
+        private static final int HOME_ADD_APPLICATION_SERVICE_PROCESSOR = 8;
 
         private Map<Integer,MessageProcessor> processors;
 
@@ -334,6 +424,8 @@ public class ProfSerEngine {
             processors.put(HOME_START_CONVERSATION_CL_PROCESSOR,new StartConversationClProcessor());
             processors.put(HOME_CHECK_IN_PROCESSOR,new CheckinConversationProcessor());
             processors.put(HOME_UPDATE_PROFILE_PROCESSOR,new UpdateProfileConversationProcessor());
+            processors.put(HOME_PROFILE_SEARCH_PROCESSOR,new ProfileSearchProcessor());
+            processors.put(HOME_ADD_APPLICATION_SERVICE_PROCESSOR,new AddApplicationServiceProcessor());
         }
 
         @Override
@@ -365,7 +457,7 @@ public class ProfSerEngine {
 
                 case RESPONSE:
                     try {
-                        dispatchResponse(session, message.getResponse());
+                        dispatchResponse(session,message.getId(), message.getResponse());
                     }catch (Exception e){
                         LOG.info("Message id fail: "+message.getId());
                         e.printStackTrace();
@@ -384,14 +476,14 @@ public class ProfSerEngine {
 
         }
 
-        private void dispatchResponse(IoSession session, IopProfileServer.Response response) throws Exception {
+        private void dispatchResponse(IoSession session, int messageId, IopProfileServer.Response response) throws Exception {
             switch (response.getConversationTypeCase()){
 
                 case CONVERSATIONRESPONSE:
-                    dispatchConversationResponse(session,response.getConversationResponse());
+                    dispatchConversationResponse(session,messageId,response.getConversationResponse());
                     break;
                 case SINGLERESPONSE:
-                    dispatchSingleResponse(session,response.getSingleResponse());
+                    dispatchSingleResponse(session,messageId,response.getSingleResponse());
                     break;
 
                 case CONVERSATIONTYPE_NOT_SET:
@@ -399,7 +491,7 @@ public class ProfSerEngine {
                     switch (status){
                         // this happen when the connection is active and i send a startConversation or something else that i have to see..
                         case ERROR_BAD_CONVERSATION_STATUS:
-                            LOG.info("response: "+response.toString()+", engine state: "+profSerConnectionState.toString());
+                            LOG.info("Message id: "+messageId+", response: "+response.toString()+", engine state: "+profSerConnectionState.toString());
 //                            profSerConnectionState = START_CONVERSATION_NON_CL;
                             break;
                         // this happen whe the identity already exist or when the cl and non-cl port are the same in the StartConversation message
@@ -420,12 +512,12 @@ public class ProfSerEngine {
             }
         }
 
-        private void dispatchSingleResponse(IoSession session, IopProfileServer.SingleResponse singleResponse){
+        private void dispatchSingleResponse(IoSession session, int messageId, IopProfileServer.SingleResponse singleResponse){
             switch (singleResponse.getResponseTypeCase()){
 
                 case LISTROLES:
                     LOG.info("ListRoles received");
-                    processors.get(LIST_ROLES_PROCESSOR).execute(singleResponse.getListRoles());
+                    processors.get(LIST_ROLES_PROCESSOR).execute(messageId,singleResponse.getListRoles());
                     break;
 
                 default:
@@ -435,7 +527,7 @@ public class ProfSerEngine {
 
         }
 
-        private void dispatchConversationResponse(IoSession session, IopProfileServer.ConversationResponse conversationResponse) throws Exception {
+        private void dispatchConversationResponse(IoSession session, int messageId, IopProfileServer.ConversationResponse conversationResponse) throws Exception {
             switch (conversationResponse.getResponseTypeCase()){
 
                 case START:
@@ -445,23 +537,32 @@ public class ProfSerEngine {
                     profNodeConnection.setSignedConnectionChallenge(signedChallenge);
                     LOG.info("challenge signed: "+ CryptoBytes.toHexString(signedChallenge));
 
-                    if (profSerConnectionState==WAITING_START_NON_CL) processors.get(START_CONVERSATION_NON_CL_PROCESSOR).execute(conversationResponse.getStart());
-                    else processors.get(HOME_START_CONVERSATION_CL_PROCESSOR).execute(conversationResponse.getStart());
+                    if (profSerConnectionState==WAITING_START_NON_CL) processors.get(START_CONVERSATION_NON_CL_PROCESSOR).execute(messageId,conversationResponse.getStart());
+                    else processors.get(HOME_START_CONVERSATION_CL_PROCESSOR).execute(messageId,conversationResponse.getStart());
                     break;
                 case REGISTERHOSTING:
                     LOG.info("home node response received in port: "+session.getPortType());
-                    processors.get(HOME_NODE_REQUEST_PROCESSOR).execute(conversationResponse.getRegisterHosting());
+                    processors.get(HOME_NODE_REQUEST_PROCESSOR).execute(messageId,conversationResponse.getRegisterHosting());
                     break;
                 case CHECKIN:
                     LOG.info("check in response ");
-                    processors.get(HOME_CHECK_IN_PROCESSOR).execute(conversationResponse.getCheckIn());
+                    processors.get(HOME_CHECK_IN_PROCESSOR).execute(messageId,conversationResponse.getCheckIn());
                     break;
                 case UPDATEPROFILE:
                     if (verifyIdentity(conversationResponse.getSignature().toByteArray(),conversationResponse.toByteArray())) {
-                        processors.get(HOME_UPDATE_PROFILE_PROCESSOR).execute(conversationResponse.getUpdateProfile());
+                        processors.get(HOME_UPDATE_PROFILE_PROCESSOR).execute(messageId,conversationResponse.getUpdateProfile());
                     }else {
                         throw new Exception("El nodo no es quien dice, acá tengo que desconectar todo");
                     }
+                    break;
+                case PROFILESEARCH:
+                    LOG.info("profile search response ");
+                    processors.get(HOME_PROFILE_SEARCH_PROCESSOR).execute(messageId,conversationResponse.getProfileSearch());
+                    break;
+                case APPLICATIONSERVICEADD:
+                    LOG.info("add application service");
+                    processors.get(HOME_ADD_APPLICATION_SERVICE_PROCESSOR).execute(messageId,conversationResponse.getApplicationServiceAdd());
+
                     break;
                 default:
                     LOG.info("algo llegó y no lo estoy controlando..");
@@ -484,7 +585,7 @@ public class ProfSerEngine {
 
 
         @Override
-        public void execute(IopProfileServer.ListRolesResponse message) {
+        public void execute(int messageId,IopProfileServer.ListRolesResponse message) {
             LOG.info("ListRolesProcessor execute..");
             for (IopProfileServer.ServerRole serverRole : message.getRolesList()) {
                 switch (serverRole.getRole()){
@@ -520,7 +621,7 @@ public class ProfSerEngine {
     private class StartConversationNonClProcessor implements MessageProcessor<IopProfileServer.StartConversationResponse>{
 
         @Override
-        public void execute(IopProfileServer.StartConversationResponse message) {
+        public void execute(int messageId,IopProfileServer.StartConversationResponse message) {
             LOG.info("StartNonClProcessor execute..");
             //todo: ver todos los get que tiene esto, el challenge y demás...
             profSerConnectionState = START_CONVERSATION_NON_CL;
@@ -536,7 +637,7 @@ public class ProfSerEngine {
     private class HomeNodeRequestProcessor implements MessageProcessor<IopProfileServer.RegisterHostingResponse>{
 
         @Override
-        public void execute(IopProfileServer.RegisterHostingResponse message) {
+        public void execute(int messageId,IopProfileServer.RegisterHostingResponse message) {
             LOG.info("HomeNodeRequestProcessor execute..");
 
             //todo: ver que parametros utilizar de este homeNodeResponse..
@@ -544,6 +645,7 @@ public class ProfSerEngine {
             // save data
             profSerDb.setProfileRegistered(profServerData.getHost(),profNodeConnection.getProfile().getHexPublicKey());
             profNodeConnection.setIsRegistered(true);
+            profNodeConnection.setNeedRegisterProfile(true);
             engine();
         }
     }
@@ -554,7 +656,7 @@ public class ProfSerEngine {
     private class StartConversationClProcessor implements MessageProcessor<IopProfileServer.StartConversationResponse>{
 
         @Override
-        public void execute(IopProfileServer.StartConversationResponse message) {
+        public void execute(int messageId,IopProfileServer.StartConversationResponse message) {
             LOG.info("StartConversationClProcessor execute..");
             //todo: ver todos los get que tiene esto, el challenge y demás...
             // set the node challenge
@@ -571,10 +673,15 @@ public class ProfSerEngine {
     private class CheckinConversationProcessor implements MessageProcessor<IopProfileServer.CheckInResponse>{
 
         @Override
-        public void execute(IopProfileServer.CheckInResponse message) {
+        public void execute(int messageId,IopProfileServer.CheckInResponse message) {
             LOG.info("CheckinProcessor execute..");
             profSerConnectionState = CHECK_IN;
             LOG.info("#### Check in completed!!  ####");
+
+            // if the profile is just registered i have to initialize it
+            if (profNodeConnection.isNeedRegisterProfile()){
+                initProfile();
+            }
             // notify check-in
             for (EngineListener engineListener : engineListeners) {
                 engineListener.onCheckInCompleted(profNodeConnection.getProfile());
@@ -586,13 +693,41 @@ public class ProfSerEngine {
     private class UpdateProfileConversationProcessor implements MessageProcessor<IopProfileServer.UpdateProfileResponse>{
 
         @Override
-        public void execute(IopProfileServer.UpdateProfileResponse message) {
+        public void execute(int messageId,IopProfileServer.UpdateProfileResponse message) {
             LOG.info("UpdateProfileProcessor execute..");
             LOG.info("UpdateProfileProcessor update works..");
 
         }
     }
 
+    private class ProfileSearchProcessor implements MessageProcessor<IopProfileServer.ProfileSearchResponse>{
+
+        @Override
+        public void execute(int messageId,IopProfileServer.ProfileSearchResponse message) {
+            LOG.info("ProfileSearchProcessor execute..");
+            LOG.info("Profile search count: "+message.getProfilesCount());
+            StringBuilder stringBuilder = new StringBuilder();
+            for (IopProfileServer.IdentityNetworkProfileInformation identityNetworkProfileInformation : message.getProfilesList()) {
+                stringBuilder
+                        .append("PK: "+identityNetworkProfileInformation.getIdentityPublicKey().toStringUtf8())
+                        .append("\n")
+                        .append("Name: "+identityNetworkProfileInformation.getName())
+                        .append("\n");
+            }
+            LOG.info(stringBuilder.toString());
+        }
+    }
+
+    private class AddApplicationServiceProcessor implements MessageProcessor<IopProfileServer.ApplicationServiceAddResponse>{
+
+
+        @Override
+        public void execute(int messageId,IopProfileServer.ApplicationServiceAddResponse message) {
+            LOG.info("AddApplicationServiceProcessor");
+            // todo: acá deberia chequear si fueron listados bien los applicationServices..
+
+        }
+    }
 
     
 }

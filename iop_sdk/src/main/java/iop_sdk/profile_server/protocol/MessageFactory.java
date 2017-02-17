@@ -14,6 +14,8 @@ public class MessageFactory {
 
     private static AtomicInteger messageIdGenerator = new AtomicInteger(0);
 
+    public static final int NO_LOCATION = 0x7FFFFFFF;
+
     /**
      * Build ping request message
      *
@@ -203,6 +205,115 @@ public class MessageFactory {
         return buildMessage(request,signature);
     }
 
+    /**
+     *
+     * // Asks a profile server for a list of all identities that match the search criteria. This search never returns
+     // profiles of old customer identities who cancelled their hosting agreements, even if the profile server still
+     // holds some information about those identities.
+     //
+     // Each search request only produces a limited number of results. The maximal size of the first set of results
+     // is provided by 'maxResponseRecordCount' field. The response to this message contains up to 'maxResponseRecordCount'
+     // results. If there are more results available, they are saved to the conversation context, which enables the client
+     // to obtain more results with subsequent ProfileSearchPartRequest messages.
+     //
+     // The profile server will not save more than 'maxTotalRecordCount' search requests.
+     // The profile server has to allow the client to get additional results at least 1 minute from receiving
+     // ProfileSearchRequest, but it can maintain the result cache for longer than that.
+     //
+     // Once the client sends another ProfileSearchRequest, or if it disconnects, the old search results are discarded.
+     //
+     // Roles: clNonCustomer, clCustomer
+     //
+     // Conversation status: ConversationStarted, Verified, Authenticated
+     *
+     * @param onlyHostedProfiles  // If set to true, the profile server only returns profiles of its own customers.
+     *                            // If set to false, profiles from the server's neighborhood can be included in the result.
+     *
+     * @param includeThumbnailImages // If set to true, the response will include a thumbnail image of each profile.
+     *
+     * @param maxResponseRecordCount  // Maximal number of results to be delivered in the response. If 'includeThumbnailImages'
+     *                                // is true, this has to be an integer between 1 and 100. If 'includeThumbnailImages' is false,
+     *                                // this has to be an integer between 1 and 1000. The value must not be greater than 'maxTotalRecordCount'.
+     *
+     * @param maxTotalRecordCount     // Maximal number of total results that the profile server will look for and save. If 'includeThumbnailImages'
+     *                                // is true, this has to be an integer between 1 and 1,000. If 'includeThumbnailImages' is false,
+     *                                // this has to be an integer between 1 and 10,000.
+     *
+     *
+     * @param profileType    // WildcardType or empty string. If not empty, the profile server will only return profiles
+     *                       // of identity types that match the wildcard string. If empty, all identity types are allowed.
+     *                       // Max 64 bytes long.
+     *
+     * @param profileName    // WildcardType or empty string. If not empty, the profile server  will only return profiles
+     *                       // with names that match the wildcard string. If empty, all profile names are allowed.
+     *                       // Max 64 bytes long.
+     *
+     * @param latitude       // LocationType. Encoded target GPS location latitude or NO_LOCATION. If not NO_LOCATION,
+     *                       // it is, in combination with 'longitude' and 'radius' a specification of target area,
+     *                       // where the identity has to be located (according to its profile information) in order to be
+     *                       // included in the search results. If NO_LOCATION, 'longitude' and 'radius' are ignored
+     *                       // and all locations are allowed.
+     *
+     * @param longitude      // LocationType. If 'latitude' is not NO_LOCATION, this is encoded target GPS location longitude.
+     *
+     * @param radius         // If 'latitude' is not NO_LOCATION, this is target location radius in metres.
+     *
+     * @param extraData      // RegexType or empty string. If not empty, specifies the regular expression that identity
+     *                       // profile's extra data information must match in order to be included in the results.
+     *                       // If empty, no filtering based on extra data information is made.
+     *                       // Max 256 bytes long.
+     *
+     *
+     *                       todo: faltan las validaciones de cada campo..
+     * @return
+     */
+    public static IopProfileServer.Message buildProfileSearchRequest(
+            boolean onlyHostedProfiles,
+            boolean includeThumbnailImages,
+            int maxResponseRecordCount,
+            int maxTotalRecordCount,
+            String profileType,
+            String profileName,
+            int latitude,
+            int longitude,
+            int radius,
+            String extraData){
+
+
+        IopProfileServer.ProfileSearchRequest.Builder builder = IopProfileServer.ProfileSearchRequest.newBuilder();
+
+        builder.setIncludeHostedOnly(onlyHostedProfiles);
+        builder.setIncludeThumbnailImages(includeThumbnailImages);
+        builder.setMaxResponseRecordCount(maxResponseRecordCount);
+        builder.setMaxTotalRecordCount(maxTotalRecordCount);
+        if (profileType!=null)
+            builder.setType(profileType);
+        if (profileName!=null)
+            builder.setName(profileName);
+        builder.setLatitude(latitude);
+        builder.setLongitude(longitude);
+        if (radius>0)
+            builder.setRadius(radius);
+        if (extraData!=null)
+            builder.setExtraData(extraData);
+
+        return buildMessage(builder);
+    }
+
+    public static IopProfileServer.Message buildApplicationServiceAddRequest(String serviceName){
+        IopProfileServer.ApplicationServiceAddRequest.Builder builder = IopProfileServer.ApplicationServiceAddRequest.newBuilder();
+        builder.addServiceNames(serviceName);
+        return buildMessage(builder);
+    }
+
+    public static IopProfileServer.Message buildGetIdentityInformationRequest(String profilePk,boolean includeApplicationServices,boolean includeThumbnail,boolean includeProfileImage) {
+        IopProfileServer.GetIdentityInformationRequest.Builder geBuilder = IopProfileServer.GetIdentityInformationRequest.newBuilder();
+        geBuilder.setIdentityNetworkId(ByteString.copyFromUtf8(profilePk));
+        geBuilder.setIncludeApplicationServices(includeApplicationServices);
+        geBuilder.setIncludeThumbnailImage(includeThumbnail);
+        geBuilder.setIncludeProfileImage(includeProfileImage);
+        return buildMessage(geBuilder);
+    }
 
 
     /**
@@ -269,6 +380,18 @@ public class MessageFactory {
         return buildMessage(IopProfileServer.ConversationRequest.newBuilder().setStart(startConversationBuilder));
     }
 
+    private static IopProfileServer.Message buildMessage(IopProfileServer.ProfileSearchRequest.Builder builder) {
+        return buildMessage(IopProfileServer.ConversationRequest.newBuilder().setProfileSearch(builder));
+    }
+
+    private static IopProfileServer.Message buildMessage(IopProfileServer.ApplicationServiceAddRequest.Builder builder) {
+        return buildMessage(IopProfileServer.ConversationRequest.newBuilder().setApplicationServiceAdd(builder));
+    }
+
+    private static IopProfileServer.Message buildMessage(IopProfileServer.GetIdentityInformationRequest.Builder builder){
+        return buildMessage(IopProfileServer.SingleRequest.newBuilder().setGetIdentityInformation(builder));
+    }
+
     private static IopProfileServer.Message initMessage(IopProfileServer.Message.Builder messageBuilder) {
         messageBuilder.setId(getMessageId());
         return messageBuilder.build();
@@ -277,6 +400,7 @@ public class MessageFactory {
     private static int getMessageId(){
         return messageIdGenerator.incrementAndGet();
     }
+
 
 
 }

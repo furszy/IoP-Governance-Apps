@@ -1,5 +1,8 @@
 package iop_sdk.profile_server.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import iop_sdk.profile_server.Signer;
 
 /**
@@ -18,16 +21,17 @@ public class Profile implements Signer {
     private int longitude;
     private String extraData;
 
+    private List<String> applicationServices;
 
     /** Key del profile */
     private KeyEd25519 keyEd25519;
-
 
 
     public Profile(byte[] version,String name,KeyEd25519 keyEd25519) {
         this.version = version;
         this.name = name;
         this.keyEd25519 = keyEd25519.generateKeys();
+        applicationServices = new ArrayList<>();
     }
 
     public void setVersion(byte[] version) {
@@ -102,6 +106,10 @@ public class Profile implements Signer {
         this.type = type;
     }
 
+    public void addApplicationService(String service){
+        applicationServices.add(service);
+    }
+
 
     @Override
     public byte[] sign(byte[] message) {
@@ -114,4 +122,7 @@ public class Profile implements Signer {
     }
 
 
+    public List<String> getApplicationServices() {
+        return applicationServices;
+    }
 }

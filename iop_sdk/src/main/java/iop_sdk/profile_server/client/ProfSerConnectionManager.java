@@ -31,8 +31,6 @@ import iop_sdk.profile_server.protocol.IopProfileServer;
 
 public class ProfSerConnectionManager {
 
-    private static final String TAG = "ProfSerConnectionManager";
-
     private SSLContext sslContext;
 
     private String host;
@@ -57,7 +55,6 @@ public class ProfSerConnectionManager {
 
     private void initContext(SslContextFactory sslContextFactory) throws Exception {
         if (sslContextFactory==null) throw new IllegalArgumentException("ssl context factory null");
-        //todo: hay que ver esto..
         this.sslContext = sslContextFactory.buildContext();
     }
 

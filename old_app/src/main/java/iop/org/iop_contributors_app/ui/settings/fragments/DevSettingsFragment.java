@@ -147,7 +147,9 @@ public class DevSettingsFragment extends PreferenceFragment implements Preferenc
     @Override
     public boolean onPreferenceTreeClick(PreferenceScreen preferenceScreen, Preference preference) {
 
-        if (preference.getKey().equals("id_restart_blockchain")){
+        if (preference.getKey().equals("id_info")) {
+            startActivity(new Intent(getActivity(),NetworkInfoActivity.class));
+        }if (preference.getKey().equals("id_restart_blockchain")){
             module.getWalletManager().resetBlockchain();
             //module.cleanEverything();
             Toast.makeText(getActivity(),"Reseting blockchain...\nApp will be closed to clean data in 5 seconds",Toast.LENGTH_LONG).show();

@@ -297,6 +297,8 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
 
             @Override
             public void run() {
+                org.bitcoinj.core.Context.propagate(WalletConstants.CONTEXT);
+
                 lastMessageTime.set(System.currentTimeMillis());
 
                 if (application.isVotingApp()) {
@@ -396,25 +398,29 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
     }
 
     private void proposalsArrive(List<Proposal> proposals){
-        for (Proposal proposal : proposals) {
-            try {
-                Proposal temp = proposal;
-                proposal = walletModule.proposalArrive(proposal);
-                if (proposal!=null) {
-                    LOG.info("Proposal arrive!");
-                    // notify state
-                    broadcastProposalArrived(proposal);
-                }else {
-                    LOG.info("Proposal arrive return null, state: "+temp.getState());
+        if (proposals!=null) {
+            for (Proposal proposal : proposals) {
+                try {
+                    Proposal temp = proposal;
+                    proposal = walletModule.proposalArrive(proposal);
+                    if (proposal != null) {
+                        LOG.info("Proposal arrive!");
+                        // notify state
+                        broadcastProposalArrived(proposal);
+                    } else {
+                        LOG.info("Proposal arrive return null, state: " + temp.getState());
+                    }
+                } catch (CantSaveProposalException e) {
+                    LOG.info(e.getMessage());
+                } catch (CantSaveProposalExistException e) {
+                    // nothing
+                    LOG.info("proposal exist! " + proposal.getGenesisTxHash());
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-            } catch (CantSaveProposalException e) {
-                LOG.info(e.getMessage());
-            } catch (CantSaveProposalExistException e) {
-                // nothing
-                LOG.info("proposal exist! " + proposal.getGenesisTxHash());
-            } catch (Exception e){
-                e.printStackTrace();
             }
+        }else {
+            LOG.info("Proposals arrive null");
         }
     }
 
@@ -777,6 +783,7 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
                             showMaxTransactionsExceedDialog(1500);
                             e.printStackTrace();
                         } catch (Exception e) {
+                            showDialogException(COMMON_ERROR_DIALOG, e.getMessage());
                             e.printStackTrace();
                         }
                     }
@@ -817,6 +824,7 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
                         } catch (CantCancelVoteException e) {
                             showDialogException(COMMON_ERROR_DIALOG,e.getMessage());
                         } catch (Exception e){
+                            showDialogException(COMMON_ERROR_DIALOG, e.getMessage());
                             e.printStackTrace();
                         }
 

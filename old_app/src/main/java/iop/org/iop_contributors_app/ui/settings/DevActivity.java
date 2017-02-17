@@ -4,7 +4,13 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.os.Bundle;
 import android.view.Menu;
+import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
+
+import org.bitcoinj.core.Peer;
+
+import java.util.List;
 
 import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.ui.base.BaseActivity;
@@ -38,6 +44,8 @@ public class DevActivity extends BaseActivity {
                 .commit();
     }
 
+
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         return super.onCreateOptionsMenu(menu);
@@ -57,5 +65,7 @@ public class DevActivity extends BaseActivity {
     protected void onDestroy() {
         super.onDestroy();
     }
+
+
 
 }

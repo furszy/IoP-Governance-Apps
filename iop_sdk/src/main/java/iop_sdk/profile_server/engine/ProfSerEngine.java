@@ -4,7 +4,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -21,6 +24,7 @@ import iop_sdk.profile_server.client.ProfNodeConnection;
 import iop_sdk.profile_server.client.ProfSerImp;
 import iop_sdk.profile_server.client.ProfileServer;
 import iop_sdk.profile_server.db.ProfServerDbFile;
+import iop_sdk.profile_server.engine.listeners.ProfSerMsgListener;
 import iop_sdk.profile_server.model.ProfServerData;
 import iop_sdk.profile_server.model.Profile;
 import iop_sdk.profile_server.processors.MessageProcessor;
@@ -65,6 +69,8 @@ public class ProfSerEngine {
     private ProfileServerHanlder handler;
     /** Engine listener*/
     private final CopyOnWriteArrayList<EngineListener> engineListeners = new CopyOnWriteArrayList<>();
+    /** Messages listeners:  id -> listner */
+    private final ConcurrentMap<Integer,ProfSerMsgListener> msgListeners = new ConcurrentHashMap<>();
 
     private ExecutorService executor;
 
@@ -181,9 +187,16 @@ public class ProfSerEngine {
         return addApplicationServiceRequest(applicationService);
     }
 
-    public void searchProfileByName(String name){
+    /**
+     * //todo: hace falta dividir la lectura de la escritura.
+     * @param name
+     * @param listener
+     */
+    public void searchProfileByName(String name, ProfSerMsgListener<List<IopProfileServer.IdentityNetworkProfileInformation>> listener){
         try {
-            profileServer.searchProfilesRequest(false,false,100,10000,null,name,null);
+            msgListeners.put(
+                    profileServer.searchProfilesRequest(false,false,100,10000,null,name,null),
+                    listener);
         } catch (CantConnectException e) {
             e.printStackTrace();
         } catch (CantSendMessageException e) {
@@ -218,9 +231,9 @@ public class ProfSerEngine {
      * Main method to init the connection with the server.
      */
     private void engine(){
-
         try {
 
+            LOG.info("Engine");
 
             if (!profNodeConnection.isRegistered()){
 
@@ -715,6 +728,10 @@ public class ProfSerEngine {
                         .append("\n");
             }
             LOG.info(stringBuilder.toString());
+
+            msgListeners.get(messageId).onMessageReceive(messageId,message.getProfilesList());
+            msgListeners.remove(messageId);
+
         }
     }
 

@@ -10,6 +10,7 @@ import android.util.Log;
 import org.iop.AppController;
 import org.iop.WalletModule;
 
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -26,7 +27,9 @@ import iop_sdk.profile_server.ProfileServerConfigurations;
 import iop_sdk.profile_server.Signer;
 import iop_sdk.profile_server.engine.EngineListener;
 import iop_sdk.profile_server.engine.ProfSerEngine;
+import iop_sdk.profile_server.engine.listeners.ProfSerMsgListener;
 import iop_sdk.profile_server.model.ProfServerData;
+import iop_sdk.profile_server.protocol.IopProfileServer;
 
 
 /**
@@ -236,7 +239,12 @@ public class ProfileServerService extends Service implements ModuleProfileServer
         // here i can update extra data field or just notify the connection to the UI
 
         // voy a hacer una prueba trayendo los usuarios registrados..
-        profSerEngine.searchProfileByName("*Mati*");
+        profSerEngine.searchProfileByName("*Mati*", new ProfSerMsgListener<List<IopProfileServer.IdentityNetworkProfileInformation>>() {
+            @Override
+            public void onMessageReceive(int messageId, List<IopProfileServer.IdentityNetworkProfileInformation> message) {
+                Log.i(TAG,"Search profile message received");
+            }
+        });
 
 //        profSerEngine.getProfileServices();
     }

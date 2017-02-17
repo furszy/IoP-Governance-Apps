@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.Socket;
 import java.nio.ByteBuffer;
+import java.util.concurrent.TimeUnit;
 
 import javax.net.SocketFactory;
 
@@ -29,13 +30,14 @@ public class ProfileServerSocket implements IoSession<IopProfileServer.Message> 
     private String host;
     /** Server role type */
     private IopProfileServer.ServerRoleType portType;
-
+    /** Socket factory */
     private SocketFactory socketFactory;
-
+    /** Blocking Socket */
     private Socket socket;
-
+    /** Handler */
     private IoHandler<IopProfileServer.Message> handler;
-
+    /** Reader thread */
+    private Thread readThread;
 
     public ProfileServerSocket(SocketFactory socketFactory, String host, int port,IopProfileServer.ServerRoleType portType) throws Exception {
         this.socketFactory = socketFactory;
@@ -46,7 +48,10 @@ public class ProfileServerSocket implements IoSession<IopProfileServer.Message> 
     }
 
     public void connect() throws IOException {
+        if ((socket!=null && readThread!=null) && (socket.isConnected() || readThread.isAlive())) throw new IllegalStateException("ProfileServerSocket is running");
         this.socket = socketFactory.createSocket(host,port);
+        readThread = new Thread(new Reader());
+        readThread.start();
     }
 
     public void setHandler(IoHandler<IopProfileServer.Message> handler) {
@@ -65,7 +70,7 @@ public class ProfileServerSocket implements IoSession<IopProfileServer.Message> 
             socket.getOutputStream().write(messageToSend);
             socket.getOutputStream().flush();
             handler.messageSent(this,message);
-            read();
+//            read();
         }catch (Exception e){
             throw new CantSendMessageException(e);
         }
@@ -115,6 +120,7 @@ public class ProfileServerSocket implements IoSession<IopProfileServer.Message> 
     public void closeNow() throws IOException {
         logger.info("Closing socket port: "+portType);
         socket.close();
+        readThread.interrupt();
     }
 
     @Override
@@ -140,5 +146,25 @@ public class ProfileServerSocket implements IoSession<IopProfileServer.Message> 
     @Override
     public boolean isWriteSuspended() {
         return false;
+    }
+
+
+    private class Reader implements Runnable{
+
+        @Override
+        public void run() {
+            try {
+
+                for (;;) {
+                    if (!socket.isClosed())
+                        read();
+                    else {
+                        TimeUnit.SECONDS.sleep(3);
+                    }
+                }
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }
     }
 }

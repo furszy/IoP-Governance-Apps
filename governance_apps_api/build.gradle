@@ -21,13 +21,6 @@ android {
     }
 }
 
-repositories {
-    mavenCentral()
-    flatDir {
-        dirs 'libs'
-    }
-}
-
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
@@ -35,15 +28,4 @@ dependencies {
     })
     compile 'com.android.support:appcompat-v7:24.2.1'
     testCompile 'junit:junit:4.12'
-
-    compile project(':IoP-SDK')
-
-    // libsodium
-    //compile(name:'libsodium-jni-aar-1.0.3', ext:'aar')
-
-    compile project(':libsodium-jni-aar-1.0.3')
-
-
-
-
 }

@@ -323,7 +323,6 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
                                         bestBlockHeight = bestBlockHeight -3;
                                     }
 
-
                                     List<Proposal> proposals = null;
                                     ServerWrapper.RequestProposalsResponse requestProposalsResponse = null;
 

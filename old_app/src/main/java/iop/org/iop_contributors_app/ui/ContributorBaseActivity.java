@@ -19,17 +19,12 @@ import iop.org.iop_contributors_app.ui.base.BaseActivity;
 import iop.org.iop_contributors_app.ui.components.NavViewAdapter;
 import iop.org.iop_contributors_app.ui.dialogs.wallet.BackupDialog;
 import iop.org.iop_contributors_app.ui.dialogs.wallet.RestoreDialogFragment2;
-import iop.org.iop_sdk_android.core.wrappers.IntentWrapperAndroid;
-import iop_sdk.global.IntentWrapper;
 import iop_sdk.governance.propose.Proposal;
-import iop_sdk.governance.vote.Vote;
 
-import static org.iop.intents.constants.IntentsConstants.ACTION_NOTIFICATION;
 import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_PROPOSAL_FROZEN_FUNDS_UNLOCKED;
 import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_PROPOSAL_TRANSACTION_SUCCED;
 import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_TYPE;
 import static org.iop.intents.constants.IntentsConstants.INTENT_EXTRA_PROPOSAL;
-import static org.iop.intents.constants.IntentsConstants.INTENT_NOTIFICATION;
 
 /**
  * Created by mati on 21/12/16.
@@ -69,6 +64,7 @@ public abstract class ContributorBaseActivity extends BaseActivity {
                     break;
             }
             onActionDrawerClicked();
+            //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             startActivity(intent);
         }
 
@@ -82,7 +78,7 @@ public abstract class ContributorBaseActivity extends BaseActivity {
      * method to finish or not the activity when the drawer is clicked
      */
     protected void onActionDrawerClicked() {
-
+//        finish();
     }
 
     protected void beforeCreate(Bundle savedInstanceState){

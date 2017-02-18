@@ -1,5 +1,6 @@
 package iop.org.iop_contributors_app.services;
 
+import android.app.AlarmManager;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -58,6 +59,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -90,6 +92,7 @@ import static org.iop.intents.constants.IntentsConstants.COMMON_ERROR_DIALOG;
 import static org.iop.intents.constants.IntentsConstants.INSUFICIENTS_FUNDS_DIALOG;
 import static org.iop.intents.constants.IntentsConstants.INTENTE_BROADCAST_DIALOG_TYPE;
 import static org.iop.intents.constants.IntentsConstants.INTENTE_EXTRA_MESSAGE;
+import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_BLOCKCHAIN_STATE;
 import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_ON_COIN_RECEIVED;
 import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_ON_COIN_RECEIVED_IS_TRANSACTION_MINE;
 import static org.iop.intents.constants.IntentsConstants.INTENT_BROADCAST_DATA_PROPOSAL_TRANSACTION_ARRIVED;
@@ -113,7 +116,7 @@ import static org.iop.intents.constants.IntentsConstants.UNKNOWN_ERROR_DIALOG;
 public class BlockchainServiceImpl extends Service implements BlockchainService{
 
     private static final Logger LOG = LoggerFactory.getLogger(BlockchainServiceImpl.class);
-    private static final String TAG = "BlockchainServiceImpl";
+    private final String SCHEDULE_SERVICE = "scheduled";
 
     private AppController application;
     /** Root Module */
@@ -294,6 +297,8 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
 
             @Override
             public void run() {
+                org.bitcoinj.core.Context.propagate(WalletConstants.CONTEXT);
+
                 lastMessageTime.set(System.currentTimeMillis());
 
                 if (application.isVotingApp()) {
@@ -304,8 +309,12 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
                         @Override
                         public void run() {
                             try {
-                                //bestBlockHeight != -1 &&
-                                if (!transactionFinder.getLastBestChainHash().equals(block.getHash().toString())) {
+                                // todo: por alguna razón el getLastBestChainHash devuelve null..
+                                String lastBestChainHash = transactionFinder.getLastBestChainHash();
+                                if (lastBestChainHash==null){
+                                    transactionFinder.setLastBestChainHash(lastBestChainHash);
+                                }
+                                if (!lastBestChainHash.equals(block.getHash().toString())) {
                                     LOG.info("executing download-1");
 
                                     int bestBlockHeight = conf.maybeIncrementBestChainHeightEver(blockchainManager.getChainHeadHeight());
@@ -314,12 +323,11 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
                                         bestBlockHeight = bestBlockHeight -3;
                                     }
 
-
                                     List<Proposal> proposals = null;
                                     ServerWrapper.RequestProposalsResponse requestProposalsResponse = null;
 
                                     // obtain proposal contracts to filter
-                                    requestProposalsResponse = walletModule.requestProposalsFullTx(bestBlockHeight);
+                                    requestProposalsResponse = walletModule.requestProposalsFullTx(0);//bestBlockHeight);
                                     if (requestProposalsResponse != null) {
                                         proposalsArrive(requestProposalsResponse.getProposals());
                                     }
@@ -334,44 +342,8 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
 
 
                 }else {
-
-                    LOG.info("executing download active proposals (para actualizarlas)");
-                    executorService.submit(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                // update own contract proposal
-                                List<Proposal> list = walletModule.getActiveProposalsInBlockchain();
-                                if (!list.isEmpty()) {
-                                    LOG.info("Active proposals: "+Arrays.toString(list.toArray()));
-                                    ServerWrapper.RequestProposalsResponse requestProposalsResponse = walletModule.requestUpdateFromProposals(list);
-                                    if (requestProposalsResponse != null) {
-                                        // arribo de propuestas
-                                        proposalsArrive(requestProposalsResponse.getProposals());
-                                        // check if a fork occur
-                                        // If the node doesn't send me the exact number of proposals that i sent, i have to put the remaining proposals in a UKNOWN state because they are not in the blockchain for some reason
-                                        List<Proposal> remainingProposals = new ArrayList<Proposal>();
-                                        for (Proposal proposal : list) {
-                                            boolean exist = false;
-                                            for (Proposal proposal1 : requestProposalsResponse.getProposals()) {
-                                                if (proposal.getGenesisTxHash().equals(proposal1.getGenesisTxHash())){
-                                                    exist=true;
-                                                    break;
-                                                }
-                                            }
-                                            if (!exist){
-                                                remainingProposals.add(proposal);
-                                            }
-                                        }
-                                        // now i put the remaining proposals to UKNOWN STATE
-                                        walletModule.saveUnknownProposals(remainingProposals);
-                                    }
-                                }
-                            }catch (Exception e){
-                                e.printStackTrace();
-                            }
-                        }
-                    });
+                    // update proposals
+                    updateProposals();
 
                 }
 
@@ -379,32 +351,77 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
 //                broadcastBlockchainState();
             }
         }
-        private void proposalsArrive(List<Proposal> proposals){
+
+
+    };
+
+
+    private void updateProposals(){
+        LOG.info("executing download active proposals (para actualizarlas)");
+        executorService.submit(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    // update own contract proposal
+                    List<Proposal> list = walletModule.getActiveProposalsInBlockchain();
+                    if (!list.isEmpty()) {
+                        LOG.info("Active proposals: "+Arrays.toString(list.toArray()));
+                        ServerWrapper.RequestProposalsResponse requestProposalsResponse = walletModule.requestUpdateFromProposals(list);
+                        if (requestProposalsResponse != null) {
+                            // arribo de propuestas
+                            proposalsArrive(requestProposalsResponse.getProposals());
+                            // check if a fork occur
+                            // If the node doesn't send me the exact number of proposals that i sent, i have to put the remaining proposals in a UKNOWN state because they are not in the blockchain for some reason
+                            List<Proposal> remainingProposals = new ArrayList<Proposal>();
+                            for (Proposal proposal : list) {
+                                boolean exist = false;
+                                for (Proposal proposal1 : requestProposalsResponse.getProposals()) {
+                                    if (proposal.getGenesisTxHash().equals(proposal1.getGenesisTxHash())){
+                                        exist=true;
+                                        break;
+                                    }
+                                }
+                                if (!exist){
+                                    remainingProposals.add(proposal);
+                                }
+                            }
+                            // now i put the remaining proposals to UKNOWN STATE
+                            walletModule.saveUnknownProposals(remainingProposals);
+                        }
+                    }
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
+    private void proposalsArrive(List<Proposal> proposals){
+        if (proposals!=null) {
             for (Proposal proposal : proposals) {
                 try {
                     Proposal temp = proposal;
                     proposal = walletModule.proposalArrive(proposal);
-                    if (proposal!=null) {
+                    if (proposal != null) {
                         LOG.info("Proposal arrive!");
                         // notify state
                         broadcastProposalArrived(proposal);
-                    }else {
-                        LOG.info("Proposal arrive return null, state: "+temp.getState());
+                    } else {
+                        LOG.info("Proposal arrive return null, state: " + temp.getState());
                     }
                 } catch (CantSaveProposalException e) {
                     LOG.info(e.getMessage());
                 } catch (CantSaveProposalExistException e) {
                     // nothing
                     LOG.info("proposal exist! " + proposal.getGenesisTxHash());
-                } catch (Exception e){
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
+        }else {
+            LOG.info("Proposals arrive null");
         }
-
-    };
-
-
+    }
 
     private final BroadcastReceiver connectivityReceiver = new BroadcastReceiver() {
         @Override
@@ -493,9 +510,9 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
 
                     mBuilder =
                             new NotificationCompat.Builder(getApplicationContext())
-                                    .setSmallIcon(R.drawable.ic__launcher)
+                                    .setSmallIcon(R.drawable.ic_iop_token)
                                     .setContentTitle("IoPs received!")
-                                    .setContentText("Transaction received for a value of " + BtcFormat.getInstance().format(notificationAccumulatedAmount.getValue()).replace("BTC",""))
+                                    .setContentText("Transaction received for a value of " + BtcFormat.getInstance(Locale.GERMAN).format(notificationAccumulatedAmount.getValue()).replace("BTC","IoP"))
                                     .setAutoCancel(false)
                                     .setDeleteIntent(deleteIntent);
 
@@ -536,11 +553,16 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
                     try {
                         org.bitcoinj.core.Context.propagate(CONTEXT);
 
-                        broadcastProposalArrived(
-                            // check and save proposal in db
-                                walletModule.txProposalArrive(tx)
+                        Proposal proposal = // check and save proposal in db
+                                walletModule.txProposalArrive(tx);
+                        if (proposal!=null) {
+                            broadcastProposalArrived(
+                                    proposal
 
-                        );
+                            );
+                        }else {
+                            LOG.error("Proposal arrived with an error, please check this, tx:  "+tx.toString());
+                        }
                     } catch (Exception e){
                         e.printStackTrace();
                     }
@@ -597,6 +619,8 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
         blockchainManager = walletModule.getBlockchainManager();
         conf = (WalletPreferencesConfiguration) walletModule.getWalletManager().getConfigurations();
 
+        tryScheduleService();
+
         //todo: esto no me gusta nada
 
         peerConnectivityListener = new PeerConnectivityListener();
@@ -626,6 +650,9 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
                                     e.printStackTrace();
                                 }
                             }
+
+                            // update balance state
+                            broadcastBlockchainStateIntent();
                         }
                     }
                 }catch (Exception e){
@@ -645,6 +672,37 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
         intentFilter.addAction(Intent.ACTION_DEVICE_STORAGE_LOW);
         intentFilter.addAction(Intent.ACTION_DEVICE_STORAGE_OK);
         registerReceiver(connectivityReceiver, intentFilter); // implicitly init PeerGroup
+    }
+
+    /**
+     * Schedule service for later
+     */
+    private void tryScheduleService() {
+        boolean isSchedule = System.currentTimeMillis()<conf.getScheduledBLockchainService();
+        if (!isSchedule){
+            LOG.info("scheduling service");
+            AlarmManager alarm = (AlarmManager)getSystemService(ALARM_SERVICE);
+            long scheduleTime = System.currentTimeMillis() + 1000*60;//(1000 * 60 * 60); // One hour from now
+
+            Intent intent = new Intent(this, BlockchainServiceImpl.class);
+            intent.setAction(SCHEDULE_SERVICE);
+            alarm.set(
+                    // This alarm will wake up the device when System.currentTimeMillis()
+                    // equals the second argument value
+                    alarm.RTC_WAKEUP,
+                    scheduleTime,
+                    // PendingIntent.getService creates an Intent that will start a service
+                    // when it is called. The first argument is the Context that will be used
+                    // when delivering this intent. Using this has worked for me. The second
+                    // argument is a request code. You can use this code to cancel the
+                    // pending intent if you need to. Third is the intent you want to
+                    // trigger. In this case I want to create an intent that will start my
+                    // service. Lastly you can optionally pass flags.
+                    PendingIntent.getService(this, 0,intent , 0)
+            );
+            // save
+            conf.saveScheduleBlockchainService(scheduleTime);
+        }
     }
 
 
@@ -674,7 +732,19 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
 
             final String action = intent.getAction();
 
-            if (BlockchainService.ACTION_BROADCAST_PROPOSAL_TRANSACTION.equals(action)) {
+            if (SCHEDULE_SERVICE.equals(action)){
+                if (application.isVotingApp()){
+                    executorService.submit(new Runnable() {
+                        @Override
+                        public void run() {
+                            org.bitcoinj.core.Context.propagate(WalletConstants.CONTEXT);
+                            check();
+                        }
+                    });
+                }else {
+                    check();
+                }
+            }else if (BlockchainService.ACTION_BROADCAST_PROPOSAL_TRANSACTION.equals(action)) {
                 executorService.submit(new Runnable() {
                     @Override
                     public void run() {
@@ -712,6 +782,7 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
                             showMaxTransactionsExceedDialog(1500);
                             e.printStackTrace();
                         } catch (Exception e) {
+                            showDialogException(COMMON_ERROR_DIALOG, e.getMessage());
                             e.printStackTrace();
                         }
                     }
@@ -737,6 +808,7 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
                         try {
                             // Obtengo el voto del intent
                             Vote vote = (Vote) intent.getSerializableExtra(INTENT_EXTRA_PROPOSAL_VOTE);
+                            org.bitcoinj.core.Context.propagate(conf.getWalletContext());
                             if (walletModule.sendVote(vote)) {
                                 broadcastVoteSucced(vote);
                             }
@@ -751,6 +823,7 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
                         } catch (CantCancelVoteException e) {
                             showDialogException(COMMON_ERROR_DIALOG,e.getMessage());
                         } catch (Exception e){
+                            showDialogException(COMMON_ERROR_DIALOG, e.getMessage());
                             e.printStackTrace();
                         }
 
@@ -784,7 +857,7 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
             blockchainSyncBuilder = new NotificationCompat.Builder(this);
             blockchainSyncBuilder.setContentTitle("Blockchain Syncing")
                     .setContentText("Blocks left: "+blockLeft)
-                    .setSmallIcon(R.drawable.ic__launcher);
+                    .setSmallIcon(R.drawable.ic_iop_token);
             // Sets an activity indicator for an operation of indeterminate length
             blockchainSyncBuilder.setProgress(0, 0, true);
             // Displays the progress bar for the first time.
@@ -921,6 +994,9 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
 //                }, TimeUnit.SECONDS.toMillis(5));
             }
 
+            // schedule service it is not scheduled yet
+            tryScheduleService();
+
         }catch(Exception e){
             e.printStackTrace();
         }
@@ -948,17 +1024,21 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
                         blockchainDownloadListener);
 
                 //todo: ver si conviene esto..
-                broadcastBlockchainState();
+                broadcastBlockchainState(true);
+
+                // update proposals
+                updateProposals();
+
 
                 isChecking.set(false);
             } else {
                 LOG.error("algo malo pasa");
-                broadcastBlockchainState();
+                broadcastBlockchainState(false);
             }
         }catch (Exception e){
             e.printStackTrace();
             isChecking.set(false);
-            broadcastBlockchainState();
+            broadcastBlockchainState(false);
         }
     }
 
@@ -997,7 +1077,7 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
 
         @Override
         public void onBlockchainOff(Set<BlockchainState.Impediment> impediments) {
-            String dialogText = "Blockchain impediment: ";
+            String dialogText = "Blockchain obstacle: ";
             int i = 0;
             for (BlockchainState.Impediment impediment : impediments) {
                 dialogText += impediment.toString();
@@ -1020,7 +1100,7 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
         }
     };
 
-    private void broadcastBlockchainState() {
+    private void broadcastBlockchainState(boolean isCheckOk) {
 
 
         if (!impediments.isEmpty()) {
@@ -1036,12 +1116,18 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
 
             android.support.v4.app.NotificationCompat.Builder mBuilder =
                     new NotificationCompat.Builder(getApplicationContext())
-                            .setSmallIcon(R.drawable.ic__launcher)
-                            .setContentTitle("Impediment")
+                            .setSmallIcon(R.drawable.ic_iop_token)
+                            .setContentTitle("Obstacle")
                             .setContentText("Fail: "+stringBuilder.toString());
 
             nm.notify(15, mBuilder.build());
         }
+
+        if (isCheckOk){
+            broadcastBlockchainStateIntent();
+        }
+
+
 //        if (blockchainManager.getConnectedPeers().isEmpty()){
 //            android.support.v4.app.NotificationCompat.Builder mBuilder =
 //                    new NotificationCompat.Builder(getApplicationContext())
@@ -1051,6 +1137,13 @@ public class BlockchainServiceImpl extends Service implements BlockchainService{
 //
 //            nm.notify(16, mBuilder.build());
 //        }
+    }
+
+    private void broadcastBlockchainStateIntent(){
+        Intent intent = new Intent(ACTION_NOTIFICATION);
+        intent.putExtra(INTENT_BROADCAST_TYPE,INTENT_DATA);
+        intent.putExtra(INTENT_BROADCAST_DATA_TYPE, INTENT_BROADCAST_DATA_BLOCKCHAIN_STATE);
+        localBroadcast.sendBroadcast(intent);
     }
 
 

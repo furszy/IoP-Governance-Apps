@@ -123,7 +123,7 @@
                     android:paddingTop="5dp"
                     android:paddingBottom="5dp"
                     android:paddingLeft="15dp"
-                    android:inputType="number"
+                    android:inputType="numberDecimal"
                     android:textSize="13sp"
                     android:layout_weight="1"/>
 

@@ -18,4 +18,9 @@ public class WalletManagerListenerImp implements WalletManagerListener {
     public void onWalletRestored() {
         walletModule.getAppController().showDialog(WalletConstants.SHOW_RESTORE_SUCCED_DIALOG);
     }
+
+    @Override
+    public boolean isOutputLocked(String hash, long index) {
+        return walletModule.isOutputLocked(hash,index);
+    }
 }

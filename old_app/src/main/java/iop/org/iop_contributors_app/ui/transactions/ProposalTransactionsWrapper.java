@@ -3,6 +3,7 @@ package iop.org.iop_contributors_app.ui.transactions;
 import org.bitcoinj.core.Transaction;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import iop_sdk.governance.propose.Proposal;
@@ -30,5 +31,13 @@ public class ProposalTransactionsWrapper {
 
     public List<Transaction> getTransactions() {
         return transactions;
+    }
+
+    @Override
+    public String toString() {
+        return "ProposalTransactionsWrapper{" +
+                "proposal=" + proposal +
+                ", transactions=" + Arrays.toString(transactions.toArray()) +
+                '}';
     }
 }

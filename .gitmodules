@@ -1,0 +1,3 @@
+[submodule "Android-IoP-SDK"]
+	path = Android-IoP-SDK
+	url = https://github.com/furszy/Android-IoP-SDK.git

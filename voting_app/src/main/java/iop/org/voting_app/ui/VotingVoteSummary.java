@@ -12,6 +12,7 @@ import android.view.animation.Transformation;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -78,6 +79,11 @@ public class VotingVoteSummary extends VotingBaseActivity implements View.OnClic
     private TextView txt_go_vote;
     private View card_bottom_border;
 
+    // addicional info
+    private LinearLayout container_addicional_info;
+    private TextView txt_tx_hash;
+
+
     private ProgressBar progressYes;
     private TextView txt_vote_yes;
     private ProgressBar progressNo;
@@ -107,6 +113,7 @@ public class VotingVoteSummary extends VotingBaseActivity implements View.OnClic
     private EditText txt_vote_quantity;
 
     private boolean isChangeVoteExpanded;
+    private boolean isAddicionalInfoShow;
 
 
 
@@ -121,7 +128,6 @@ public class VotingVoteSummary extends VotingBaseActivity implements View.OnClic
     public boolean onOptionsItemSelected(MenuItem item) {
 
         if (item.getItemId()==R.id.id_change_vote){
-
             if (voteWrapper.getProposal().isActive()) {
                 if (!isChangeVoteExpanded) {
                     expand(container_change_vote, card_bottom_border);
@@ -132,9 +138,21 @@ public class VotingVoteSummary extends VotingBaseActivity implements View.OnClic
                 isChangeVoteExpanded = !isChangeVoteExpanded;
             }
             return true;
+        }else if(item.getItemId()==R.id.id_addcional_info){
+            showAddicionalInfo();
+            return true;
         }
 
         return false;
+    }
+
+    private void showAddicionalInfo() {
+        if (!isAddicionalInfoShow){
+            txt_tx_hash.setText("TxId: "+voteWrapper.getVote().getGenesisHashHex());
+            expand(container_addicional_info);
+        }else {
+            collapse(container_addicional_info);
+        }
     }
 
     @Override
@@ -157,6 +175,9 @@ public class VotingVoteSummary extends VotingBaseActivity implements View.OnClic
         txt_go_cancel = (TextView) root.findViewById(R.id.txt_go_cancel);
         txt_go_vote = (TextView) root.findViewById(R.id.txt_go_vote);
         card_bottom_border = root.findViewById(R.id.card_bottom_border);
+
+        container_addicional_info = (LinearLayout) root.findViewById(R.id.container_addicional_info);
+        txt_tx_hash = (TextView) root.findViewById(R.id.txt_tx_hash);
 
         container_change_vote = root.findViewById(R.id.container_change_vote);
         seek_bar_switch = (SwitchSeekBar) root.findViewById(R.id.seek_bar_switch);
@@ -209,7 +230,6 @@ public class VotingVoteSummary extends VotingBaseActivity implements View.OnClic
         });
         
         loadVote();
-
 
         if(getIntent().getExtras().containsKey(INTENT_CHANGE_VOTE)){
             expand(container_change_vote, card_bottom_border);
@@ -312,10 +332,18 @@ public class VotingVoteSummary extends VotingBaseActivity implements View.OnClic
         txt_vote_yes.setText(numberToNumberWithDots(voteYes));
         txt_vote_no.setText(numberToNumberWithDots(voteNo));
 
-        if (totalValue>0){
-            txt_vote_result.setText((voteYes>voteNo)?"Yes is winning":"No is winning");
+        if (voteWrapper.getProposal().isActive()){
+            if (totalValue>0){
+                txt_vote_result.setText((voteYes>voteNo)?"Yes is winning":"No is winning");
+            }else {
+                txt_vote_result.setText("No votes yet");
+            }
         }else {
-            txt_vote_result.setText("No votes yet");
+            if (totalValue>0){
+                txt_vote_result.setText((voteYes>voteNo)?"Yes won":"No won");
+            }else {
+                txt_vote_result.setText("No votes");
+            }
         }
 
         seek_bar_switch.setPosition(getPositionByVoteType(voteWrapper.getVote().getVote()));
@@ -420,15 +448,11 @@ public class VotingVoteSummary extends VotingBaseActivity implements View.OnClic
 
         long amountIoPToshis = votingAmount;
 
-
-
-
         if (Transaction.MIN_NONDUST_OUTPUT.isGreaterThan(Coin.valueOf(amountIoPToshis))){
             SimpleDialogs.showErrorDialog(this,"Error", "Votes not allowed, min votes value: "+Transaction.MIN_NONDUST_OUTPUT.getValue());
             hideDoneLoading();
             return;
         }
-
 
         Vote vote = voteWrapper.getVote();
         vote.setVoteType(voteType);

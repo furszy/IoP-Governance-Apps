@@ -58,8 +58,6 @@ public class VotingProposalsActivity extends VotingBaseActivity implements VoteC
 
     }
 
-
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId()==R.id.action_show_all){
@@ -140,12 +138,14 @@ public class VotingProposalsActivity extends VotingBaseActivity implements VoteC
             Proposal proposal = (Proposal) data.get(INTENT_EXTRA_PROPOSAL);
             if (proposals==null || proposals.isEmpty()) {
                 if (adapter!=null) {
-                    if (!proposal.getTitle().equals("")) {
-                        proposals.add(proposal);
-                        adapter.changeDataSet(proposals);
-                        hideEmptyScreen();
-                    }else {
-                        Log.e(TAG,"Proposal showed in this screen with null title.. this is a big issue, proposal: "+proposal.toString());
+                    if (proposal!=null) {
+                        if (!proposal.getTitle().equals("")) {
+                            proposals.add(proposal);
+                            adapter.changeDataSet(proposals);
+                            hideEmptyScreen();
+                        } else {
+                            Log.e(TAG, "Proposal showed in this screen with null title.. this is a big issue, proposal: " + proposal.toString());
+                        }
                     }
                 }
             }else {

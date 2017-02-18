@@ -152,6 +152,27 @@
                         android:textColor="#fff" />
 
 
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:id="@+id/container_addicional_info"
+                        android:layout_marginLeft="9dp"
+                        android:layout_marginRight="9dp"
+                        android:visibility="gone"
+                        android:paddingTop="9dp"
+                        android:paddingBottom="9dp">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/txt_tx_hash"
+                            />
+
+
+                    </LinearLayout>
+
+
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"

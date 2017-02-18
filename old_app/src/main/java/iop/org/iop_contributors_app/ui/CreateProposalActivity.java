@@ -1,9 +1,15 @@
 package iop.org.iop_contributors_app.ui;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -22,6 +28,8 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.bitcoinj.core.Address;
+import org.iop.WalletConstants;
 import org.iop.db.CantGetProposalException;
 import org.iop.db.CantSaveProposalExistException;
 import org.json.JSONArray;
@@ -35,6 +43,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import iop.org.furszy_lib.ChromeHelpPopup;
+import iop.org.furszy_lib.scanner.ScanActivity;
 import iop.org.furszy_lib.utils.SizeUtils;
 import iop.org.iop_contributors_app.R;
 import iop.org.iop_contributors_app.ui.dialogs.wallet.InsuficientFundsDialog;
@@ -47,6 +56,10 @@ import iop_sdk.forum.CantCreateTopicException;
 import iop_sdk.governance.propose.Beneficiary;
 import iop_sdk.governance.propose.Proposal;
 
+import static android.Manifest.permission.CAMERA;
+import static android.Manifest.permission.VIBRATE;
+import static android.widget.Toast.LENGTH_LONG;
+import static iop.org.furszy_lib.scanner.ScanActivity.INTENT_EXTRA_RESULT;
 import static iop.org.iop_contributors_app.ui.ProposalSummaryActivity.ACTION_PROPOSAL;
 import static iop_sdk.governance.ProposalForum.FIELD_ADDRESS;
 import static iop_sdk.governance.ProposalForum.FIELD_BLOCK_REWARD;
@@ -65,11 +78,12 @@ import static org.iop.intents.constants.IntentsConstants.INTENT_EXTRA_PROPOSAL;
  * Created by mati on 17/11/16.
  */
 
-public class CreateProposalActivity extends ContributorBaseActivity {
+public class CreateProposalActivity extends ContributorBaseActivity implements BeneficiariesAdapter.QrListener {
 
 
     private static final String TAG = "CreateProposalActivity";
 
+    private static final int SCANNER_RESULT = 122;
 //    public static final String ACTION_PROPOSAL_BROADCASTED = "propBroadcasted";
 
     // dialogs
@@ -115,7 +129,6 @@ public class CreateProposalActivity extends ContributorBaseActivity {
     private RecyclerView recycler_beneficiaries;
     private BeneficiariesAdapter beneficiariesAdapter;
     private List<Beneficiary> extraBeneficiaries = new ArrayList<>();
-    private LinearLayout ben_container;
 
     private RelativeLayout beneficiaries_container;
 
@@ -199,7 +212,6 @@ public class CreateProposalActivity extends ContributorBaseActivity {
         btn_create_proposal = (Button) root.findViewById(R.id.btn_create_proposal);
 
         recycler_beneficiaries = (RecyclerView) root.findViewById(R.id.recycler_beneficiaries);
-        ben_container = (LinearLayout) root.findViewById(R.id.ben_container);
 
         beneficiaries_container = (RelativeLayout) root.findViewById(R.id.beneficiaries_container) ;
 
@@ -236,7 +248,7 @@ public class CreateProposalActivity extends ContributorBaseActivity {
                                 try {
                                     loadProposal();
                                 }catch (Exception e){
-                                    Toast.makeText(CreateProposalActivity.this,"Load proposal fail",Toast.LENGTH_LONG).show();
+                                    Toast.makeText(CreateProposalActivity.this,"Load proposal fail", LENGTH_LONG).show();
                                 }
                             }
                         });
@@ -269,13 +281,18 @@ public class CreateProposalActivity extends ContributorBaseActivity {
                                     if (proposal != null) {
 
                                         int forumId = 0;
-                                        if ((forumId = module.createForumProposal(proposal))>0) {
-                                            messageBody = "Proposal created!";
-                                            proposal.setForumId(forumId);
-                                            result = true;
-                                        } else {
+                                        if (isOnline()) {
+                                            if ((forumId = module.createForumProposal(proposal)) > 0) {
+                                                messageBody = "Proposal created!";
+                                                proposal.setForumId(forumId);
+                                                result = true;
+                                            } else {
+                                                errorTitle = "Error";
+                                                messageBody = "Uknown, proposal fail!\nplease send a report";
+                                            }
+                                        }else {
                                             errorTitle = "Error";
-                                            messageBody = "Uknown, proposal fail!\nplease send a report";
+                                            messageBody = "No internet connectivity";
                                         }
                                     } else {
                                         Log.e(TAG, "proposal null, see logs");
@@ -350,7 +367,7 @@ public class CreateProposalActivity extends ContributorBaseActivity {
                         Beneficiary lastBeneficiary = getBeneficiaryFromRecycler(beneficiariesSize-1);
                         validator.validateBeneficiary(lastBeneficiary.getAddress(), lastBeneficiary.getAmount());
                     } catch (ValidationException e) {
-                        Toast.makeText(v.getContext(),e.getMessage(),Toast.LENGTH_LONG).show();
+                        Toast.makeText(v.getContext(),e.getMessage(), LENGTH_LONG).show();
                         return;
                     } catch (Exception e){
                         e.printStackTrace();
@@ -371,6 +388,13 @@ public class CreateProposalActivity extends ContributorBaseActivity {
 
     }
 
+    public boolean isOnline() {
+        ConnectivityManager cm =
+                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        return netInfo != null && netInfo.isConnectedOrConnecting();
+    }
+
     private void initBeneficiaryRecycler(){
         recycler_beneficiaries.setVisibility(View.VISIBLE);
         //recycler_beneficiaries.setHasFixedSize(true);
@@ -378,7 +402,7 @@ public class CreateProposalActivity extends ContributorBaseActivity {
         recycler_beneficiaries.setLayoutManager(layoutManager);
         VerticalSpaceItemDecoration dividerItemDecoration = new VerticalSpaceItemDecoration(SizeUtils.convertDpToPx(getResources(),12));
         recycler_beneficiaries.addItemDecoration(dividerItemDecoration);
-        beneficiariesAdapter = new BeneficiariesAdapter(CreateProposalActivity.this,extraBeneficiaries,validator);
+        beneficiariesAdapter = new BeneficiariesAdapter(CreateProposalActivity.this,extraBeneficiaries,validator,this);
         recycler_beneficiaries.setAdapter(beneficiariesAdapter);
     }
 
@@ -470,7 +494,7 @@ public class CreateProposalActivity extends ContributorBaseActivity {
 //        // Creating adapter for spinner
 //        ArrayAdapter<String> dataAdapter = new ArrayAdapter<>(this, R.layout.create_proposal_spinner_item, categories);
 //
-//        // Drop down layout style - list view with radio button
+//        // Drop down layout style - wrapper view with radio button
 //        dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 //
 //        // attaching data adapter to spinner
@@ -824,4 +848,142 @@ public class CreateProposalActivity extends ContributorBaseActivity {
 
 
 
+
+//    @Override
+//    public void onRequestPermissionsResult(int permsRequestCode, String[] permissions, int[] grantResults) {
+//
+//        switch (permsRequestCode) {
+//
+//            case 200:
+//                boolean cameraAccepted = grantResults[1] == PackageManager.PERMISSION_GRANTED;
+//
+//                break;
+//        }
+//    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case 200:
+                if (grantResults.length > 0) {
+
+                    boolean cameraAccepted = grantResults[0] == PackageManager.PERMISSION_GRANTED;
+
+                    if (cameraAccepted)
+                        Toast.makeText(this, "Permission Granted, Now you can access camera.", LENGTH_LONG).show();
+                    else {
+
+                        Toast.makeText(this, "Permission Denied, You cannot access camera.",LENGTH_LONG).show();
+
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                            if (shouldShowRequestPermissionRationale(CAMERA)) {
+//                                showMessageOKCancel("You need to allow access to both the permissions",
+//                                        new DialogInterface.OnClickListener() {
+//                                            @Override
+//                                            public void onClick(DialogInterface dialog, int which) {
+//                                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+//                                                    requestPermissions(new String[]{ACCESS_FINE_LOCATION, CAMERA},
+//                                                            PERMISSION_REQUEST_CODE);
+//                                                }
+//                                            }
+//                                        });
+                                return;
+                            }
+                        }
+
+                    }
+                }
+                break;
+            case 201:
+                if (grantResults.length > 0) {
+
+                    boolean cameraAccepted = grantResults[0] == PackageManager.PERMISSION_GRANTED;
+
+                    if (cameraAccepted)
+                        Toast.makeText(this, "Permission Granted, vibrate.", LENGTH_LONG).show();
+                    else {
+
+                        Toast.makeText(this, "Permission Denied, vibrate.",LENGTH_LONG).show();
+
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                            if (shouldShowRequestPermissionRationale(VIBRATE)) {
+//                                showMessageOKCancel("You need to allow access to both the permissions",
+//                                        new DialogInterface.OnClickListener() {
+//                                            @Override
+//                                            public void onClick(DialogInterface dialog, int which) {
+//                                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+//                                                    requestPermissions(new String[]{ACCESS_FINE_LOCATION, CAMERA},
+//                                                            PERMISSION_REQUEST_CODE);
+//                                                }
+//                                            }
+//                                        });
+                                return;
+                            }
+                        }
+
+                    }
+                }
+
+                break;
+        }
+    }
+
+    private int beneficiaryWaitingPosition;
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        if (requestCode == SCANNER_RESULT){
+            if (resultCode==RESULT_OK) {
+                try {
+                    String address = data.getStringExtra(INTENT_EXTRA_RESULT);
+                    // first 4 letters are IoP:
+                    address = address.substring(4);
+                    Address.fromBase58(WalletConstants.NETWORK_PARAMETERS, address);
+
+                    BeneficiaryHolder beneficiaryHolder = (BeneficiaryHolder) recycler_beneficiaries.findViewHolderForAdapterPosition(beneficiaryWaitingPosition);
+                    beneficiaryHolder.edit_beneficiary_address.setText(address);
+                    Beneficiary beneficiary = beneficiariesAdapter.getItem(beneficiaryWaitingPosition);
+                    beneficiary.setAddress(address);
+
+                }catch (Exception e){
+                    Toast.makeText(this,"Bad address",Toast.LENGTH_LONG).show();
+                }
+            }
+        }
+
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @Override
+    public void onItemQrTouched(Beneficiary data, int position) {
+
+        beneficiaryWaitingPosition = position;
+
+        if (!checkPermission(CAMERA)) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                int permsRequestCode = 200;
+                String[] perms = {"android.permission.CAMERA"};
+                requestPermissions(perms, permsRequestCode);
+            }
+        }
+        if (!checkPermission(VIBRATE)) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                int permsRequestCode = 201;
+                String[] perms = {"android.permission.VIBRATE"};
+                requestPermissions(perms, permsRequestCode);
+            }
+        }
+
+
+
+        Intent intent = new Intent(this, ScanActivity.class);
+        startActivityForResult(intent,SCANNER_RESULT);
+    }
+
+    private boolean checkPermission(String permission) {
+        int result = ContextCompat.checkSelfPermission(getApplicationContext(),permission);
+
+        return result == PackageManager.PERMISSION_GRANTED;
+    }
 }

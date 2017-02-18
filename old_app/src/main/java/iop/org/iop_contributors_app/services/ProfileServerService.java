@@ -10,6 +10,7 @@ import android.util.Log;
 import org.iop.AppController;
 import org.iop.WalletModule;
 
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -24,15 +25,18 @@ import iop_sdk.global.HardCodedConstans;
 import iop_sdk.profile_server.ModuleProfileServer;
 import iop_sdk.profile_server.ProfileServerConfigurations;
 import iop_sdk.profile_server.Signer;
+import iop_sdk.profile_server.engine.EngineListener;
 import iop_sdk.profile_server.engine.ProfSerEngine;
+import iop_sdk.profile_server.engine.listeners.ProfSerMsgListener;
 import iop_sdk.profile_server.model.ProfServerData;
+import iop_sdk.profile_server.protocol.IopProfileServer;
 
 
 /**
  * Created by mati on 09/11/16.
  */
 
-public class ProfileServerService extends Service implements ModuleProfileServer {
+public class ProfileServerService extends Service implements ModuleProfileServer, EngineListener {
 
     private static final String TAG = "ProfileServerService";
 
@@ -47,7 +51,6 @@ public class ProfileServerService extends Service implements ModuleProfileServer
     private AppController application;
 
     private ProfSerEngine profSerEngine;
-
 
     public class ProfServerBinder extends Binder {
         public ProfileServerService getService() {
@@ -77,14 +80,17 @@ public class ProfileServerService extends Service implements ModuleProfileServer
 
             executor = Executors.newFixedThreadPool(3);
             // init client data
-            initClientData();
+//            initClientData();
             // init profile server
-//            profileServer = ApplicationController.getInstance().getProfileServerManager();
+//            profile_server = ApplicationController.getInstance().getProfileServerManager();
             //profileServerHanlder = new ProfileServerHanlder();
-            //profileServer.addHandler(profileServerHanlder);
+            //profile_server.addHandler(profileServerHanlder);
 
             //init
             initProfileServer();
+
+            profSerEngine.start();
+
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -98,26 +104,31 @@ public class ProfileServerService extends Service implements ModuleProfileServer
 
         String host = configurationsPreferences.getHost();
         if (host==null){
-            host = HardCodedConstans.HOST;
+            host = HardCodedConstans.HOME_HOST;
             configurationsPreferences.setHost(host);
         }
 
         CryptoWrapper cryptoWrapper = new CryptoWrapperAndroid();
 
-        ProfServerData profServerData = new ProfServerData(HardCodedConstans.HOME_HOST);
+        ProfServerData profServerData = new ProfServerData(host);
         iop_sdk.profile_server.model.Profile profile = new iop_sdk.profile_server.model.Profile(
                 new byte[]{1,0,0},
                 "Mati",
                 new KeyEd25519Android()
         );
+        profile.setType("Contributor");
+        profile.addApplicationService("exchange_address");
+        profile.addApplicationService("chat");
 
         profSerEngine = new ProfSerEngine(
                 application,
                 profServerData,
                 profile,
                 cryptoWrapper,
-                new SslContextFactory()
+                new SslContextFactory(this)
                 );
+
+        profSerEngine.addEngineListener(this);
 
 
         // primary port
@@ -125,41 +136,41 @@ public class ProfileServerService extends Service implements ModuleProfileServer
 //        profileServerConfigurations.setClPort(clPort);
 //        profileServerConfigurations.setNonClPort(nonClPort);
 
-        //profileServer = new ProfSerImp(application,configurationsPreferences,null);
+        //profile_server = new ProfSerImp(application,configurationsPreferences,null);
     }
 
-    private void initClientData() {
-        //todo: esto lo tengo que hacer cuando guarde la privkey encriptada.., por ahora lo dejo asI. Este es el profile que va a crear el usuario, está acá de ejemplo.
-
-        if (configurationsPreferences.isRegisteredInServer()) {
-
-            // load profile
-
-//            byte[] publicKey = configurationsPreferences.getUserPubKey();
-//            byte[] privKey = configurationsPreferences.getUserPrivKey();
-
-            KeyEd25519 keyEd25519 = (KeyEd25519) configurationsPreferences.getUserKeys();
-
-            Profile profile = new Profile(
-                    configurationsPreferences.getProtocolVersion(),
-                    configurationsPreferences.getUsername(),
-                    keyEd25519
-            );
-
-            module.setProfile(profile);
-
-        } else {
-
-            // save
-
-            Profile profile = new Profile(configurationsPreferences.getProfileVersion(), configurationsPreferences.getUsername());
-            module.setProfile(profile);
-            // save
-            configurationsPreferences.saveUserKeys(profile.getKey());
-        }
-
-
-    }
+//    private void initClientData() {
+//        //todo: esto lo tengo que hacer cuando guarde la privkey encriptada.., por ahora lo dejo asI. Este es el profile que va a crear el usuario, está acá de ejemplo.
+//
+//        if (configurationsPreferences.isRegisteredInServer()) {
+//
+//            // load profile
+//
+////            byte[] publicKey = configurationsPreferences.getUserPubKey();
+////            byte[] privKey = configurationsPreferences.getUserPrivKey();
+//
+//            KeyEd25519 keyEd25519 = (KeyEd25519) configurationsPreferences.getUserKeys();
+//
+//            Profile profile = new Profile(
+//                    configurationsPreferences.getProtocolVersion(),
+//                    configurationsPreferences.getUsername(),
+//                    keyEd25519
+//            );
+//
+//            module.setProfile(profile);
+//
+//        } else {
+//
+//            // save
+//
+//            Profile profile = new Profile(configurationsPreferences.getProfileVersion(), configurationsPreferences.getUsername());
+//            module.setProfile(profile);
+//            // save
+//            configurationsPreferences.saveUserKeys(profile.getKey());
+//        }
+//
+//
+//    }
 
 
     @Override
@@ -175,7 +186,7 @@ public class ProfileServerService extends Service implements ModuleProfileServer
 //        try{
 //            configurationsPreferences.setUsername(name);
 //
-//            return profileServer.updateProfileRequest(
+//            return profile_server.updateProfileRequest(
 //                    signer,
 //                    version,
 //                    name,
@@ -195,7 +206,7 @@ public class ProfileServerService extends Service implements ModuleProfileServer
 
     @Override
     public int updateExtraData(Signer signer, String extraData) throws Exception {
-        return 0;//profileServer.updateExtraData(signer,extraData);
+        return 0;//profile_server.updateExtraData(signer,extraData);
     }
 
     @Override
@@ -217,11 +228,27 @@ public class ProfileServerService extends Service implements ModuleProfileServer
     @Override
     public void onDestroy() {
         Log.d(TAG,"onDestroy");
-
+        profSerEngine.stop();
         executor.shutdown();
 
         super.onDestroy();
     }
+
+    @Override
+    public void onCheckInCompleted(iop_sdk.profile_server.model.Profile profile) {
+        // here i can update extra data field or just notify the connection to the UI
+
+        // voy a hacer una prueba trayendo los usuarios registrados..
+        profSerEngine.searchProfileByName("*Mati*", new ProfSerMsgListener<List<IopProfileServer.IdentityNetworkProfileInformation>>() {
+            @Override
+            public void onMessageReceive(int messageId, List<IopProfileServer.IdentityNetworkProfileInformation> message) {
+                Log.i(TAG,"Search profile message received");
+            }
+        });
+
+//        profSerEngine.getProfileServices();
+    }
+
 
 
 

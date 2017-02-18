@@ -63,9 +63,6 @@ public class BroadcastVoteDialog extends DialogFragment {
                 dismiss();
             }
         });
-
-
-
         return root;
     }
 

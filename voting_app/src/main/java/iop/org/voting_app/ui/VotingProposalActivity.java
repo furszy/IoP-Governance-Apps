@@ -363,6 +363,7 @@ public class VotingProposalActivity extends VotingBaseActivity implements View.O
         if (voteType == Vote.VoteType.YES && (proposal.getState() == QUEUED_FOR_EXECUTION || proposal.getState() == IN_EXECUTION)) {
             Toast.makeText(this, "No more positive votes are allowed\nProposal is already in execution", Toast.LENGTH_LONG).show();
             unlockAndHideLoading();
+            return;
         }
 
         if (checkVote(vote)) {
@@ -432,6 +433,5 @@ public class VotingProposalActivity extends VotingBaseActivity implements View.O
     @Override
     public void onStop() {
         super.onStop();
-
     }
 }

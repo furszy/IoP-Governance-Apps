@@ -4,17 +4,17 @@ import android.app.Fragment;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.bitcoinj.core.Transaction;
+import org.bitcoinj.core.TransactionConfidence;
 import org.iop.WalletModule;
 
 import java.util.ArrayList;
@@ -28,6 +28,7 @@ import iop_sdk.governance.propose.Proposal;
 
 public class UnconfirmedTransactionFragment extends Fragment {
 
+    private static final String TAG = "UnconfirmedTxsFrag";
     private SectionedRecyclerViewAdapter sectionAdapter;
     private WalletModule module;
 
@@ -80,9 +81,13 @@ public class UnconfirmedTransactionFragment extends Fragment {
         List<ProposalTransactionsWrapper> wrappers = new ArrayList<>();
 
         ProposalTransactionsWrapper proposalTransactionsWrapper = new ProposalTransactionsWrapper(Proposal.buildRandomProposal());
-        for (Transaction transaction : module.getWalletManager().getWallet().getTransactions(true)) {
+        for (Transaction transaction : module.getWalletManager().getWallet().getTransactions(false)) {
             if (!transaction.isMature())
                 proposalTransactionsWrapper.addTx(transaction);
+            else
+                if (transaction.getConfidence().getConfidenceType()== TransactionConfidence.ConfidenceType.PENDING){
+                    proposalTransactionsWrapper.addTx(transaction);
+                }
         }
         wrappers.add(proposalTransactionsWrapper);
 
@@ -96,18 +101,18 @@ public class UnconfirmedTransactionFragment extends Fragment {
     class ContactsSection extends StatelessSection {
 
         String title;
-        ProposalTransactionsWrapper list;
+        ProposalTransactionsWrapper wrapper;
 
-        public ContactsSection(String title, ProposalTransactionsWrapper list) {
+        public ContactsSection(String title, ProposalTransactionsWrapper wrapper) {
             super(R.layout.section_unnconfirmed_transactions_header, R.layout.unconfirmed_transactions_row);
 
             this.title = title;
-            this.list = list;
+            this.wrapper = wrapper;
         }
 
         @Override
         public int getContentItemsTotal() {
-            return list.getTransactions().size();
+            return wrapper.getTransactions().size();
         }
 
         @Override
@@ -119,17 +124,27 @@ public class UnconfirmedTransactionFragment extends Fragment {
         public void onBindItemViewHolder(RecyclerView.ViewHolder holder, int position) {
             final ItemViewHolder itemHolder = (ItemViewHolder) holder;
 
-            Transaction wrapper = list.getTransactions().get(position);
+            Transaction wrapper = this.wrapper.getTransactions().get(position);
             itemHolder.txt_tx_hash.setText("Transaction hash: "+wrapper.getHash().toString());
             itemHolder.txt_value.setText("Value: "+wrapper.getValueSentToMe(module.getWalletManager().getWallet()));
-            itemHolder.txt_blocks_left.setText("Block left until it be available: "+(100-wrapper.getConfidence().getDepthInBlocks()));
+            if(wrapper.isCoinBase()){
+                itemHolder.txt_blocks_left.setText("Blocks left until it be available: "+(100-wrapper.getConfidence().getDepthInBlocks()));
+            }else {
+                itemHolder.txt_blocks_left.setText("Blocks left until it be available: next block");
+            }
+
 
             //itemHolder.imgItem.setImageResource(name.hashCode() % 2 == 0 ? R.drawable.ic_face_black_48dp : R.drawable.ic_tag_faces_black_48dp);
 
             itemHolder.rootView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Toast.makeText(getActivity(), String.format("Clicked on position #%s of Section %s", sectionAdapter.getSectionPosition(itemHolder.getAdapterPosition()), title), Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(getActivity(), String.format("Clicked on position #%s of Section %s", sectionAdapter.getSectionPosition(itemHolder.getAdapterPosition()), title), Toast.LENGTH_SHORT).show();
+
+                    ContactsSection contactsSection = (ContactsSection) sectionAdapter.getSectionForPosition(sectionAdapter.getSectionPosition(itemHolder.getAdapterPosition()));
+                    ProposalTransactionsWrapper proposalTransactionsWrapper = contactsSection.getSectionWrapper();
+                    Log.i(TAG,"wrapper: "+proposalTransactionsWrapper.toString());
+                    //Log.i("Tx: "+proposalTransactionsWrapper.getTransactions().get());
                 }
             });
 
@@ -146,6 +161,10 @@ public class UnconfirmedTransactionFragment extends Fragment {
             HeaderViewHolder headerHolder = (HeaderViewHolder) holder;
 
             headerHolder.tvTitle.setText(title);
+        }
+
+        public ProposalTransactionsWrapper getSectionWrapper(){
+            return wrapper;
         }
     }
 
@@ -174,8 +193,6 @@ public class UnconfirmedTransactionFragment extends Fragment {
             txt_tx_hash = (TextView) itemView.findViewById(R.id.txt_tx_hash);
             txt_value = (TextView) itemView.findViewById(R.id.txt_value);
             txt_blocks_left = (TextView) itemView.findViewById(R.id.txt_blocks_left);
-
-
         }
     }
 }

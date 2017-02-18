@@ -6,7 +6,6 @@ import org.iop.WalletConstants;
 import org.iop.WalletModule;
 
 import java.util.List;
-import java.util.Map;
 
 import iop_sdk.governance.propose.Beneficiary;
 import iop_sdk.governance.propose.Proposal;

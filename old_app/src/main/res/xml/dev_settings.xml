@@ -35,6 +35,8 @@
 
         <Preference android:key="id_restart_blockchain" android:title="Restart blockchain" android:summary="Resetea la blockchain bldo ;P" />
 
+        <Preference android:key="id_info" android:title="Info" android:summary="More info about the blockchain"/>
+
     </PreferenceCategory>
 
 

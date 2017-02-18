@@ -29,6 +29,10 @@ public class WalletPreferencesConfiguration extends Configurations implements Wa
 
     private static final String PREFS_KEY_BEST_CHAIN_HEIGHT_EVER = "best_chain_height_ever";
 
+    private static final String PREFS_KEY_ADMIN_NOTIFICATION_TYPE = "admin_notif_type";
+
+    private static final String PREFS_KEY_SCHEDULE_BLOCKCHAIN_SERVICE = "schedule_bch_service";
+
     public WalletPreferencesConfiguration(SharedPreferences prefs) {
         super(prefs);
     }
@@ -65,6 +69,24 @@ public class WalletPreferencesConfiguration extends Configurations implements Wa
 
     public String getReceiveAddress(){
         return getString(PREFS_KEY_RECEIVE_ADDRESS,null);
+    }
+
+    @Override
+    public int getAdminNotification() {
+        return getInt(PREFS_KEY_ADMIN_NOTIFICATION_TYPE,0);
+    }
+
+    @Override
+    public void setAdminNotification(int type) {
+        save(PREFS_KEY_ADMIN_NOTIFICATION_TYPE,type);
+    }
+
+    public void saveScheduleBlockchainService(long time){
+        save(PREFS_KEY_SCHEDULE_BLOCKCHAIN_SERVICE,time);
+    }
+
+    public long getScheduledBLockchainService(){
+        return getLong(PREFS_KEY_SCHEDULE_BLOCKCHAIN_SERVICE,0);
     }
 
 

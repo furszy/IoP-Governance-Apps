@@ -1,0 +1,12 @@
+include ':bitcoinj-core-0.14.3'
+project(':bitcoinj-core-0.14.3').projectDir = new File('Android-IoP-SDK/bitcoinj-core-0.14.3')
+
+include ':iop_sdk_android'
+project(':iop_sdk_android').projectDir = new File('Android-IoP-SDK/iop_sdk_android')
+
+include ':libsodium-jni-aar-1.0.3'
+project(':libsodium-jni-aar-1.0.3').projectDir = new File('Android-IoP-SDK/libsodium-jni-aar-1.0.3')
+
+include ':IoP-SDK'
+project(':IoP-SDK').projectDir = new File('Android-IoP-SDK/IoP-SDK')
+

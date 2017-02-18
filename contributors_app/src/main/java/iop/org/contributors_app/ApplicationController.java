@@ -144,18 +144,18 @@ public class ApplicationController extends Application implements AppController 
         startBlockchainService();
 
 
-        try {
-
-            // We need an Editor object to make preference changes.
-            // All objects are from android.context.Context
-            SharedPreferences settings = getSharedPreferences(ProfileServerConfigurationsImp.PREFS_NAME, 0);
-            profileServerPref = new ProfileServerConfigurationsImp(this,settings);
-
-            startProfileServerService();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+//        try {
+//
+//            // We need an Editor object to make preference changes.
+//            // All objects are from android.context.Context
+//            SharedPreferences settings = getSharedPreferences(ProfileServerConfigurationsImp.PREFS_NAME, 0);
+//            profileServerPref = new ProfileServerConfigurationsImp(this,settings);
+//
+//            startProfileServerService();
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
 
     }
 

@@ -1,3 +1,3 @@
-include ':old_app', ':furszy_lib', ':iop_sdk_android', ':libsodium-jni-aar-1.0.3', ':bitcoinj-core-0.14.3', ':voting_app', ':module', ':contributors_app',':IoP-SDK'
+include ':old_app', ':furszy_lib', ':voting_app', ':module', ':contributors_app'
 
-//':iop_sdk'
+apply from: 'settings/settings.gradle'
